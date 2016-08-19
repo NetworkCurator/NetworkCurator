@@ -1,0 +1,6 @@
+## ignoring temporary files and local netbeans project files
+
+*/*.*~
+*/*/*.*~
+nbproject
+nc-admin/config/*php
