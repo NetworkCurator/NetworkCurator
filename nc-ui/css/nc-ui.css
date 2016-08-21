@@ -1,0 +1,43 @@
+/** 
+ * Custom theme for NetworkCurator
+ *
+*/
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+h1, h2, h3, h4 {     
+    font-family: 'Roboto', Helvetica, sans-serif;
+}
+
+body {       
+    font-family: 'Open Sans', Helvetica, sans-serif;
+    /** top padding prevents navigation bar overlaying content **/
+    padding-top: 50px;
+    margin-bottom: 80px;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;    
+    height: 50px;    
+}
+.footer .container {
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+}
+
+form {
+    margin-top: 14px;
+    margin-bottom: 30px;
+}
+.form-group {
+    margin-bottom: 2em;
+}
+
+
+.form-inline button {
+    margin-left: 12px;
+}
