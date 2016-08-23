@@ -29,14 +29,16 @@ function sqlreport($c, $s) {
 }
 
 // Helper definitions for sql columns
-$vc10col = " VARCHAR(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ";
-$vc24col = " VARCHAR(24) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ";
-$vc32col = " VARCHAR(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ";
-$vc64col = " VARCHAR(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ";
-$vc128col = " VARCHAR(128) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ";
-$vc256col = " VARCHAR(256) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ";
-$textcol = " TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ";
-
+$vc10col = " VARCHAR(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT ''";
+$vc24col = " VARCHAR(24) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT ''";
+$vc32col = " VARCHAR(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT ''";
+$vc64col = " VARCHAR(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT ''";
+$vc128col = " VARCHAR(128) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT ''";
+$vc256col = " VARCHAR(256) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT ''";
+$textcol = " TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT ''";
+$statuscol = " INT NOT NULL DEFAULT 1";
+$dblcol = " DOUBLE NOT NULL DEFAULT 0.0";
+$datecol = " DATETIME NOT NULL";
 
 
 /* --------------------------------------------------------------------------
@@ -60,13 +62,7 @@ try {
     $sql = "CREATE DATABASE " . DB_NAME . " ";
     $sql .= "DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;";
     sqlreport($conn1, $sql);
-
-    echo "Configuring database admin user:";
-    $sql = "GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,CREATE ";
-    $sql .= "TEMPORARY TABLES,DROP,INDEX,ALTER ON " . DB_NAME . ".* TO ";
-    $sql .= DB_ADMIN . "@" . SERVER . " IDENTIFIED BY '" . DB_ADMIN_PASSWD . "';";
-    sqlreport($conn1, $sql);
-
+  
     $conn1->close();
     echo "\n";
     
@@ -101,7 +97,7 @@ echo "\n";
 $tabname = $tp . "users";
 echo "Creating table $tabname:";
 $sql = "CREATE TABLE $tabname (
-  datetime DATETIME NOT NULL,
+  datetime $datecol,
   user_id $vc32col,
   user_firstname $vc64col,
   user_middlename $vc64col,
@@ -109,7 +105,7 @@ $sql = "CREATE TABLE $tabname (
   user_email $vc256col,
   user_pwd $vc64col, 
   user_extpwd $vc64col,   
-  user_status INT NOT NULL,
+  user_status $statuscol,
   PRIMARY KEY (`user_id`)
   ) COLLATE utf8_unicode_ci";
 sqlreport($conn2, $sql);
@@ -124,7 +120,7 @@ echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (
   user_id $vc32col,
   network_id $vc32col,    
-  permissions INT,
+  permissions INT NOT NULL DEFAULT 0,
   UNIQUE KEY `user_network` (`user_id`, `network_id`)
 ) COLLATE utf8_unicode_ci";
 sqlreport($conn2, $sql);
@@ -162,10 +158,10 @@ $sql = "CREATE TABLE $tabname (
   node_id $vc32col,
   class_id $vc32col,
   node_name $vc64col,  
-  node_value DOUBLE NOT NULL,
+  node_value $dblcol,
   node_valueunit $vc24col,
-  node_score DOUBLE NOT NULL,
-  node_status INT NOT NULL,
+  node_score $dblcol,
+  node_status $statuscol,
   PRIMARY KEY (`node_id`)
 ) COLLATE utf8_unicode_ci";
 sqlreport($conn2, $sql);
@@ -187,10 +183,10 @@ $sql = "CREATE TABLE $tabname (
   to_id $vc32col,
   class_id $vc32col,
   link_name $vc64col,  
-  link_value DOUBLE NOT NULL,
+  link_value $dblcol,
   link_valueunit $vc24col,
-  link_score DOUBLE NOT NULL,
-  link_status INT NOT NULL,
+  link_score $dblcol,
+  link_status $statuscol,
   PRIMARY KEY (`link_id`)
 ) COLLATE utf8_unicode_ci";
 sqlreport($conn2, $sql);
@@ -216,10 +212,10 @@ $sql = "CREATE TABLE $tabname (
   class_id $vc32col,
   class_name $vc64col,
   parent_id $vc32col,
-  connector TINYINT(1) NOT NULL,
-  directional TINYINT(1) NOT NULL,
-  class_score DOUBLE NOT NULL,
-  class_status INT NOT NULL,
+  connector TINYINT(1) NOT NULL DEFAULT 0,
+  directional TINYINT(1) NOT NULL DEFAULT 0,
+  class_score $dblcol,
+  class_status $statuscol,
   PRIMARY KEY (`class_id`)
 ) COLLATE utf8_unicode_ci";
 sqlreport($conn2, $sql);
@@ -242,11 +238,11 @@ $sql = "CREATE TABLE $tabname (
   root_id $vc32col,
   parent_id $vc32col,  
   anno_text $textcol,
-  anno_depth INT NOT NULL,
-  anno_value DOUBLE NOT NULL,
+  anno_depth INT NOT NULL DEFAULT 0,
+  anno_value $dblcol,
   anno_valueunit $vc24col,
-  anno_score DOUBLE NOT NULL,
-  anno_status INT NOT NULL  
+  anno_score $dblcol,
+  anno_status $statuscol 
 ) COLLATE utf8_unicode_ci";
 sqlreport($conn2, $sql);
 
@@ -271,7 +267,7 @@ $sql = "CREATE TABLE $tabname (
   original_filename $vc256col,
   filename $vc64col,  
   filetype $vc24col,
-  filesize BIGINT,
+  filesize BIGINT NOT NULL DEFAULT 0,
   PRIMARY KEY (`filename`)
 ) COLLATE utf8_unicode_ci";
 sqlreport($conn2, $sql);
@@ -288,7 +284,7 @@ sqlreport($conn2, $sql);
 $tabname = $tp . "activity";
 echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (
-  datetime DATETIME NOT NULL,
+  datetime $datecol,
   user_id $vc32col,
   network_id $vc32col,    
   action $vc64col,
@@ -312,7 +308,7 @@ sqlreport($conn2, $sql);
 $tabname = $tp . "log";
 echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (
-  datetime DATETIME NOT NULL,
+  datetime $datecol,
   user_id $vc32col,
   user_ip $vc128col,
   controller $vc64col,
@@ -337,11 +333,13 @@ $userstable = $tp . "users";
 $adminpass = md5("admin123");
 $adminextp = md5(makeRandomHexString(60));
 $sql = "INSERT INTO $userstable 
-            (datetime, user_id, user_pwd, user_extpwd, user_firstname, user_lastname,
+            (datetime, user_id, user_pwd, user_extpwd, 
+            user_firstname, user_middlename, user_lastname,
             user_email, user_status) VALUES 
-            (UTC_TIMESTAMP(), 'admin',  '$adminpass', '$adminextp', 'Administrator',
-                '', '', 1) , 
-            (UTC_TIMESTAMP(), 'guest',  '', 'guest', 'Guest', '', '', 1)";
+            (UTC_TIMESTAMP(), 'admin',  '$adminpass', '$adminextp', 
+                'Administrator', '', '', '', 1) , 
+            (UTC_TIMESTAMP(), 'guest',  '', 'guest', 
+            'Guest', '', '', '', 1)";
 sqlreport($conn2, $sql);
 
 
