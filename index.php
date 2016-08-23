@@ -31,8 +31,7 @@ $uid = $_SESSION['uid'];
 $upw = $_SESSION['upw'];
 $NCapi = new NCApiCaller($uid, $upw);
 $userin = $NCapi->checkLogin();
-if (!$userin) {
-    echo "<b>setting to guest?</b> $userin $uid $upw ss";
+if (!$userin) {    
     print_r($userin);
     $uid = "guest";
 }

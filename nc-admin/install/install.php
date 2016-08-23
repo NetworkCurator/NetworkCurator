@@ -380,7 +380,7 @@ $ncappkey = makeRandomHexString(32);
 // Create a configuration file for the 
 $myconf = "<?php\n";
 $myconf .= "\n// Configuration for connecting to the database\n";
-$myconf .= "define('NC_SERVER',\t\t'" . SERVER . "');\n";
+$myconf .= "define('NC_DB_SERVER',\t\t'" . DB_SERVER . "');\n";
 $myconf .= "define('NC_DB_NAME',\t\t'" . DB_NAME . "');\n";
 $myconf .= "define('NC_DB_ADMIN',\t\t'" . DB_ADMIN . "');\n";
 $myconf .= "define('NC_DB_ADMIN_PASSWD',\t'" . DB_ADMIN_PASSWD . "');\n";

@@ -20,7 +20,7 @@ include_once "../../nc-api/helpers/GeneralApiCaller.php";
  * -------------------------------------------------------------------------- */
 
 // Create connection to database
-$conn1 = mysqli_connect(NC_SERVER, NC_DB_ADMIN, NC_DB_ADMIN_PASSWD, NC_DB_NAME);
+$conn1 = mysqli_connect(NC_DB_SERVER, NC_DB_ADMIN, NC_DB_ADMIN_PASSWD, NC_DB_NAME);
 if (!$conn1) {
     die("Connection failed: " . mysqli_error($conn1) . "\n");
 }

@@ -12,7 +12,7 @@
  * 
  */
 function connectNetworkCuratorDB() {
-    $conn = mysqli_connect(NC_SERVER, NC_DB_ADMIN, NC_DB_ADMIN_PASSWD, NC_DB_NAME);
+    $conn = mysqli_connect(NC_DB_SERVER, NC_DB_ADMIN, NC_DB_ADMIN_PASSWD, NC_DB_NAME);
     if (!$conn) {
         die("Connection failed: " . mysqli_error($conn) . "<br/>");
     }
