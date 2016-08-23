@@ -25,22 +25,6 @@ nc_timeout = 4000;
 
 
 /* ==========================================================================
- * Actions on page load
- * ========================================================================== */
-
-/**
- * This fixes a "bug" in bootstrap that allows radio buttons to accept clicks
- * and change active state even if they are set to disabled
- */
-$(document).ready(
-    function () {
-        $('.btn-group .disabled').click(function(event) {
-            event.stopPropagation();
-        });   
-    });
-
-
-/* ==========================================================================
  * Generic functions 
  * ========================================================================== */
 
@@ -52,7 +36,7 @@ $(document).ready(
  *   use 0 for id-like strings (strictly alphanumeric, minimum length)
  *   use 1 for lenient id-like strings (alphanumeric, with _-)
  *   use 2 for name-like strings (spaces, dashes, and apostrophe allowed)
- *   use 3 for passwords (special chars allowed, minimum length 6)
+ *   use 3 for passwords (special chars allowed, minimum length 6) 
  *   
  *   use negative values to skip the length requirement
  */
@@ -125,18 +109,36 @@ function ncCheckFormEmail(nn) {
 /**
  * checks that an object x is consistent with an API return 
  */
-function ncCheckAPIresult(x) {
+function ncCheckAPIresult(x) {    
     if ("success" in x && ("data" in x || "errormsg" in x)) {
         return true;
     } else {
-        if (debug) {
-            alert("Something wrong in API result: "+ x.toString());
-        }
+        ncAlert("Something wrong in API result: "+ x.toString());        
         return false;
     }
 }
 
 
+/**
+ * Show a message in a modal window
+ */
+function ncMsg(h, b) {
+    $('#nc-msg-header').html(h);
+    $('#nc-msg-body').html(b);
+    $('#nc-msg-modal').modal('show');
+}
+
+
+/**
+ * Disable clicks on disabled elements
+ */
+function ncDisabledClick(target) {    
+    $(target+' .disabled').click(function(event) {
+        event.stopPropagation();
+    });   
+}
+ 
+ 
 /* ==========================================================================
  * Section on processing the login form
  * ========================================================================== */
@@ -171,7 +173,7 @@ function ncSendLogin() {
                 $('#ncfg-userid label').html("Please verify the username is correct:");
                 $('#ncfg-password label').html("Please verify the password is correct:");
             } else {
-                window.location.replace("?page=splash");
+                window.location.replace("");
             }
         }                                
     }
@@ -195,9 +197,10 @@ function ncSendCreateNetwork() {
     $('#ncfg-networkname,#ncfg-networktitle,#ncfg-networkdesc').removeClass('has-warning has-error');
     // basic checks on the network name text box    
     if (ncCheckFormInput("networkname", "network name", 1)+
-        ncCheckFormInput("networktitle", "network title", 2) +
-        ncCheckFormInput("networkdesc", "network description", 2) < 3) return 0;
-        
+        ncCheckFormInput("networktitle", "network title", 2) < 2) return 0;    
+    var networkdesc = $("<div>").html($('#nc-networkdesc').val()).text();
+    if (networkdesc.length>250) return 0;
+       
     // post the registration request 
     $.post(nc_api, 
     {
@@ -205,7 +208,7 @@ function ncSendCreateNetwork() {
         action: "createNewNetwork", 
         network_name: $('#nc-networkname').val(),
         network_title: $('#nc-networktitle').val(),
-        network_desc: $('#nc-networkdesc').val()
+        network_desc: networkdesc
     }, function(data, status) {          
         ncAlert(data);        
         data = $.parseJSON(data);
@@ -302,11 +305,23 @@ function ncUpdatePermissions(netname, uid) {
     // call the update permissions api
     ncUpdatePermissionsGeneric(uid, netname, nowval, 
         function (data) {
-            ncAlert(data);                            
+            ncAlert(data);        
+            data = $.parseJSON(data);
             btn.removeClass('btn-warning btn-success').html('Done').addClass('btn-default');        
             setTimeout(function(){
                 btn.html('Update').removeClass('btn-default disabled').addClass('btn-success');            
             }, nc_timeout); 
+            if (ncCheckAPIresult(data) && data['success']==false) {                                 
+                ncMsg('Error', data['errormsg']);                                 
+                return;
+            }                        
+            if (nowval==0 && uid!=="guest") {                
+                // if setting user to 0, remove the form element from the page
+                var ncfp = $('#ncf-permissions-'+uid);
+                ncfp.hide('normal', function() {
+                    ncfp.remove()
+                }); 
+            }
         });            
 }
 
@@ -319,40 +334,15 @@ function ncUpdatePermissions(netname, uid) {
 function ncLookupUser(netname) {
         
     // find the value associated with the selected permission level
-    var idfield = $("#nc-permissions-adduserid");
-    idfield.prop("disabled", true);
+    var idfield = $("#nc-permissions-adduserid");    
     var uid = idfield.val();
 
     var btn = $("#nc-permissions-lookup");    
-    var cancelbtn = $("#nc-permissions-cancel"); 
-    var btnlab = btn.text();
-        
-    var granttext = "Grant view access";
-    // if trying to grant view access, just call the update permissions api
-    if (btnlab==granttext) {        
-        ncUpdatePermissionsGeneric(uid, netname, 1, 
-            function myfun(data) {
-                ncAlert(data);  
-                $("#nc-permissions-userid").html("");
-                btn.removeClass('btn-warning btn-success').addClass("btn-default");
-                btn.html('Refresh the page to see changes, or add another');
-                setTimeout(function(){
-                    btn.html('Lookup').removeClass('btn-default disabled').addClass('btn-success');                                
-                }, nc_timeout*2);
-                cancelbtn.addClass("hidden");
-                idfield.prop("disabled", false);
-            });
-        return;        
-    } 
-
+               
     // if reached here, still trying to lookup the user, check if is is well-formed              
-    if (ncCheckString(uid, 1)==0) {            
-        btn.removeClass('btn-success').addClass('btn-default disabled').html('Invalid userid');        
-        setTimeout(function(){
-            btn.html('Lookup').removeClass('btn-default disabled').addClass('btn-success');            
-            idfield.prop("disabled", false);
-        }, nc_timeout/2);    
-        return;
+    if (ncCheckString(uid, 1)==0) { 
+        ncMsg('Hey!', 'Invalid user id');  
+        return false;
     }
         
     btn.removeClass("btn-success").addClass("btn-warning disabled").html("Checking");
@@ -367,43 +357,49 @@ function ncLookupUser(netname) {
     }, function(data) {
         ncAlert(data);        
         data = $.parseJSON(data);
-        btn.removeClass("btn-warning").addClass('btn-default');
+        btn.html('Lookup').removeClass('btn-warning disabled').addClass('btn-success');                    
         if (ncCheckAPIresult(data)) {            
-            if (data['success']==false) {                
-                btn.html(data['errormsg']);                
-                setTimeout(function(){
-                    btn.html('Lookup').removeClass('btn-default disabled').addClass('btn-success');            
-                    idfield.prop("disabled", false);
-                }, nc_timeout); 
-            } else {
-                if (data['data']==0) {
+            if (data['success']==false) {              
+                ncMsg('Error', data['errormsg']);                
+            } else {                
+                if (data['data']==0) {                    
                     // the target user exists and indeed cannot view the network
-                    btn.html(granttext).removeClass('btn-default disabled').addClass('btn-success');
-                    cancelbtn.removeClass('hidden');                    
+                    // offer to grant permissions
+                    $('#nc-grantconfirm-user').html(uid);                    
+                    $('#nc-grantconfirm-network').html(netname);                    
+                    $('#nc-grantconfirm-modal').modal('show');                    
                 } else {
-                    // the target user already can view the network
-                    btn.html("User already has permissions");                        
-                    setTimeout(function(){
-                        btn.html('Lookup').removeClass('btn-default disabled').addClass('btn-success');            
-                        idfield.prop("disabled", false);
-                    }, nc_timeout); 
+                    ncMsg('Response', 'User already has permissions');                    
                 }                
             }
-        }                
+        }
+        idfield.prop("disabled", false);
     });
+    return false;
 }
 
 
 /**
- * Invoked when admin tries to grant privileges to user, but decides to cancel
+ * Invoked when admin confirms to grant privileges to a user
  */
-function ncGrantViewCancel() {
-    $("#nc-permissions-adduserid").prop("disabled", false);    
-    $("#nc-permissions-lookup").html("Lookup");    
-    $("#nc-permissions-cancel").addClass("hidden"); 
+function ncGrantViewOk() {
+    var uid = $("#nc-grantconfirm-user").html();    
+    var netname =$("#nc-grantconfirm-network").html();            
+    ncUpdatePermissionsGeneric(uid, netname, 1, 
+        function myfun(data) {                
+            ncAlert(data); 
+            data = $.parseJSON(data);
+            // clear the text box
+            $("#nc-permissions-userid").html("");         
+            // create a new array to pass on to the widget builder
+            var new_item = $(ncuiPermissionsWidget(netname, data['data'])).hide();
+            $("#nc-permissions-users").append(new_item);
+            new_item.show('normal');        
+        });
+    return false;        
 }
 
-
+ 
 /**
  * Sends an api request to update permissions on a network
  * 
@@ -418,20 +414,46 @@ function ncUpdatePermissionsGeneric(uid, netname, perm, outfun) {
     {
         controller: "NCUsers", 
         action: "updatePermissions", 
-        network: netname,
+        network_name: netname,
         target_id: uid,
         permissions: perm
     }, outfun );   
 }
 
 
+
+/* ==========================================================================
+ * Actions for ontologies
+ * ========================================================================== */
+
+
+function ncTestOntology(netname) {
+    $.post(nc_api, 
+    {
+        controller: "NCOntology", 
+        action: "listNodeOntology", 
+        network_name: netname        
+    }, function(data) {
+        alert(data);        
+    });  
+}
+
+/* ==========================================================================
+ * Actions on page load
+ * ========================================================================== */
+
+/**
+ * This fixes a "bug" in bootstrap that allows radio buttons to accept clicks
+ * and change active state even if they are set to disabled
+ */
+$(document).ready(
+    function () {
+        ncDisabledClick('.btn-group'); 
+    }
+    );
+
+
+
 /* ==========================================================================
  * misc code, leftovers
  * ========================================================================== */
-
-if (4>5) {
-    $('.btn').click(function(e) {
-        e.preventDefault();
-        $(this).addClass('active');
-    })
-}

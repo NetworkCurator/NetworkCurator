@@ -64,7 +64,7 @@ class GeneralApiCaller {
                 
         //check if we're able to json_decode the result correctly
         if ($ans == false || isset($ans['success']) == false) {            
-            throw new Exception('Request was not correct in NetworkCuratorApiCaller');
+            throw new Exception('Request was not correct in GeneralApiCaller');
         }
         
         // if there was an error in the request, throw an exception

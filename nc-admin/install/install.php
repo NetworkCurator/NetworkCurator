@@ -5,14 +5,15 @@
 
 echo "\n";
 echo "NetworkCurator installation\n\n";
-include "install-settings.php";
 include "../../nc-core/php/nc-generic.php";
 
-// Create connection to database
-$conn1 = mysqli_connect(SERVER, DB_ROOT, DB_ROOT_PASSWD);
-if (!$conn1) {
-    die("Connection failed: " . mysqli_error($conn1) . "\n");
+// load the settings (also local settings)
+$localfile = "install-settings-local.php";
+if (file_exists($localfile)) {
+    include $localfile;
 }
+include "install-settings.php";
+
 
 /* --------------------------------------------------------------------------
  * Prep - helper functions and helper variables
@@ -30,6 +31,7 @@ function sqlreport($c, $s) {
 // Helper definitions for sql columns
 $vc10col = " VARCHAR(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ";
 $vc24col = " VARCHAR(24) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ";
+$vc32col = " VARCHAR(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ";
 $vc64col = " VARCHAR(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ";
 $vc128col = " VARCHAR(128) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ";
 $vc256col = " VARCHAR(256) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ";
@@ -41,26 +43,37 @@ $textcol = " TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ";
  * Start installation
  * -------------------------------------------------------------------------- */
 
-echo "Dropping existing database:";
-$sql = "DROP DATABASE IF EXISTS " . DB_NAME . " ";
-sqlreport($conn1, $sql);
-echo "\n";
+try {
+    
+    // Create connection to database
+    $conn1 = mysqli_connect(SERVER, DB_ROOT, DB_ROOT_PASSWD);
+    if (!$conn1) {
+        throw new Exception("Connection failed: " . mysqli_error($conn1) . "\n");
+    }
 
-echo "Creating database:";
-$sql = "CREATE DATABASE " . DB_NAME . " ";
-$sql .= "DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;";
-sqlreport($conn1, $sql);
+    echo "Dropping existing database:";
+    $sql = "DROP DATABASE IF EXISTS " . DB_NAME . " ";
+    sqlreport($conn1, $sql);
+    echo "\n";
 
-echo "Configuring database admin user:";
-$sql = "GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,CREATE ";
-$sql .= "TEMPORARY TABLES,DROP,INDEX,ALTER ON " . DB_NAME . ".* TO ";
-$sql .= DB_ADMIN . "@" . SERVER . " IDENTIFIED BY '" . DB_ADMIN_PASSWD . "';";
-sqlreport($conn1, $sql);
+    echo "Creating database:";
+    $sql = "CREATE DATABASE " . DB_NAME . " ";
+    $sql .= "DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;";
+    sqlreport($conn1, $sql);
 
+    echo "Configuring database admin user:";
+    $sql = "GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,CREATE ";
+    $sql .= "TEMPORARY TABLES,DROP,INDEX,ALTER ON " . DB_NAME . ".* TO ";
+    $sql .= DB_ADMIN . "@" . SERVER . " IDENTIFIED BY '" . DB_ADMIN_PASSWD . "';";
+    sqlreport($conn1, $sql);
 
-$conn1->close();
-echo "\n";
-
+    $conn1->close();
+    echo "\n";
+    
+} catch (Exception $e) {
+    echo "DROP/CREATE operations failed: " . $e->getMessage();
+    echo "\n\n";
+}
 
 
 /* --------------------------------------------------------------------------
@@ -81,6 +94,7 @@ $sql = "DROP TABLE IF EXISTS " . $tp . implode(", " . $tp, $alltabs);
 sqlreport($conn2, $sql);
 echo "\n";
 
+
 // -----------------------------------------------------------------------------
 // The users table will hold information about registered users
 
@@ -88,14 +102,14 @@ $tabname = $tp . "users";
 echo "Creating table $tabname:";
 $sql = "CREATE TABLE $tabname (
   datetime DATETIME NOT NULL,
-  user_id $vc64col,
+  user_id $vc32col,
   user_firstname $vc64col,
   user_middlename $vc64col,
   user_lastname $vc64col,
-  user_email $vc64col,
+  user_email $vc256col,
   user_pwd $vc64col, 
   user_extpwd $vc64col,   
-  user_status TINYINT(1) NOT NULL,
+  user_status INT NOT NULL,
   PRIMARY KEY (`user_id`)
   ) COLLATE utf8_unicode_ci";
 sqlreport($conn2, $sql);
@@ -108,9 +122,9 @@ sqlreport($conn2, $sql);
 $tabname = $tp . "permissions";
 echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (
-  user_id $vc64col,
-  network_id $vc64col,    
-  permissions $vc10col,
+  user_id $vc32col,
+  network_id $vc32col,    
+  permissions INT,
   UNIQUE KEY `user_network` (`user_id`, `network_id`)
 ) COLLATE utf8_unicode_ci";
 sqlreport($conn2, $sql);
@@ -126,18 +140,15 @@ sqlreport($conn2, $sql);
 $tabname = $tp . "networks";
 echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (  
-  network_id $vc64col,    
+  network_id $vc32col,    
   network_name $vc64col,  
-  owner_id $vc64col,  
+  owner_id $vc32col,  
   PRIMARY KEY (`network_id`)
 ) COLLATE utf8_unicode_ci";
 sqlreport($conn2, $sql);
 
-echo "Creating indexes on $tabname (1/2): ";
-$sql = "CREATE INDEX network_id_name ON $tabname (network_id(8), network_name(12)); ";
-sqlreport($conn2, $sql);
-echo "Creating indexes on $tabname (2/2): ";
-$sql = "CREATE INDEX network_name_id ON $tabname (network_name(12), network_id(8)); ";
+echo "Creating indexes on $tabname: ";
+$sql = "CREATE INDEX network_name_id ON $tabname (network_name, network_id); ";
 sqlreport($conn2, $sql);
 
 
@@ -147,9 +158,9 @@ sqlreport($conn2, $sql);
 $tabname = $tp . "nodes";
 echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (  
-  network_id $vc64col,
-  node_id $vc24col,
-  node_class $vc24col,
+  network_id $vc32col,
+  node_id $vc32col,
+  class_id $vc32col,
   node_name $vc64col,  
   node_value DOUBLE NOT NULL,
   node_valueunit $vc24col,
@@ -160,7 +171,7 @@ $sql = "CREATE TABLE $tabname (
 sqlreport($conn2, $sql);
 
 echo "Creating indexes on $tabname: ";
-$sql = "CREATE INDEX node_class ON $tabname (node_class(8)); ";
+$sql = "CREATE INDEX class_id ON $tabname (class_id(8)); ";
 sqlreport($conn2, $sql);
 
 
@@ -170,11 +181,11 @@ sqlreport($conn2, $sql);
 $tabname = $tp . "links";
 echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (  
-  network_id $vc64col,
-  link_id $vc24col,
-  from_id $vc24col,
-  to_id $vc24col,
-  link_class $vc24col,
+  network_id $vc32col,
+  link_id $vc32col,
+  from_id $vc32col,
+  to_id $vc32col,
+  class_id $vc32col,
   link_name $vc64col,  
   link_value DOUBLE NOT NULL,
   link_valueunit $vc24col,
@@ -191,9 +202,31 @@ echo "Creating indexes on $tabname (2/3): ";
 $sql = "CREATE INDEX to_id ON $tabname (to_id(8)); ";
 sqlreport($conn2, $sql);
 echo "Creating indexes on $tabname (3/3): ";
-$sql = "CREATE INDEX link_class ON $tabname (network_id, link_class(8)); ";
+$sql = "CREATE INDEX class_id ON $tabname (network_id, class_id(8)); ";
 sqlreport($conn2, $sql);
 
+
+// -----------------------------------------------------------------------------
+// The classes table will hold ontologies for nodes and links
+
+$tabname = $tp . "classes";
+echo "Creating table $tabname: ";
+$sql = "CREATE TABLE $tabname (  
+  network_id $vc32col,
+  class_id $vc32col,
+  class_name $vc64col,
+  parent_id $vc32col,
+  connector TINYINT(1) NOT NULL,
+  directional TINYINT(1) NOT NULL,
+  class_score DOUBLE NOT NULL,
+  class_status INT NOT NULL,
+  PRIMARY KEY (`class_id`)
+) COLLATE utf8_unicode_ci";
+sqlreport($conn2, $sql);
+
+echo "Creating indexes on $tabname: ";
+$sql = "CREATE INDEX network_id ON $tabname (network_id(8), parent_id); ";
+sqlreport($conn2, $sql);
 
 
 // -----------------------------------------------------------------------------
@@ -203,11 +236,11 @@ $tabname = $tp . "annotations";
 echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (  
   datetime DATETIME NOT NULL,
-  anno_id $vc24col,
-  network_id $vc64col,  
-  user_id $vc64col,  
-  root_id $vc24col,
-  parent_id $vc24col,  
+  anno_id $vc32col,
+  network_id $vc32col,  
+  user_id $vc32col,  
+  root_id $vc32col,
+  parent_id $vc32col,  
   anno_text $textcol,
   anno_depth INT NOT NULL,
   anno_value DOUBLE NOT NULL,
@@ -233,8 +266,8 @@ $tabname = $tp . "datafiles";
 echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (  
   datetime DATETIME NOT NULL,
-  network_id $vc64col,  
-  user_id $vc64col,  
+  network_id $vc32col,  
+  user_id $vc32col,  
   original_filename $vc256col,
   filename $vc64col,  
   filetype $vc24col,
@@ -256,10 +289,10 @@ $tabname = $tp . "activity";
 echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (
   datetime DATETIME NOT NULL,
-  user_id $vc64col,
-  network_id $vc64col,    
+  user_id $vc32col,
+  network_id $vc32col,    
   action $vc64col,
-  target_id $vc64col,  
+  target_id $vc32col,  
   value $textcol
 ) COLLATE utf8_unicode_ci";
 sqlreport($conn2, $sql);
@@ -280,7 +313,7 @@ $tabname = $tp . "log";
 echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (
   datetime DATETIME NOT NULL,
-  user_id $vc64col,
+  user_id $vc32col,
   user_ip $vc128col,
   controller $vc64col,
   action $vc64col,
@@ -356,6 +389,7 @@ $myconf .= "define('NC_DB_ADMIN_PASSWD',\t'" . DB_ADMIN_PASSWD . "');\n";
 $myconf .= "\n// Configuration for accessing data tables\n";
 $myconf .= "define('NC_TABLE_ACTIVITY',\t'" . DB_TABLE_PREFIX . "_activity');\n";
 $myconf .= "define('NC_TABLE_ANNO',\t\t'" . DB_TABLE_PREFIX . "_annotations');\n";
+$myconf .= "define('NC_TABLE_CLASSES',\t\t'" . DB_TABLE_PREFIX . "_classes');\n";
 $myconf .= "define('NC_TABLE_LINKS',\t'" . DB_TABLE_PREFIX . "_links');\n";
 $myconf .= "define('NC_TABLE_LOG',\t\t'" . DB_TABLE_PREFIX . "_log');\n";
 $myconf .= "define('NC_TABLE_NETWORKS',\t'" . DB_TABLE_PREFIX . "_networks');\n";
@@ -364,15 +398,16 @@ $myconf .= "define('NC_TABLE_PERMISSIONS',\t'" . DB_TABLE_PREFIX . "_permissions
 $myconf .= "define('NC_TABLE_USERS',\t'" . DB_TABLE_PREFIX . "_users');\n";
 $myconf .= "define('NC_ID_LEN',\t\t'" . NC_ID_LEN . "_users');\n";
 $myconf .= "\n// Configuration for web server delivering content\n";
-$myconf .= "define('NC_CORE_PATH',\t'$ncpath/nc-core');\n";
-$myconf .= "define('NC_JS_PATH',\t'$ncpath/nc-core/js');\n";
-$myconf .= "define('NC_CSS_PATH',\t'$ncpath/nc-core/css');\n";
-$myconf .= "define('NC_UI_PATH',\t'$ncpath/nc-ui');\n";
-$myconf .= "define('NC_PHP_PATH',\t'$ncpath/nc-core/php');\n";
-$myconf .= "define('NC_API_PATH',\t'" . SERVER . "$ncpath/nc-api/nc-api.php');\n";
-$myconf .= "define('NC_DATA_PATH',\t'$ncpath/nc-data');\n";
 $myconf .= "define('NC_PATH',\t'$ncpath');\n";
-$myconf .= "\n// Configuration for api\n";
+$myconf .= "define('NC_CORE_PATH',\t'$ncpath/nc-core');\n";
+$myconf .= "define('NC_CSS_PATH',\t'$ncpath/nc-core/css');\n";
+$myconf .= "define('NC_INCLUDES_PATH',\t'$ncpath/nc-core/includes');\n";
+$myconf .= "define('NC_JS_PATH',\t'$ncpath/nc-core/js');\n";
+$myconf .= "define('NC_PHP_PATH',\t'$ncpath/nc-core/php');\n";
+$myconf .= "define('NC_DATA_PATH',\t'$ncpath/nc-data');\n";
+$myconf .= "define('NC_UI_PATH',\t'$ncpath/nc-ui');\n";
+$myconf .= "\n// Configuration for API\n";
+$myconf .= "define('NC_API_PATH',\t'" . SERVER . "$ncpath/nc-api/nc-api.php');\n";
 $myconf .= "define('NC_APP_ID',\t'" . NC_APP_ID . "');\n";
 $myconf .= "define('NC_APP_KEY',\t'$ncappkey');\n";
 $myconf .= "\n// Configuration for website\n";

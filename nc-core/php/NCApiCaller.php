@@ -10,13 +10,16 @@ class NCApiCaller {
     private $_caller;
     private $_uid;
     private $_upw;
-    
+    // _p will be initialized as array with userid and userextpwd pre-filled
+    private $_p; 
+
     // constructor; creates an instance of the GeneralApiCaller 
     // with the app id, key, and path defined in the config
     public function __construct($uid, $upw) {
         $this->_caller = new GeneralApiCaller(NC_APP_ID, NC_APP_KEY, NC_API_PATH);
         $this->_uid = $uid;
         $this->_upw = $upw;
+        $this->_p = array('user_id'=>$uid, 'user_extpwd'=>$upw);
     }
 
     /**
@@ -26,8 +29,9 @@ class NCApiCaller {
      * 
      */
     function listNetworks() {
-        $params = array('user_id' => $this->_uid, 'user_extpwd' => $this->_upw,
-            'controller' => 'NCNetworks', 'action' => 'listNetworks');
+        $params = $this->_p;
+        $params['controller'] = 'NCNetworks';
+        $params['action'] = 'listNetworks';      
         return $this->_caller->sendRequest($params);
     }
 
@@ -38,9 +42,10 @@ class NCApiCaller {
      * @return array
      */
     function listNetworkUsers($network) {
-        $params = array('user_id' => $this->_uid, 'user_extpwd' => $this->_upw,
-            'controller' => 'NCNetworks', 'action' => 'listNetworkUsers',
-            'network_name' => $network);
+        $params = $this->_p;
+        $params['controller'] = 'NCNetworks';
+        $params['action'] = 'listNetworkUsers';
+        $params['network_name'] = $network;
         return $this->_caller->sendRequest($params);
     }
 
@@ -52,9 +57,10 @@ class NCApiCaller {
      * @return type
      */
     function isNetworkPublic($network) {
-        $params = array('user_id' => $this->_uid, 'user_extpwd' => $this->_upw,
-            'controller' => 'NCNetworks', 'action' => 'isPublic',
-            'network_name' => $network);
+        $params = $this->_p;
+        $params['controller'] = 'NCNetworks';
+        $params['action'] = 'isPublic';
+        $params['network_name'] = $network;        
         return $this->_caller->sendRequest($params);
     }
 
@@ -110,22 +116,20 @@ class NCApiCaller {
 
         // update the cookies for logged-in users
         if ($userconfirmed) {
-            if ($userconfirmed['success'] === true) {
-                $_SESSION['uid'] = $uid;
-                $_SESSION['upw'] = $upw;
-                $_SESSION['firstname'] = $firstname;
-                $_SESSION['middlename'] = $middlename;
-                $_SESSION['lastname'] = $lastname;
-                setcookie("nc_uid", $uid, $tim, "/");
-                setcookie("nc_firstname", $firstname, $tim, "/");
-                setcookie("nc_middlename", $middlename, $tim, "/");
-                setcookie("nc_lastname", $lastname, $tim, "/");
-                if ((isset($_SESSION['remember']) && $_SESSION['remember'] == 1) || (isset($_COOKIE['nc_remember']) && $_COOKIE['nc_remember'] == 1)) {
-                    setcookie("nc_upw", $upw, $tim, "/");
-                    $_SESSION['remember'] = 1;
-                }
-                return true;
+            $_SESSION['uid'] = $uid;
+            $_SESSION['upw'] = $upw;
+            $_SESSION['firstname'] = $firstname;
+            $_SESSION['middlename'] = $middlename;
+            $_SESSION['lastname'] = $lastname;
+            setcookie("nc_uid", $uid, $tim, "/");
+            setcookie("nc_firstname", $firstname, $tim, "/");
+            setcookie("nc_middlename", $middlename, $tim, "/");
+            setcookie("nc_lastname", $lastname, $tim, "/");
+            if ((isset($_SESSION['remember']) && $_SESSION['remember'] == 1) || (isset($_COOKIE['nc_remember']) && $_COOKIE['nc_remember'] == 1)) {
+                setcookie("nc_upw", $upw, $tim, "/");
+                $_SESSION['remember'] = 1;
             }
+            return true;
         }
 
         return false;
@@ -137,27 +141,57 @@ class NCApiCaller {
      * @param type $network
      * @return type
      */
-    function queryPermissions($network) {        
-        $params = array('user_id' => $this->_uid, 'user_extpwd'=> $this->_upw,
-            'controller' => 'NCUsers', 'action' => 'queryPermissions',
-            'network_name' => $network, 'target_id' => $this->_uid);
+    function querySelfPermissions($network) {
+        $params = $this->_p;
+        $params['controller'] = 'NCUsers';
+        $params['action'] = 'queryPermissions';
+        $params['network_name'] = $network;  
+        $params['target_id'] = $this->_uid; 
         return $this->_caller->sendRequest($params);
     }
 
-    
     /**
      * get Network title and abstract from annotations
      * 
      * @param type $network
      * @return type
      */
-    function getNetworkMetadata($network) {        
-        $params = array('user_id' => $this->_uid, 'user_extpwd'=> $this->_upw,
-            'controller' => 'NCNetworks', 'action' => 'getNetworkMetadata',
-            'network_name' => $network);      
+    function getNetworkMetadata($network) {
+        $params = $this->_p;
+        $params['controller'] = 'NCNetworks';
+        $params['action'] = 'getNetworkMetadata';
+        $params['network_name'] = $network;           
         return $this->_caller->sendRequest($params);
     }
-       
+
+    /**
+     * get an array of all the classes defined for nodes in the network
+     * 
+     * @param type $network
+     * @return type
+     */
+    function getNodeClasses($network) {
+        $params = $this->_p;
+        $params['controller'] = 'NCOntology';
+        $params['action'] = 'getNodeOntology';
+        $params['network_name'] = $network; 
+        return $this->_caller->sendRequest($params);
+    }
+    
+    
+    /**
+     * get an array of all the class defined for links in the network 
+     * 
+     * @param type $network
+     * @return type
+     */
+    function getLinkClasses($network) {
+        $params = $this->_p;
+        $params['controller'] = 'NCOntology';
+        $params['action'] = 'getLinkOntology';
+        $params['network_name'] = $network; 
+        return $this->_caller->sendRequest($params);
+    }
 }
 
 ?>

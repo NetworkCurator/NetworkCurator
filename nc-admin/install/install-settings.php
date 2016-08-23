@@ -13,7 +13,9 @@ define("SERVER", "localhost");
 // !! Change password in local copy !! 
 //
 define("DB_ROOT", "nc_admin0");
-define("DB_ROOT_PASSWD", "yellowflowersontheroadside");
+if (!defined("DB_ROOT_PASSWD")) {
+    define("DB_ROOT_PASSWD", "yellowflowersontheroadside");
+}
 
 
 // Name of new database
@@ -26,7 +28,9 @@ define("DB_NAME", "networkcurator");
 // !! Change password in local copy !!
 //
 define("DB_ADMIN", "nc_admin1");
-define("DB_ADMIN_PASSWD", "blueskieswithcloudstoday");
+if (!defined("DB_ADMIN_PASSWD")) {
+    define("DB_ADMIN_PASSWD", "blueskieswithcloudstoday");
+}
 
 
 // prefix for tables
@@ -47,6 +51,4 @@ define("NC_SITE_NAME", "NetworkCurator");
 
 // length of random strings in ids
 define("NC_ID_LEN", 9);
-
-
 ?>

@@ -31,6 +31,11 @@ $uid = $_SESSION['uid'];
 $upw = $_SESSION['upw'];
 $NCapi = new NCApiCaller($uid, $upw);
 $userin = $NCapi->checkLogin();
+if (!$userin) {
+    echo "<b>setting to guest?</b> $userin $uid $upw ss";
+    print_r($userin);
+    $uid = "guest";
+}
 $userip = $_SERVER['REMOTE_ADDR'];
 
 
@@ -49,12 +54,12 @@ if ($page == "login" || $page == "logout" || $page == "admin") {
 } else if ($page=="network") {
     // these are pages that require a set network name
     if (!$network) {
-        include_once "nc-ui/nc-ui-splash.php";
+        include_once "nc-ui/nc-ui-front.php";
     } else {
         include_once "nc-ui/nc-ui-$page.php";
     }    
 } else {
-    include_once "nc-ui/nc-ui-splash.php";
+    include_once "nc-ui/nc-ui-front.php";
 }
 
 // the footer is common to all pages

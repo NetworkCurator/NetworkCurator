@@ -3,12 +3,13 @@
 /**
  * Class handling requests for networks (list networks, add a new network, etc.)
  * 
- * Functions assume that the NC configuration definitions are already loaded
+ * Class assumes that the NC configuration definitions are already loaded
+ * Class assumes that the invoking user has passed identity checks
  * 
  */
 class NCNetworks {
 
-    // generic
+    // db connection and array of parameters
     private $_conn;
     private $_params;
     // some variables extracted from $_params, for convenience
@@ -46,16 +47,7 @@ class NCNetworks {
             $this->_uid = $this->_params['user_id'];
         } else {
             throw new Exception("NCNetworks requires parameter user_id");
-        }
-        if (!isset($params['user_extpwd'])) {
-            throw new Exception("NCNetworks requires parameter user_extpwd");
-        }
-
-        // confirm the user
-        $usercontroller = new NCUsers($conn, $this->_params);
-        if (!$usercontroller->confirm()) {
-            throw new Exception("Failed user confirmation");
-        }
+        }        
     }
 
     /**
@@ -120,7 +112,7 @@ class NCNetworks {
         }
 
         // 2/5, create a directory on the server for the network        
-        $networkdir = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/" . $network;
+        $networkdir = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/networks/" . $network;
         if (!mkdir($networkdir, 0777, true)) {
             throw new Exception("Failed creating network data space: " . $networkdir);
         }
@@ -171,7 +163,8 @@ class NCNetworks {
      */
     public function isPublic() {
         $network = $this->_network;
-        $guestpermissions = $this->getUserPermissions($network, "guest");
+        $NCAccess = new NCAccess($this->_conn);
+        $guestpermissions = $NCAccess->getUserPermissions($network, "guest");
         if ($guestpermissions == 0) {
             return false;
         } else {
@@ -241,15 +234,15 @@ class NCNetworks {
         $uid = $this->_uid;
 
         // check that requesting user can view this network
-        $upermissions = $this->getUserPermissions($network, $uid);
+        $NCAccess = new NCAccess($this->_conn);
+        $upermissions = $NCAccess->getUserPermissions($network, $uid);
         if ($upermissions < 1) {
             throw new Exception("Insufficient permission to view network");
         }
 
         // get the users participating in this network       
         $sql = "SELECT user_firstname, user_middlename, user_lastname, 
-            $tu.user_id AS user_id,
-            network_name, $tn.network_id, permissions            
+            $tu.user_id AS user_id, permissions            
             FROM $tn 
                JOIN $tp ON $tn.network_id=$tp.network_id 
                JOIN $tu ON $tp.user_id=$tu.user_id                                
@@ -263,7 +256,7 @@ class NCNetworks {
         }
         $ans = array();
         while ($row = mysqli_fetch_assoc($sqlresult)) {
-            $ans[] = $row;
+            $ans[$row['user_id']] = $row;
         }
         return $ans;
     }
@@ -284,7 +277,8 @@ class NCNetworks {
         }
 
         // check if user has permission to view the table
-        if ($this->getUserPermissions($network, $uid) < 1) {
+        $NCAccess = new NCAccess($this->_conn);
+        if ($NCAccess->getUserPermissions($network, $uid) < 1) {
             throw new Exception("Insufficient permission to view the network");
         }
 
@@ -351,38 +345,7 @@ class NCNetworks {
         return $ans;
     }
 
-    /**
-     * looks up the permission code for a user on a network.
-     *
-     * This function takes network and uid separately from the class _network
-     * and _uid. This allows, for example, the admin user to get the 
-     * permission for the guest user. 
-     * 
-     * @param type $network
-     * @param type $uid
-     * @throws Exception
-     */
-    private function getUserPermissions($network, $uid) {
-
-        $tn = "" . NC_TABLE_NETWORKS;
-        $tp = "" . NC_TABLE_PERMISSIONS;
-
-        $sql = "SELECT permissions            
-            FROM $tp JOIN $tn ON $tp.network_id=$tn.network_id                
-            WHERE BINARY $tp.user_id='$uid' AND $tn.network_name='$network'";
-        //return $sql;
-        $sqlresult = mysqli_query($this->_conn, $sql);
-        if (!$sqlresult) {
-            throw new Exception("Failed checking network permissions");
-        }
-        if (mysqli_num_rows($sqlresult) == 0) {
-            return 0;
-        } else {
-            $row = mysqli_fetch_assoc($sqlresult);
-            return $row['permissions'];
-        }
-    }
-
+  
 }
 
 ?>

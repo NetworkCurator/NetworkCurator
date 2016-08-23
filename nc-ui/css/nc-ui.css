@@ -1,7 +1,13 @@
 /** 
  * Custom theme for NetworkCurator
  *
-*/
+ */
+
+ 
+/* --------------------------------------------------------------------------
+ * General page/body elements
+ * -------------------------------------------------------------------------- */
+ 
 html {
     position: relative;
     min-height: 100%;
@@ -14,9 +20,54 @@ h1, h2, h3, h4 {
 body {       
     font-family: 'Open Sans', Helvetica, sans-serif;
     /** top padding prevents navigation bar overlaying content **/
-    padding-top: 50px;
+    padding-top: 32px;
     margin-bottom: 80px;
 }
+
+
+
+/* --------------------------------------------------------------------------
+ * Navbars
+ * -------------------------------------------------------------------------- */
+
+.nc-navbar { 
+    min-height:32px; 
+ }
+.nc-navbar .navbar-brand { 
+    padding: 0px 15px; 
+    font-size: inherit;
+    height: 32px;
+    line-height: 32px; }
+.nc-navbar .navbar-nav > li > a {  
+    padding: 0px 15px;
+    line-height: 32px; 
+}
+.nc-navbar .navbar-text { 
+    padding: 0px 15px;
+    margin: 0px 15px;
+    line-height: 32px; 
+}
+.navbar2 .container {
+    padding-left: 0px !important;
+}
+.navbar2 .active {
+    background-color: #c0c0c0;
+}
+
+.navbar2 {
+    position: absolute;    
+    top: 32px;
+    left: 0;
+    right: 0;
+}
+.body2 {
+    padding-top: 80px;
+}
+
+
+/* --------------------------------------------------------------------------
+ * Footer
+ * -------------------------------------------------------------------------- */
 
 .footer {
     position: absolute;
@@ -29,6 +80,33 @@ body {
     padding-right: 0px !important;
 }
 
+
+/* --------------------------------------------------------------------------
+ * Handling for navbars
+ * -------------------------------------------------------------------------- */
+
+
+.nc-btn-permissions {
+    min-width: 94px !important;
+}
+
+.nc-fg-name {
+    min-width: 260px !important;
+    max-width: 260px !important;
+    width: 260px !important;    
+    white-space: nowrap;   
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: inherit;
+    margin-bottom: 0px;
+}
+
+.nc-form-permissions {
+    margin-top: 6px;
+    margin-bottom: 6px;
+}
+
+
 form {
     margin-top: 14px;
     margin-bottom: 30px;
@@ -40,4 +118,32 @@ form {
 
 .form-inline button {
     margin-left: 12px;
+}
+
+
+
+#nc-nav-network-title {
+    font-weight: 600;
+    white-space: nowrap;   
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: inherit;
+}
+#nc-nav-network-title:hover {
+    text-decoration: inherit;
+    color: inherit;
+}
+
+.admin > a {
+    color: #d43f3a !important;
+}
+
+.ncui-darklabel {
+    background-color: #222;
+    opacity: 0.7;
+    color: #fff;
+    font-size: 110%;
+    font-weight: 400;
+    padding: 12px;
+    margin-top: 22px;
 }

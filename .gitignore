@@ -4,3 +4,4 @@
 */*/*.*~
 nbproject
 nc-admin/config/*php
+nc-admin/install/*local*

@@ -20,6 +20,7 @@ include_once $nowdir . "/../nc-core/php/nc-generic.php";
 // connectivity to the database
 include_once $nowdir . "/helpers/nc-db.php";
 include_once $nowdir . "/helpers/NCLogger.php";
+include_once $nowdir . "/helpers/NCAccess.php";
 
 // object that will hold answer of the api call
 $ans = array();

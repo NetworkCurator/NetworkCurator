@@ -3,17 +3,18 @@
 /**
  * Class handling requests for user accounts (new user, change permissions, etc.)
  * 
- * Functions assume that the NC configuration definitions are already loaded
+ * Class assumes that the NC configuration definitions are already loaded
+ * Class assumes that the invoking user has passed identity checks
  * 
  */
 class NCUsers {
 
+    // db connection and array of parameters
     private $_conn;
     private $_params;
     // some variables extracted from $_params, for convenience    
-    private $_uid;
-    private $_upw;
-    
+    private $_uid;    
+
     /**
      * Constructor 
      * 
@@ -28,24 +29,18 @@ class NCUsers {
     public function __construct($conn, $params) {
         $this->_conn = $conn;
         $this->_params = $params;
-        
+
         // make parameters SQL-safe
-        foreach ($params as $key => $value) {            
+        foreach ($params as $key => $value) {
             $this->_params[$key] = addslashes(stripslashes($value));
         }
-        
+
         // check for required parameters       
         if (isset($params['user_id'])) {
             $this->_uid = $this->_params['user_id'];
         } else {
             throw new Exception("NCNetworks requires parameter user_id");
-        }
-        if (isset($params['user_extpwd'])) {
-            $this->_upw = $this->_params['user_extpwd'];
-        } else {
-            throw new Exception("NCNetworks requires parameter user_extpwd");
-        }
-        
+        }        
     }
 
     /**
@@ -63,7 +58,7 @@ class NCUsers {
         if (count(array_intersect_key(array_flip($tocheck), $pp)) !== count($tocheck)) {
             throw new Exception("Missing parameters");
         }
-        
+
         //shorthand variables
         $firstname = $this->_params['firstname'];
         $middlename = $this->_params['middlename'];
@@ -71,19 +66,14 @@ class NCUsers {
         $email = $this->_params['email'];
         $targetid = $this->_params['target_id'];
         $targetpwd = md5($this->_params['target_password']);
-        $uid = $this->_uid;        
+        $uid = $this->_uid;
         $conn = $this->_conn;
 
         // perform tests on whether this user can create new network?
         if ($uid !== "admin") {
             throw new Exception("Insufficient permissions to create a network");
         }
-
-        // confirm the user credentials
-        if (!$this->confirm()) {
-            throw new Exception("Failed user confirmation");
-        }
-
+       
         // check that the network does not already exist?                  
         $sql = "SELECT user_id FROM " . NC_TABLE_USERS . " 
             WHERE user_id='$targetid'";
@@ -158,8 +148,8 @@ class NCUsers {
      * A validation of a user log-in status using the ext password code
      * 
      * Expects $_params to have the following components
-     * uid - user id
-     * upw - user password (extpwd)
+     * user_id - user id
+     * user_extpwd - user password (extpwd)
      * 
      * @return boolean
      * 
@@ -172,7 +162,7 @@ class NCUsers {
 
         // shorthand variables
         $uid = $this->_uid;
-        $upw = $this->_upw;
+        $upw = $this->_params['user_extpwd'];
 
         // first check if the user is a guest
         if ($uid === "guest" && $upw === "guest") {
@@ -214,13 +204,31 @@ class NCUsers {
         // the asking user should be the site administrator
         $uid = $this->_uid;
         $conn = $this->_conn;
-        if ($uid !== "admin") {
-            throw new Exception("Action allowed by admin only");
-        }
 
         $targetid = $this->_params['target_id'];
-        $targetnetwork = $this->_params['network'];
+        $targetnetwork = $this->_params['network_name'];
         $newpermissions = (int) $this->_params['permissions'];
+
+        // get the netid that matches the network name
+        $sql = "SELECT network_id FROM " . NC_TABLE_NETWORKS . "
+            WHERE BINARY network_name = '$targetnetwork'";
+        $sqlresult = mysqli_query($conn, $sql);
+        if (!$sqlresult || (mysqli_num_rows($sqlresult) < 1)) {
+            $netid = "";
+        } else {
+            $sqlrow = mysqli_fetch_assoc($sqlresult);
+            $netid = $sqlrow['network_id'];
+        }
+
+        // get permissions for the asking user, only curators and admin can 
+        // update permissions
+        $sql = "SELECT permissions FROM " . NC_TABLE_PERMISSIONS . "
+            WHERE BINARY user_id = '$uid' AND network_id='$netid'
+                AND permissions>3";
+        $sqlresult = mysqli_query($conn, $sql);
+        if (!$sqlresult || (mysqli_num_rows($sqlresult) < 1)) {
+            throw new Exception("Insufficient permissions");
+        }
 
         // make sure the target user exists and the permisions are valid
         if ($newpermissions < 0 || $newpermissions > 4) {
@@ -229,20 +237,16 @@ class NCUsers {
         if ($targetid == "guest" && $newpermissions > 1) {
             throw new Exception("Guest user cannot have high permissions");
         }
-        $sql = "SELECT user_id FROM " . NC_TABLE_USERS . "
+        $sql = "SELECT user_id, user_firstname, user_middlename, user_lastname 
+            FROM " . NC_TABLE_USERS . "
             WHERE BINARY user_id = '$targetid'";
         $sqlresult = mysqli_query($conn, $sql);
         if (!$sqlresult || (mysqli_num_rows($sqlresult) < 1)) {
             throw new Exception("Target user does not exist");
         }
-        $sql = "SELECT network_id FROM " . NC_TABLE_NETWORKS . "
-            WHERE BINARY network_name = '$targetnetwork'";
-        $sqlresult = mysqli_query($conn, $sql);
-        if (!$sqlresult || (mysqli_num_rows($sqlresult) < 1)) {
-            throw new Exception("Target network does not exist");
-        }
-        $sqlrow = mysqli_fetch_assoc($sqlresult);
-        $netid = $sqlrow['network_id'];
+        $userinfo = array();
+        $userinfo[$targetid] = mysqli_fetch_assoc($sqlresult);
+        $userinfo[$targetid]['permissions'] = $newpermissions;
 
         // make sure the new permission is different from the existing value
         $sql = "SELECT permissions FROM " . NC_TABLE_PERMISSIONS . "
@@ -271,7 +275,7 @@ class NCUsers {
         $logger = new NCLogger($conn);
         $logger->logActivity($uid, $netid, "updated permissions for user", $targetid, $newpermissions);
 
-        return true;
+        return $userinfo;
     }
 
     /**
@@ -287,11 +291,20 @@ class NCUsers {
         $conn = $this->_conn;
         $targetid = $this->_params['target_id'];
         $targetnetwork = $this->_params['network_name'];
-        
+        $tp = "" . NC_TABLE_PERMISSIONS;
+        $tn = "" . NC_TABLE_NETWORKS;
+
         // the asking user should be the site administrator
-        // or a user asking for their own permissions
+        // a user asking for their own permissions, or curator on a network
         if ($uid !== "admin" && $uid !== $targetid) {
-            throw new Exception("Action allowed by admin only");
+            $sql = "SELECT permissions FROM $tp JOIN $tn
+                ON $tn.network_id=$tp.network_id 
+            WHERE user_id='$uid' AND network_name='$targetnetwork' AND
+               permissions>3";
+            $sqlresult = mysqli_query($conn, $sql);            
+            if (!$sqlresult || (mysqli_num_rows($sqlresult) < 1)) {
+                throw new Exception("Insufficient permissions spsps");
+            }
         }
 
         // make sure the target user and network exist

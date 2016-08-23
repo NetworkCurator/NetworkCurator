@@ -27,7 +27,7 @@
                 <label for="nc-networkdesc">Network description:</label> 
                 <textarea class="form-control" rows="4" id="nc-networkdesc"></textarea>        
                 <p class="help-block">This should be a concise description of the
-                    network (max 200 words).</p>        
+                    network (max 250 characters).</p>        
             </div>        
             <button type="submit" class="btn btn-success submit">Create</button>
             <div id="ncf-result"></div>

@@ -1,14 +1,13 @@
 <?php
 /*
- * Element showing one network on the splash page
+ * Element showing one network on the main/index/front page.
+ * It's like a card or media element. (new name?)
+ * 
  */
 ?>
 
 <?php
 $nowlink = "?page=network&network=$networkname";
-if ($_SESSION['uid'] == "admin") {
-    $nowlink = "?page=admin&network=$networkname";
-}
 ?>
 <div class="media nc-mt-20">    
     <div class="media-body">
