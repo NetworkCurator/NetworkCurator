@@ -173,7 +173,7 @@ function ncSendLogin() {
                 $('#ncfg-userid label').html("Please verify the username is correct:");
                 $('#ncfg-password label').html("Please verify the password is correct:");
             } else {
-                window.location.replace("");
+                window.location.replace("?page=front");
             }
         }                                
     }
