@@ -5,7 +5,6 @@
  * All user interaction should got through here.
  * 
  */
-
 // load the settings for the website
 include_once "nc-admin/config/nc-config.php";
 
@@ -27,12 +26,16 @@ $network = $_REQUEST['network'];
 
 // collect information about the user from the session
 session_start();
-$uid = $_SESSION['uid'];
-$upw = $_SESSION['upw'];
+if (!isset($_SESSION['uid'])) {
+    $uid = "guest";
+    $upw = "guest";
+} else {
+    $uid = $_SESSION['uid'];
+    $upw = $_SESSION['upw'];
+}
 $NCapi = new NCApiCaller($uid, $upw);
 $userin = $NCapi->checkLogin();
 if (!$userin) {    
-    print_r($userin);
     $uid = "guest";
 }
 $userip = $_SERVER['REMOTE_ADDR'];
@@ -50,13 +53,13 @@ include_once "nc-ui/nc-components/nc-navbar.php";
 if ($page == "login" || $page == "logout" || $page == "admin") {
     // these are pages that require only a user id
     include_once "nc-ui/nc-ui-$page.php";
-} else if ($page=="network") {
+} else if ($page == "network") {
     // these are pages that require a set network name
     if (!$network) {
         include_once "nc-ui/nc-ui-front.php";
     } else {
         include_once "nc-ui/nc-ui-$page.php";
-    }    
+    }
 } else {
     include_once "nc-ui/nc-ui-front.php";
 }

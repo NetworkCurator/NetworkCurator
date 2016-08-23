@@ -7,7 +7,6 @@
  * 
  */
 
-echo "here";
 // get the permission level for this user
 try {
     $upermissions = $NCapi->querySelfPermissions($network);
@@ -16,7 +15,6 @@ try {
     $upermissions = 0;
 }
 
-echo "there";
 // if user does not have at least view permissions, redirect
 if (!$upermissions || $upermissions < 1) {
     header("Refresh: 0; ?page=front");
@@ -26,7 +24,6 @@ if (!$upermissions || $upermissions < 1) {
 // get network title and description
 $netmeta = $NCapi->getNetworkMetadata($network);
 
-echo "sisisis";
 // get what aspect of the network to view (summary, graph, log, etc)
 $view = 'summary';
 if (isset($_REQUEST['view'])) {
