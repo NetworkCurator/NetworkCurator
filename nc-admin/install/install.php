@@ -48,7 +48,7 @@ $datecol = " DATETIME NOT NULL";
 try {
     
     // Create connection to database
-    $conn1 = mysqli_connect(SERVER, DB_ROOT, DB_ROOT_PASSWD);
+    $conn1 = mysqli_connect(DB_SERVER, DB_ROOT, DB_ROOT_PASSWD);
     if (!$conn1) {
         throw new Exception("Connection failed: " . mysqli_error($conn1) . "\n");
     }
@@ -76,7 +76,7 @@ try {
  * Create tables
  * -------------------------------------------------------------------------- */
 
-$conn2 = mysqli_connect(SERVER, DB_ADMIN, DB_ADMIN_PASSWD, DB_NAME);
+$conn2 = mysqli_connect(DB_SERVER, DB_ADMIN, DB_ADMIN_PASSWD, DB_NAME);
 if (!$conn2) {
     die("Connection failed: " . mysqli_error($conn2) . "\n");
 }

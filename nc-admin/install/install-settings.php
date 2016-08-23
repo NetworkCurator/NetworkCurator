@@ -2,8 +2,8 @@
 
 // This file contains settings using during the NetworkCurator installation
 // Connection to SQL server
-if (!defined("SERVER")) {
-    define("SERVER", "localhost");
+if (!defined("DB_SERVER")) {
+    define("DB_SERVER", "localhost");
 }
 
 
@@ -46,6 +46,11 @@ if (!defined("DB_TABLE_PREFIX")) {
     define("DB_TABLE_PREFIX", "nc");
 }
 
+
+// settings for web server - api
+if (!defined("SERVER")) {
+    define("SERVER", "localhost");
+}
 
 // settings for the web server - position of NetworkCurator on a webpage
 if (!defined("NC_PATH")) {
