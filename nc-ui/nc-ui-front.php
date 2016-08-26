@@ -14,14 +14,16 @@ include_once "nc-ui/nc-components/ui-front-jumbo.php";
 <?php
 // get info on existing and viewable networks
 // display each using the code in ui-network-card            
+//echo "A";
 $mynetworks = $NCapi->listNetworks();
+//echo "B";
 //print_r($mynetworks);
-for ($x = 0; $x < count($mynetworks); $x++) {
-    $thisn = $mynetworks[$x];
-    $networkid = $mynetworks[$x]['network_id'];
-    $networkname = $mynetworks[$x]['network_name'];
-    $networktitle = $mynetworks[$x]['title'];
-    $networkdesc = $mynetworks[$x]['description'];
+
+for ($x = 0; $x < count($mynetworks); $x++) {    
+    $networkid = $mynetworks[$x]['network_id'];    
+    $networkname = $mynetworks[$x]['network_name'];    
+    $networktitle = $mynetworks[$x]['network_title'];
+    $networkabstract = $mynetworks[$x]['network_abstract'];
     include "nc-components/ui-network-card.php";
 }
 ?>

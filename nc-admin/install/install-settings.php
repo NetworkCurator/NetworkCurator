@@ -70,8 +70,14 @@ if (!defined("NC_SITE_NAME")) {
 }
 
 
+// initial password for site admin
+if (!defined("NC_SITE_ADMIN_PASSWORD")) {
+    define("NC_SITE_ADMIN_PASSWORD", "admin123");
+}
+
+
 // length of random strings in ids
 if (!defined("NC_ID_LEN")) {
-    define("NC_ID_LEN", 9);
+    define("NC_ID_LEN", 11);
 }
 ?>

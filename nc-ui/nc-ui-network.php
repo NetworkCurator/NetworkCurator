@@ -14,6 +14,7 @@ try {
     // this case handles situations where the network code is not a valid network name
     $upermissions = 0;
 }
+//echo "uperm: $upermissions";
 
 // if user does not have at least view permissions, redirect
 if (!$upermissions || $upermissions < 1) {
@@ -23,6 +24,7 @@ if (!$upermissions || $upermissions < 1) {
 
 // get network title and description
 $netmeta = $NCapi->getNetworkMetadata($network);
+//print_r($netmeta);
 
 // get what aspect of the network to view (summary, graph, log, etc)
 $view = 'summary';
@@ -64,6 +66,7 @@ if ($upermissions < 4) {
 
 <?php
 // after the menu, include the contents specific
+//echo "<br/>FFF";
 include_once "nc-ui/nc-components/ui-network-$view.php";
 ?>
 
@@ -72,7 +75,7 @@ include_once "nc-ui/nc-components/ui-network-$view.php";
 <script>
     $(document).ready(
     function () {           
-        $('#nc-nav-network-title').html('<?php echo $netmeta['title'] ?>');
+        $('#nc-nav-network-title').html('<?php echo $netmeta['network_title'] ?>');
         $('body').addClass('body2');
     });
 </script>

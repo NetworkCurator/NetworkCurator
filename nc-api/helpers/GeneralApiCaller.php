@@ -39,6 +39,7 @@ class GeneralApiCaller {
      */
     public function sendRequest($params) {
 
+        // echo "sendRequest\n";
         // encrypt the request                        
         $request = base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $this->_app_key, json_encode($params), MCRYPT_MODE_ECB));
 
@@ -58,9 +59,9 @@ class GeneralApiCaller {
             printf("cUrl error (#%d): %s<br>\n", curl_errno($handle), htmlspecialchars(curl_error($handle)));
         } 
         
-        //echo "XYZ: ".$ans;
+        //echo "GAC: ".$ans."\n";
         $ans = json_decode($ans, true);        
-        //echo "ABC: ".$ans;
+        //echo "ABC: ".$ans."\n";
                 
         //check if we're able to json_decode the result correctly
         if ($ans == false || isset($ans['success']) == false) {            

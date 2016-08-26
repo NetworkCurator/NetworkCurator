@@ -11,7 +11,7 @@ class NCApiCaller {
     private $_uid;
     private $_upw;
     // _p will be initialized as array with userid and userextpwd pre-filled
-    private $_p; 
+    private $_p;
 
     // constructor; creates an instance of the GeneralApiCaller 
     // with the app id, key, and path defined in the config
@@ -19,7 +19,7 @@ class NCApiCaller {
         $this->_caller = new GeneralApiCaller(NC_APP_ID, NC_APP_KEY, NC_API_PATH);
         $this->_uid = $uid;
         $this->_upw = $upw;
-        $this->_p = array('user_id'=>$uid, 'user_extpwd'=>$upw);
+        $this->_p = array('user_id' => $uid, 'user_extpwd' => $upw);
     }
 
     /**
@@ -31,7 +31,7 @@ class NCApiCaller {
     function listNetworks() {
         $params = $this->_p;
         $params['controller'] = 'NCNetworks';
-        $params['action'] = 'listNetworks';      
+        $params['action'] = 'listNetworks';
         return $this->_caller->sendRequest($params);
     }
 
@@ -60,7 +60,7 @@ class NCApiCaller {
         $params = $this->_p;
         $params['controller'] = 'NCNetworks';
         $params['action'] = 'isPublic';
-        $params['network_name'] = $network;        
+        $params['network_name'] = $network;
         return $this->_caller->sendRequest($params);
     }
 
@@ -77,7 +77,7 @@ class NCApiCaller {
      * 
      */
     function checkLogin() {
-
+        
         // default state is "guest"
         $g = "guest";
         $tim = time() + (3600 * 24 * 7);
@@ -109,10 +109,10 @@ class NCApiCaller {
                 return false;
             }
         }
-
+        
         // confirm the existence of the user using an API call        
         $apiparams = array('user_extpwd' => $upw);
-        $userconfirmed = $this->_caller->sendReq($uid, "NCUsers", "confirm", $apiparams);
+        $userconfirmed = $this->_caller->sendReq($uid, "NCUsers", "confirm", $apiparams);        
 
         // update the cookies for logged-in users
         if ($userconfirmed) {
@@ -131,7 +131,7 @@ class NCApiCaller {
             }
             return true;
         }
-
+        
         return false;
     }
 
@@ -145,8 +145,8 @@ class NCApiCaller {
         $params = $this->_p;
         $params['controller'] = 'NCUsers';
         $params['action'] = 'queryPermissions';
-        $params['network_name'] = $network;  
-        $params['target_id'] = $this->_uid; 
+        $params['network_name'] = $network;
+        $params['target_id'] = $this->_uid;
         return $this->_caller->sendRequest($params);
     }
 
@@ -160,7 +160,7 @@ class NCApiCaller {
         $params = $this->_p;
         $params['controller'] = 'NCNetworks';
         $params['action'] = 'getNetworkMetadata';
-        $params['network_name'] = $network;           
+        $params['network_name'] = $network;
         return $this->_caller->sendRequest($params);
     }
 
@@ -174,11 +174,10 @@ class NCApiCaller {
         $params = $this->_p;
         $params['controller'] = 'NCOntology';
         $params['action'] = 'getNodeOntology';
-        $params['network_name'] = $network; 
+        $params['network_name'] = $network;
         return $this->_caller->sendRequest($params);
     }
-    
-    
+
     /**
      * get an array of all the class defined for links in the network 
      * 
@@ -189,9 +188,10 @@ class NCApiCaller {
         $params = $this->_p;
         $params['controller'] = 'NCOntology';
         $params['action'] = 'getLinkOntology';
-        $params['network_name'] = $network; 
+        $params['network_name'] = $network;
         return $this->_caller->sendRequest($params);
     }
+
 }
 
 ?>

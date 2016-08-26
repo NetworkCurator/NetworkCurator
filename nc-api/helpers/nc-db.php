@@ -1,22 +1,35 @@
 <?php
+
 /**
  * Collection of functions dealing with NetworkCurator database management
  * 
- * Functions assume that the NC configuration definitions are already loaded
+ *  
+ */
+
+/**
+ * Create a connection to the NC database using PDO
  * 
  */
+function connectDB($server, $dbname, $account, $password) {
+    $db = new PDO('mysql:host=' . $server . ';dbname=' . $dbname . ';charset=utf8mb4',
+                    $account, $password);
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+    $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+    return $db;
+}
 
 
 /**
- * Create a connection to the NC database
+ * Helper function to prepare an sql query and execute it in one line.
  * 
+ * @param type $sql
+ * @param type $bind
+ * @return type
  */
-function connectNetworkCuratorDB() {
-    $conn = mysqli_connect(NC_DB_SERVER, NC_DB_ADMIN, NC_DB_ADMIN_PASSWD, NC_DB_NAME);
-    if (!$conn) {
-        die("Connection failed: " . mysqli_error($conn) . "<br/>");
-    }
-    return $conn;
+function prepexec($db, $sql, $arr) {
+    $stmt = $db->prepare($sql);
+    $stmt->execute($arr);
+    return $stmt;
 }
-
 ?>

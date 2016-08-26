@@ -16,7 +16,7 @@ $nowlink = "?page=network&network=$networkname";
                 <?php echo $networktitle ?>
             </a>
         </h3>
-        <?php echo $networkdesc; ?>
+        <?php echo $networkabstract; ?>
     </div>
 </div>
 

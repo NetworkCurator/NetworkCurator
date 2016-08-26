@@ -8,36 +8,30 @@
  * Class assumes that the invoking user has passed identity checks
  * 
  */
-class NCOntology {
+class NCOntology extends NCLogger {
 
-    // db connection and array of parameters
-    private $_conn;
-    private $_params;
+    // db connection and array of parameters are inherited from NCLogger        
     // some variables extracted from $_params, for convenience
     private $_network;
     private $_uid;
+    private $_netid;
 
     /**
      * Constructor 
      * 
-     * @param type $conn
+     * @param PDO $db
      * 
      * Connection to the NC database
      * 
-     * @param type $params
+     * @param array $params
      * 
      * array with parameters
      */
-    public function __construct($conn, $params) {
-
-        $this->_conn = $conn;
+    public function __construct($db, $params) {
+   
+        $this->_db = $db;
         $this->_params = $params;
-
-        // make parameters SQL-safe
-        foreach ($params as $key => $value) {
-            $this->_params[$key] = addslashes(stripslashes($value));
-        }
-
+    
         // check for required parameters
         if (isset($params['network_name'])) {
             $this->_network = $this->_params['network_name'];
@@ -50,9 +44,14 @@ class NCOntology {
             throw new Exception("NCOntology requires parameter user_id");
         }
 
-        // check that the user has permissions to view this network
-        $NCAccess = new NCAccess($this->_conn);
-        if ($NCAccess->getUserPermissions($this->_network, $this->_uid) < 1) {
+        // all function will need to know the network id code
+        $this->_netid = $this->getNetworkId($this->_params['network_name']);
+        if ($this->_netid=="") {
+            throw new Exception("Network does not exist");
+        }
+        
+        // check that the user has permissions to view this network        
+        if ($this->getUserPermissionsNetID($this->_netid, $this->_uid) < NC_PERM_VIEW) {            
             throw new Exception("Insufficient permissions to query ontology");
         }
     }
@@ -89,13 +88,16 @@ class NCOntology {
         }
 
         $tc = "" . NC_TABLE_CLASSES;
-        $tn = "" . NC_TABLE_NETWORKS;
+        $tat = "" . NC_TABLE_ANNOTEXT;        
 
         // query the classes table for this network
-        $sql = "SELECT class_id, class_name, parent_id, connector, directional, 
-            class_score, class_status FROM " . $tn . " 
-                JOIN " . $tc . " ON $tc.network_id=$tn.network_id 
-                WHERE $tn.network_name='$this->_network'";
+        $sql = "SELECT class_id, $tc.parent_id AS parent_id, connector, directional, class_status,
+            anno_text
+            FROM $tc 
+              JOIN $tat 
+                  ON $tc.class_id=$tat.parent_id AND $tc.network_id=$tat.network_id              
+                WHERE $tc.network_id = ? 
+                  AND $tat.anno_status = ".NC_ACTIVE;                  
         if ($this->_params['ontology'] === "links") {
             $sql .= " AND connector=1";
         } else if ($this->_params['ontology'] === "nodes") {
@@ -105,15 +107,12 @@ class NCOntology {
         }
         $sql .= " ORDER BY parent_id";
         
-        $sqlresult = mysqli_query($this->_conn, $sql);
-        if (!$sqlresult) {
-            throw new Exception("Failed ontology lookup");
+        $stmt = prepexec($this->_db, $sql, [$this->_netid]);
+        $result = array();
+        while ($row = $stmt->fetch()) {
+            $result[$row['class_id']] = $row;
         }
-        $ans = array();
-        while ($row = mysqli_fetch_assoc($sqlresult)) {
-            $ans[$row['class_id']] = $row;
-        }
-        return $ans;                
+        return $result;                
     }
 
 }

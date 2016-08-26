@@ -10,7 +10,7 @@
 /**
  * A combination used for debugging. 
  */
-ncdebug = false;
+ncdebug = true;
 function ncAlert(x) {
     if (ncdebug) alert(x);
 }
@@ -259,11 +259,11 @@ function ncSendCreateUser() {
     {
         controller: "NCUsers", 
         action: "createNewUser", 
-        firstname: $('#nc-firstname').val(),
-        middlename: $('#nc-middlename').val(),
-        lastname: $('#nc-lastname').val(),
-        target_id: $('#nc-userid').val(),
-        email: $('#nc-email').val(),
+        target_firstname: $('#nc-firstname').val(),
+        target_middlename: $('#nc-middlename').val(),
+        target_lastname: $('#nc-lastname').val(),
+        target_email: $('#nc-email').val(),
+        target_id: $('#nc-userid').val(),        
         target_password: $('#nc-pwd').val()
     }, function(data, status) {          
         ncAlert(data);        

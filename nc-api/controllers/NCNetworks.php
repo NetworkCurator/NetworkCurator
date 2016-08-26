@@ -7,11 +7,9 @@
  * Class assumes that the invoking user has passed identity checks
  * 
  */
-class NCNetworks {
+class NCNetworks extends NCLogger {
 
-    // db connection and array of parameters
-    private $_conn;
-    private $_params;
+    // db connection and array of parameters are inherited from NCLogger    
     // some variables extracted from $_params, for convenience
     private $_network;
     private $_uid;
@@ -19,7 +17,7 @@ class NCNetworks {
     /**
      * Constructor 
      * 
-     * @param type $conn
+     * @param type $db
      * 
      * Connection to the NC database
      * 
@@ -27,15 +25,10 @@ class NCNetworks {
      * 
      * array with parameters
      */
-    public function __construct($conn, $params) {
+    public function __construct($db, $params) {
 
-        $this->_conn = $conn;
+        $this->_db = $db;
         $this->_params = $params;
-
-        // make parameters SQL-safe
-        foreach ($params as $key => $value) {
-            $this->_params[$key] = addslashes(stripslashes($value));
-        }
 
         // check for required parameters
         if (isset($params['network_name'])) {
@@ -47,7 +40,7 @@ class NCNetworks {
             $this->_uid = $this->_params['user_id'];
         } else {
             throw new Exception("NCNetworks requires parameter user_id");
-        }        
+        }
     }
 
     /**
@@ -80,9 +73,6 @@ class NCNetworks {
         }
 
         // shorthand variables
-        $networktitle = $this->_params['network_title'];
-        $networkdesc = $this->_params['network_desc'];
-        $conn = $this->_conn;
         $uid = $this->_uid;
         $network = $this->_network;
 
@@ -91,61 +81,63 @@ class NCNetworks {
             throw new Exception("Insufficient permissions to create a network");
         }
 
-        // check that the network does not already exist?                  
-        $sql = "SELECT network_name FROM " . NC_TABLE_NETWORKS . " 
-            WHERE network_name='$network'";
-        $sqlresult = mysqli_query($conn, $sql);
-        if (!$sqlresult) {
-            throw new Exception("Failed checking networkname: " . mysqli_error($conn));
-        }
-        if (mysqli_num_rows($sqlresult) > 0) {
-            return false;
+        // check that the network does not already exist? 
+        if ($this->getNetworkId($network) !== "") {
+            throw new Exception("Network name exists");
         }
 
-        // if reached here, create the new network in 5 steps
-        // 1/5, find a new ids for the network and annotations 
-        $netid = makeRandomID($conn, NC_TABLE_NETWORKS, 'network_id', 'W', NC_ID_LEN);
-        $titleid = makeRandomID($conn, NC_TABLE_ANNO, 'anno_id', 'A', NC_ID_LEN);
-        $descid = makeRandomID($conn, NC_TABLE_ANNO, 'anno_id', 'A', NC_ID_LEN);
-        while ($descid == $titleid) {
-            $descid = makeRandomID($conn, NC_TABLE_ANNO, 'anno_id', 'A', NC_ID_LEN);
-        }
+        // if reached here, create the new network in 6 steps
+        // 1/6, find a new ids for the network and annotations                 
+        $netid = $this->makeRandomID(NC_TABLE_NETWORKS, 'network_id', 'W', NC_ID_LEN);
 
-        // 2/5, create a directory on the server for the network        
-        $networkdir = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/networks/" . $network;
+        // 2/6, create a directory on the server for the network        
+        $networkdir = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/networks/" . $netid;
         if (!mkdir($networkdir, 0777, true)) {
             throw new Exception("Failed creating network data space: " . $networkdir);
         }
 
-        // 3/5, insert a new row into the networks table and annotations       
+        // 3/6, insert a new row into the networks table and annotations       
         $sql = "INSERT INTO " . NC_TABLE_NETWORKS . "
-                   (network_id, network_name, owner_id) VALUES 
-                   ('$netid', '$network', '$uid')";
-        if (!mysqli_query($conn, $sql)) {
-            throw new Exception("Failed creating network: " . mysqli_error($conn));
-        }
-        $sql = "INSERT INTO " . NC_TABLE_ANNO . "
-                   (datetime, network_id, user_id, root_id, parent_id, 
-                   anno_id, anno_text, anno_depth, anno_status) VALUES 
-                   (UTC_TIMESTAMP(), '$netid', '$uid', '$netid', '$netid', 
-                   '$titleid', '$networktitle', -1, 1), 
-                   (UTC_TIMESTAMP(), '$netid', '$uid', '$netid', '$netid', 
-                   '$descid', '$networkdesc', -2, 1)";
-        if (!mysqli_query($conn, $sql)) {
-            throw new Exception("Failed creating network annotations: $sql " . mysqli_error($conn));
+                   (network_id, owner_id) VALUES (?, ?)";
+        try {
+            $stmt = prepexec($this->_db, $sql, [$netid, $this->_uid]);
+        } catch (Exception $ex) {
+            throw new Exception("Error inserting new table");
         }
 
-        // 4/5, create permissions for admin and guest
+        // 4/6, create a starting log entry for creation of the network        
+        $this->logActivity($uid, $netid, "created network", $netid, '');
+
+        // 5/6, create starting annotations for the title, abstract, contents
+        // insert annotation for network name       
+        $nameparams = array('network_id' => $netid, 'user_id' => $uid, 'root_id' => $netid,
+            'parent_id' => $netid, 'anno_level' => NC_NAME, 'anno_text' => $this->_params['network_name']);
+        $this->insertAnnoText($nameparams);
+        // insert annotation for network title
+        $titleparams = $nameparams;
+        $titleparams['anno_text'] = $this->_params['network_title'];
+        $titleparams['anno_level'] = NC_TITLE;
+        $this->insertAnnoText($titleparams);
+        // insert annotation for network abstract        
+        $descparams = $titleparams;
+        $descparams['anno_text'] = $this->_params['network_desc'];
+        $descparams['anno_level'] = NC_ABSTRACT;
+        $this->insertAnnoText($descparams);
+        // insert annotation for network content (more than an abstract)
+        $contentparams = $descparams;
+        $contentparams['anno_level'] = NC_CONTENT;
+        $this->insertAnnoText($contentparams);
+
+        // 6/6, create permissions for admin and guest
         $sql = "INSERT INTO " . NC_TABLE_PERMISSIONS . "
-                   (user_id, network_id, permissions) VALUES 
-                   ('admin', '$netid', '1000'), ('guest', '$netid', 0)";
-        if (!mysqli_query($conn, $sql)) {
-            throw new Exception("Failed assigning network permissions: " . mysqli_error($conn));
+                   (user_id, network_id, permissions) VALUES (?, ?, ?)";
+        try {
+            $stmt = $this->_db->prepare($sql);
+            $stmt->execute(['admin', $netid, NC_PERM_SUPER]);
+            $stmt->execute(['guest', $netid, NC_PERM_NONE]);
+        } catch (Exception $ex) {
+            throw new Exception("Error setting user permissions");
         }
-
-        // 5/5, log the activity
-        $logger = new NCLogger($conn);
-        $logger->logActivity($uid, '', "created network", $network, $networktitle);
 
         return true;
     }
@@ -161,15 +153,10 @@ class NCNetworks {
      * 
      * 
      */
-    public function isPublic() {
-        $network = $this->_network;
-        $NCAccess = new NCAccess($this->_conn);
-        $guestpermissions = $NCAccess->getUserPermissions($network, "guest");
-        if ($guestpermissions == 0) {
-            return false;
-        } else {
-            return true;
-        }
+    public function isPublic() {        
+        $netid = $this->getNetworkId($this->_network);        
+        $guestperm = $this->getUserPermissionsNetID($netid, "guest");        
+        return $guestperm !== NC_PERM_NONE;
     }
 
     /**
@@ -191,32 +178,31 @@ class NCNetworks {
     public function listNetworks() {
 
         $uid = $this->_uid;
-        $tn = "" . NC_TABLE_NETWORKS;
         $tp = "" . NC_TABLE_PERMISSIONS;
-        $ta = "" . NC_TABLE_ANNO;
+        $ta = "" . NC_TABLE_ANNOTEXT;
+        $tac = $ta . ".anno_level";
+        $tat = $ta . ".anno_text";
+        $ni = "network_id";
 
-        $sql = "SELECT network_name, network_id, 
-            GROUP_CONCAT(title SEPARATOR '') AS title,
-            GROUP_CONCAT(description SEPARATOR '') AS description            
-            FROM (SELECT network_name, $tn.network_id AS network_id,
-            (CASE WHEN $ta.anno_depth='-1' THEN $ta.anno_text ELSE '' END) AS 'title',
-            (CASE WHEN $ta.anno_depth='-2' THEN $ta.anno_text ELSE '' END) AS 'description'
-                 FROM $tn 
-                 JOIN $tp ON $tn.network_id=$tp.network_id 
-                 JOIN $ta ON $tn.network_id=$ta.network_id 
-                     WHERE BINARY $tp.user_id='$uid' AND $tp.permissions>0                 
-                     AND $ta.anno_status=1 AND $ta.anno_depth<0
-                 GROUP BY $ta.network_id, $ta.anno_depth) AS T GROUP BY network_name";
-        //return $sql;
-        $sqlresult = mysqli_query($this->_conn, $sql);
-        if (!$sqlresult) {
-            throw new Exception("Failed network list lookup");
+        $sql = "
+SELECT $ni,
+    GROUP_CONCAT(name SEPARATOR '') AS network_name,
+    GROUP_CONCAT(title SEPARATOR '') AS network_title,
+    GROUP_CONCAT(abstract SEPARATOR '') AS network_abstract    
+FROM (SELECT $tp.$ni AS $ni,
+    (CASE WHEN $tac = " . NC_NAME . " THEN $tat ELSE '' END) AS 'name',
+    (CASE WHEN $tac = " . NC_TITLE . " THEN $tat ELSE '' END) AS 'title',
+    (CASE WHEN $tac = " . NC_ABSTRACT . " THEN $tat ELSE '' END) AS 'abstract'    
+FROM $ta JOIN $tp ON $ta.$ni = $tp.$ni
+    WHERE BINARY $tp.user_id = '$uid' AND $tp.permissions>" . NC_PERM_NONE . "
+    AND $ta.anno_status = 1 AND $tac <=" . NC_ABSTRACT . "
+GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
+        $stmt = $this->_db->query($sql);
+        $result = array();
+        while ($row = $stmt->fetch()) {
+            $result[] = $row;
         }
-        $ans = array();
-        while ($row = mysqli_fetch_assoc($sqlresult)) {
-            $ans[] = $row;
-        }
-        return $ans;
+        return $result;
     }
 
     /**
@@ -227,38 +213,31 @@ class NCNetworks {
      */
     public function listNetworkUsers() {
 
-        $tu = "" . NC_TABLE_USERS;
-        $tn = "" . NC_TABLE_NETWORKS;
-        $tp = "" . NC_TABLE_PERMISSIONS;
-        $network = $this->_network;
+        $tu = "" . NC_TABLE_USERS;        
+        $tp = "" . NC_TABLE_PERMISSIONS;        
         $uid = $this->_uid;
 
-        // check that requesting user can view this network
-        $NCAccess = new NCAccess($this->_conn);
-        $upermissions = $NCAccess->getUserPermissions($network, $uid);
-        if ($upermissions < 1) {
+        $netid = $this->getNetworkId($this->_network);
+        // check that requesting user can view this network       
+        $upermissions = $this->getUserPermissionsNetID($netid, $uid);
+        if ($upermissions < NC_PERM_VIEW) {
             throw new Exception("Insufficient permission to view network");
         }
 
         // get the users participating in this network       
-        $sql = "SELECT user_firstname, user_middlename, user_lastname, 
-            $tu.user_id AS user_id, permissions            
-            FROM $tn 
-               JOIN $tp ON $tn.network_id=$tp.network_id 
-               JOIN $tu ON $tp.user_id=$tu.user_id                                
+        $sql = "SELECT user_firstname, user_middlename, user_lastname,
+               $tu.user_id AS user_id, permissions
+                  FROM $tp JOIN $tu ON $tp.user_id = $tu.user_id
                   WHERE BINARY $tp.user_id!='admin' AND $tp.user_id!='guest'
-                      AND $tn.network_name='$network' AND $tp.permissions>0
-               ORDER BY $tu.user_id";
+                     AND $tp.network_id = ? AND $tp.permissions>".NC_PERM_NONE."
+                     ORDER BY $tu.user_id";
         //return $sql;
-        $sqlresult = mysqli_query($this->_conn, $sql);
-        if (!$sqlresult) {
-            throw new Exception("Failed network list lookup");
+        $stmt = prepexec($this->_db, $sql, [$netid]);        
+        $result = array();
+        while ($row = $stmt->fetch()) {
+            $result[$row['user_id']] = $row;
         }
-        $ans = array();
-        while ($row = mysqli_fetch_assoc($sqlresult)) {
-            $ans[$row['user_id']] = $row;
-        }
-        return $ans;
+        return $result;
     }
 
     /**
@@ -269,83 +248,82 @@ class NCNetworks {
      * @throws Exception
      */
     public function getNetworkMetadata() {
-
+        
         $uid = $this->_uid;
         $network = $this->_network;
-        if ($network == "") {
-            throw new Exception("Unspecified network");
+
+        // find the network id that corresponds to the name
+        $netid = $this->getNetworkId($network);
+        if ($netid == "") {
+            throw new Exception("Network does not exist");
         }
 
-        // check if user has permission to view the table
-        $NCAccess = new NCAccess($this->_conn);
-        if ($NCAccess->getUserPermissions($network, $uid) < 1) {
+        // check if user has permission to view the table        
+        if ($this->getUserPermissionsNetID($netid, $uid) < NC_PERM_VIEW) {
             throw new Exception("Insufficient permission to view the network");
         }
 
-        $tn = "" . NC_TABLE_NETWORKS;
         $tu = "" . NC_TABLE_USERS;
+        $ta = "" . NC_TABLE_ANNOTEXT;
         $tp = "" . NC_TABLE_PERMISSIONS;
-        $ta = "" . NC_TABLE_ANNO;
-
-        // find the network id that corresponds to the name
-        $sql = "SELECT network_id FROM $tn WHERE network_name='$network'";
-        $sqlresult = mysqli_query($this->_conn, $sql);
-        $row = mysqli_fetch_assoc($sqlresult);
-        $netid = $row['network_id'];
-
-        // find the title and abstract
-        $sql = "SELECT network_id, 
-            GROUP_CONCAT(title SEPARATOR '') AS title,
-            GROUP_CONCAT(description SEPARATOR '') AS description            
-            FROM (SELECT $ta.network_id AS network_id,
-            (CASE WHEN $ta.anno_depth='-1' THEN $ta.anno_text ELSE '' END) AS 'title',
-            (CASE WHEN $ta.anno_depth='-2' THEN $ta.anno_text ELSE '' END) AS 'description'
-                 FROM $ta WHERE BINARY $ta.root_id='$netid' 
-                     AND $ta.anno_status=1 AND $ta.anno_depth<0
-                 GROUP BY $ta.anno_depth) AS T";
-        //return $sql;
-        $sqlresult = mysqli_query($this->_conn, $sql);
-        if (!$sqlresult) {
-            throw new Exception("Failed network list lookup");
-        }
-        $ans = mysqli_fetch_assoc($sqlresult);
+       
+        // find the title, abstract, etc
+        $sql = "SELECT network_id, anno_level, anno_text FROM $ta 
+              WHERE BINARY network_id = ? AND root_id = ?
+                AND anno_status = " . NC_ACTIVE . " AND anno_level <= " . NC_CONTENT;                
+        $stmt = prepexec($this->_db, $sql, [$netid, $netid]);                
         
-        $ans['network_name'] =$network;
-        
+        // record the results into an array that will eventually be output
+        $result = array();
+        while ($row = $stmt->fetch()) {
+            switch ($row['anno_level']) {
+                case NC_NAME:
+                    $result['network_name'] = $row['anno_text'];
+                    break;
+                case NC_TITLE:
+                    $result['network_title'] = $row['anno_text'];
+                    break;
+                case NC_ABSTRACT:
+                    $result['network_abstract'] = $row['anno_text'];
+                    break;
+                case NC_CONTENT:
+                    $result['network_content'] = $row['anno_text'];
+                    break;
+                default:
+                    break;
+            }
+        }        
+
         // find the users who are curators on the network
-        $sql = "SELECT user_firstname, user_middlename, user_lastname, 
-            $tp.user_id, permissions 
-            FROM $tp JOIN $tu ON $tp.user_id=$tu.user_id
-                WHERE $tp.network_id='$netid' AND $tp.permissions>1
-                AND $tp.permissions<10 
-                ORDER BY $tu.user_lastname, $tu.user_firstname, $tu.user_middlename";
-        //return "<br/><br/>".$sql;
-        $sqlresult = mysqli_query($this->_conn, $sql);
-        if (!$sqlresult) {
-            throw new Exception("Failed user contribution lookup");
-        }
+        $sql = "SELECT user_firstname, user_middlename, user_lastname,
+                $tp.user_id, permissions
+                FROM $tp JOIN $tu ON $tp.user_id = $tu.user_id
+                WHERE $tp.network_id = ? AND $tp.permissions>".NC_PERM_VIEW."
+                    AND $tp.permissions<=".NC_PERM_CURATE."
+                ORDER BY $tu.user_lastname, $tu.user_firstname, $tu.user_middlename";        
+        $stmt = prepexec($this->_db, $sql, [$netid]); 
+        
         // move information from sql result into three new arrays by permission level
         $curators = array();
         $authors = array();
         $commentators = array();
-        while ($row = mysqli_fetch_assoc($sqlresult)) {
-            if ($row['permissions']==4) {
+        while ($row = $stmt->fetch()) {
+            if ($row['permissions'] == NC_PERM_CURATE) {
                 $curators[] = $row;
-            } else if ($row['permissions']==3) {
+            } else if ($row['permissions'] == NC_PERM_EDIT) {
                 $authors[] = $row;
-            } else if ($row['permissions']==2) {
+            } else if ($row['permissions'] == NC_PERM_COMMENT) {
                 $commentators[] = $row;
             }
         }
         // attach the new arrays to the answer object
-        $ans['curators'] = $curators;
-        $ans['authors'] = $authors;
-        $ans['commentators'] = $commentators;
+        $result['curators'] = $curators;
+        $result['authors'] = $authors;
+        $result['commentators'] = $commentators;
         
-        return $ans;
+        return $result;
     }
 
-  
 }
 
 ?>

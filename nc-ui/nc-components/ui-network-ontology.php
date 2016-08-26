@@ -8,8 +8,11 @@
  */
 
 // get all the classes for the network
+//echo "<br/><br/><br/>WW1";
 $nodeclasses = $NCapi->getNodeClasses($network);
+//echo "WW2 ".$nodeclasses;
 $linkclasses = $NCapi->getLinkClasses($network);
+//echo "WW3";
 
 
 ?>

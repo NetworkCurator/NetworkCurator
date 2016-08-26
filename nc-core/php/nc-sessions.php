@@ -22,7 +22,7 @@ function ncSignin($uid, $upw, $ufirst, $ulast, $remember) {
     $_SESSION['firstname'] = $ufirst;
     $_SESSION['lastname'] = $ulast;
     $_SESSION['remember'] = 0;
-
+    
     // for expiry, use 7 days
     $tim = time() + (7 * 24 * 3600);
     setcookie("nc_uid", $_SESSION['uid'], $tim, "/");

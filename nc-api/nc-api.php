@@ -16,19 +16,19 @@
 // some settings for the application
 $nowdir = dirname(__FILE__);
 include_once $nowdir . "/../nc-admin/config/nc-config.php";
-include_once $nowdir . "/../nc-core/php/nc-generic.php";
-// connectivity to the database
+include_once $nowdir . "/../nc-admin/config/nc-constants.php";
+// connectivity to the database and general
 include_once $nowdir . "/helpers/nc-db.php";
+include_once $nowdir . "/helpers/nc-generic.php";
 include_once $nowdir . "/helpers/NCLogger.php";
-include_once $nowdir . "/helpers/NCAccess.php";
 
 // object that will hold answer of the api call
 $ans = array();
 
 try {
-
+    //echo "here";
     // connect to the database    
-    $conn = connectNetworkCuratorDB();
+    $db = connectDB(NC_DB_SERVER, NC_DB_NAME, NC_DB_ADMIN, NC_DB_ADMIN_PASSWD);
 
     // get the settings from the API request    
     $request = base64_decode($_REQUEST['request']);
@@ -50,13 +50,14 @@ try {
     }
     $params = (array) $params;
 
+    //print_r($params);
     // record the ip address of the source server
     if (!isset($request['source_ip'])) {
         $request['source_ip'] = $_SERVER['REMOTE_ADDR'];
     }
 
     // get the controller and requested action
-    $controller = stripslashes($params['controller']);
+    $controller = $params['controller'];
     $action = $params['action'];
 
     // create instance of the controller
@@ -67,7 +68,7 @@ try {
     } else {
         throw new Exception("Invalid controller $controller");
     }
-    $controllerI = new $controller($conn, $params);
+    $controllerI = new $controller($db, $params);
 
     // execute the requested action in the controller    
     if (method_exists($controllerI, $action) === false) {
@@ -77,18 +78,18 @@ try {
 
     // log most actions, except user confirmation    
     if ($action !== "confirm") {
-        if (isset($params['password'])) {
-            $params['password'] = md5(addslashes(stripslashes($params['password'])));
-        }        
+        if (isset($params['target_password'])) {
+            $params['target_password'] = 'password';
+        }
         unset($params['controller']);
-        unset($params['action']);        
-        $logger = new NCLogger($conn);
-        $logger->addEntry($params['user_id'], $_SERVER['REMOTE_ADDR'], $controller, $action, json_encode($params));
+        unset($params['action']);
+        $logger = new NCLogger($db);
+        $logger->logAction($params['user_id'], $_SERVER['REMOTE_ADDR'], $controller, $action, json_encode($params));
     }
 
     // if reached here, presumably the controlled finished correctly
     $ans['success'] = true;
-    mysqli_close($conn);
+    $db = null;
 } catch (Exception $e) {
     $ans = array();
     $ans['success'] = false;
