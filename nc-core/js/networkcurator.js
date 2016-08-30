@@ -10,7 +10,7 @@
 /**
  * A combination used for debugging. 
  */
-ncdebug = true;
+ncdebug = false;
 function ncAlert(x) {
     if (ncdebug) alert(x);
 }
@@ -427,25 +427,123 @@ function ncUpdatePermissionsGeneric(uid, netname, perm, outfun) {
  * ========================================================================== */
 
 
-function ncTestOntology(netname) {
-    $.post(nc_api, 
-    {
+function ncCreateNewClass(netname, parentid, classname, islink, isdirectional) {
+    
+    // check the class name string     
+    if (ncCheckString(classname, 1)<1) {
+        ncMsg("Hey!", "Invalid class name");
+        exit();
+    }
+    
+    $.post(nc_api, {
         controller: "NCOntology", 
-        action: "listNodeOntology", 
-        network_name: netname        
+        action: "createNewClass", 
+        network_name: netname,
+        class_name: classname,
+        parent_id: parentid,  
+        connector: +islink,
+        directional: +isdirectional        
     }, function(data) {
-        alert(data);        
+        ncAlert(data);      
+        data = $.parseJSON(data);
+        if (data['success']==false) {              
+            ncMsg('Error', data['errormsg']);                
+        } else {                
+            // insert was successful, so append the tree            
+            var newrow = {
+                class_id:data['data'], 
+                parent_id:parentid, 
+                connector:+islink,
+                directional:+isdirectional, 
+                class_name:classname
+            };
+            ncAddClassTreeChild(newrow, 1);                
+        }
+    });  
+}
+
+
+function ncUpdateClassProperties(netname, classid, classname, parentid, islink, isdirectional) {
+    
+    if (ncCheckString(classname, 1)<1) {
+        ncMsg("Hey!", "Invalid class name");
+        exit();
+    }
+    
+    $.post(nc_api, {
+        controller: "NCOntology", 
+        action: "updateClass", 
+        network_name: netname,
+        class_id: classid,
+        class_name: classname,
+        class_status: 1,
+        parent_id: parentid,  
+        connector: +islink,
+        directional: +isdirectional        
+    }, function(data) {
+        ncAlert(data);      
+        data = $.parseJSON(data);
+        if (data['success']==false) {              
+            ncMsg('Error', data['errormsg']);                
+        } else {   
+            // update the tree display            
+            var targetdisplay = $('div.nc-classdisplay[val="'+classid+'"]');
+            // update the look of the form
+            targetdisplay.find('.nc-classdisplay-span').html(classname);
+            if (isdirectional) {
+                targetdisplay.find('.nc-directional').html(' (directional)');
+            } else {
+                targetdisplay.find('.nc-directional').html('');
+            }
+        }
     });  
 }
 
 /* ==========================================================================
- * Actions on page load
- * ========================================================================== */
+* Actions on Log page
+* ========================================================================== */
+
 
 /**
- * This fixes a "bug" in bootstrap that allows radio buttons to accept clicks
- * and change active state even if they are set to disabled
- */
+* Invoked from the log page when user requests a 
+*/
+function ncLoadActivityPage(netname, pagenum, pagelen) {    
+    
+    $('#nc-activity-log-toolbar li[value!='+pagenum+']').removeClass("active");
+    $('#nc-activity-log-toolbar li[value='+pagenum+']').addClass("active");
+    // load the 
+    $.post(nc_api, 
+    {
+        controller: "NCNetworks", 
+        action: "getNetworkActivity", 
+        network_name: netname,
+        offset: pagenum*pagelen,
+        limit: pagelen
+    }, function(data) {        
+        //alert(data);  
+        data = $.parseJSON(data);
+        if (data['success']) {
+            ncPopulateActivityArea(data['data']);
+        } else {
+            alert("bad response");
+        }
+    });
+
+}
+
+
+
+
+
+
+/* ==========================================================================
+* Actions on page load
+* ========================================================================== */
+
+/**
+* This fixes a "bug" in bootstrap that allows radio buttons to accept clicks
+* and change active state even if they are set to disabled
+*/
 $(document).ready(
     function () {
         ncDisabledClick('.btn-group'); 
@@ -455,5 +553,5 @@ $(document).ready(
 
 
 /* ==========================================================================
- * misc code, leftovers
- * ========================================================================== */
+* misc code, leftovers
+* ========================================================================== */

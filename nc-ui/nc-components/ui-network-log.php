@@ -3,8 +3,22 @@
  * Page showing network activity log
  * 
  */
+
+
+// find out total number of records in the log
+$logsize = $NCapi->getNetworkActivityLogSize($network);
+
 ?>
 
 
-<p>This is the page for the network log</p>
+<div id="nc-activity-log-toolbar"></div>
+<div id="nc-activity-log" class="nc-mt-10"></div>
+
+<script>    
+    $(document).ready(
+    function () {            
+        ncBuildActivityLogToolbar("<?php echo $network; ?>", <?php echo $logsize; ?> );        
+    });
+</script>
+
 

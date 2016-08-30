@@ -8,19 +8,13 @@
  */
 
 // get all the classes for the network
-//echo "<br/><br/><br/>WW1";
 $nodeclasses = $NCapi->getNodeClasses($network);
-//echo "WW2 ".$nodeclasses;
 $linkclasses = $NCapi->getLinkClasses($network);
-//echo "WW3";
-
-
 ?>
 
 <h1 class="nc-mt-5">Ontology for network <?php echo $network; ?></h1>
-
 <div class="row">
-    <div class="col-sm-12">
+    <div class="col-sm-8">
         <h3 class="nc-mt-15">Nodes</h3>    
         <div id="nc-ontology-nodes">
         </div>
@@ -29,18 +23,18 @@ $linkclasses = $NCapi->getLinkClasses($network);
         </div>
 
         <script>  
-        <?php
-        echo "var nc_node_classes=" . json_encode($nodeclasses) . ";";
-        echo "var nc_link_classes=" . json_encode($linkclasses) . ";";
-        ?>                            
-        $(document).ready(
-        function () {                   
-            $('#nc-ontology-nodes').html(ncuiClassTreeWidget('<?php echo $network ?>', nc_node_classes, <?php echo $upermissions>3; ?>));                
-            $('#nc-ontology-links').html(ncuiClassTreeWidget('<?php echo $network; ?>', nc_link_classes, <?php echo $upermissions>3; ?>));                          
-        });            
+<?php
+echo "var network_name='$network'; ";
+$withbuttons = (int) ($upermissions >= NC_PERM_CURATE);
+echo "var nc_node_classes=" . json_encode($nodeclasses) . ";";
+echo "var nc_link_classes=" . json_encode($linkclasses) . ";";
+?>                            
+            $(document).ready(
+            function () {                                               
+            $('#nc-ontology-nodes').html(ncuiClassTreeWidget('<?php echo $network ?>', nc_node_classes, false, <?php echo $withbuttons; ?>));                
+            $('#nc-ontology-links').html(ncuiClassTreeWidget('<?php echo $network; ?>', nc_link_classes, true, <?php echo $withbuttons; ?>));                          
+            });            
         </script>
-        
-        <button class="btn btn-warning" onclick="javascript:ncTestOntology('<?php echo $network; ?>')">testing</button>
-        
+
     </div>
 </div>

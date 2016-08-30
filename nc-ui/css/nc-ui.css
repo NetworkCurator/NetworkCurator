@@ -154,3 +154,54 @@ hr {
     border-top: 1px solid #333333;    
 }
 */
+
+
+/* --------------------------------------------------------------------------
+ * Class tree structures
+ * -------------------------------------------------------------------------- */
+
+.nc-classdisplay {
+    height: 2.5em;    
+}
+.nc-classdisplay-span {
+    position: relative;
+    vertical-align: middle;
+    padding-top: 8px;
+}
+
+.nc-btn-move {
+    margin-left: 6px;
+    margin-right: 6px;
+}
+.nc-class-form {
+    margin-bottom: 2px;
+}
+.nc-class-form .form-check-inline {    
+    font-weight: 300;    
+}
+.nc-class-form .form-check-input {
+    margin-left: 8px; 
+    margin-right: 4px;     
+}
+nc-classname {
+   
+}
+.nc-classtree-children {    
+    padding: 2px 0px 5px 36px;
+}
+
+.nc-log-entry-date {
+    padding-right: 6px;
+    color: #777777;
+}
+
+.nc-log-entry-user, .nc-log-entry-target {
+    font-weight: 600;
+    color: #333333;
+}
+.nc-toolbox {
+    padding-left: 14px;
+    position: static;
+    top: 0px;
+    right: 0px;
+}

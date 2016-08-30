@@ -192,6 +192,14 @@ class NCApiCaller {
         return $this->_caller->sendRequest($params);
     }
 
+    
+    function getNetworkActivityLogSize($network) {
+        $params = $this->_p;
+        $params['controller'] = 'NCNetworks';
+        $params['action'] = 'getActivityLogSize';
+        $params['network_name'] = $network;
+        return $this->_caller->sendRequest($params);
+    }
 }
 
 ?>

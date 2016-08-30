@@ -92,17 +92,17 @@ class NCLogger {
      * @param type $value
      * @throws Exception
      */
-    public function logActivity($userid, $netid, $action, $targetid, $value) {
+    public function logActivity($userid, $netid, $action, $targetname, $value) {
         // prepare a statement for activity-logging
         $sqlact = "INSERT INTO " . NC_TABLE_ACTIVITY . "
-                   (datetime, user_id, network_id, action, target_id, value) 
+                   (datetime, user_id, network_id, action, target_name, value) 
                    VALUES 
                    (UTC_TIMESTAMP(), :user_id, :network_id, :action, 
-                       :target_id, :value)";
+                       :target_name, :value)";
         $stmt = $this->_db->prepare($sqlact);
         // execute the query with current parameters
         $pp = array('user_id' => $userid, 'network_id' => $netid,
-            'action' => $action, 'target_id' => $targetid,
+            'action' => $action, 'target_name' => $targetname,
             'value' => $value);
         $stmt->execute($pp);
         return 1;
@@ -125,14 +125,14 @@ class NCLogger {
     public function insertAnnoText($params) {
 
         // get a new annotation id
-        $tabname = "" . NC_TABLE_ANNOTEXT;
-        $newid = $this->makeRandomID($tabname, 'anno_id', 'AT', NC_ID_LEN);
+        $tat = "" . NC_TABLE_ANNOTEXT;
+        $newid = $this->makeRandomID($tat, 'anno_id', 'AT', NC_ID_LEN);
 
         $params['anno_id'] = $newid;
 
         // insert the annotation into the table
         // (this is somewhat inelegant, uses twice the named placeholders with A/B.
-        $sql = "INSERT INTO $tabname 
+        $sql = "INSERT INTO $tat 
                    (datetime, network_id, user_id, root_id, parent_id, 
                    anno_id, anno_text, anno_level, anno_status) VALUES 
                    (UTC_TIMESTAMP(), :network_idA, :user_idA, :root_idA, :parent_idA,
@@ -156,22 +156,48 @@ class NCLogger {
         return 1;
     }
 
-    public function updateTextAnno($params) {
+    /**
+     * Updates the annotext table with some new data.
+     * Updating means changing the active "status=1" entry, and adding
+     * a "status=0" entry for historical records.
+     * 
+     * 
+     * 
+     * @param array $params
+     * 
+     * The function assumes the array contains seven element.
+     * 
+     * @return
+     * 
+     * integer 1 upon success
+     * 
+     */
+    public function updateAnnoText($params) {
+
+        $tat = "" . NC_TABLE_ANNOTEXT;
+
         // prepare a statement setting all anno_status to disabled for a given anno_id
-        $sqlanno = "UPDATE " . NC_TABLE_ANNO . " SET anno_status=" . NC_HISTORICAL .
-                " WHERE anno_id = :anno_id";
-        $this->_sqlactivity = $this->_db->prepare($sqlact);
+        $sql = "UPDATE $tat SET 
+                          datetime = UTC_TIMESTAMP(), 
+                          root_id = :root_id, parent_id = :parent_id,
+                          anno_text = :anno_text
+                WHERE network_id = :network_id AND anno_id = :anno_id 
+                   AND anno_level= :anno_level AND anno_status=" . NC_ACTIVE;
+        // the update statement does not change the original user_id, so 
+        // here $pp is a subset of $params
+        $pp = $params;
+        unset($pp['user_id']);
+        $stmt = prepexec($this->_db, $sql, $pp);
 
-
-        $sql = "INSERT INTO " . NC_TABLE_ANNO . "
+        // insert an extra copy for historical records
+        $sql = "INSERT INTO $tat 
                    (datetime, network_id, user_id, root_id, parent_id, 
-                   anno_id, anno_text, anno_depth, anno_status) VALUES 
-                   (UTC_TIMESTAMP(), :network_id, :user_id, :network_id, :network_id, 
-                   :title_id, :network_title, " . NC_TITLE . ", 1), 
-                   (UTC_TIMESTAMP(), :network_id, :user_id, :network_id, :network_id, 
-                   :title_id, :network_title, " . NC_TITLE . ", 0),                        
-                   (UTC_TIMESTAMP(), '$netid', '$uid', '$netid', '$netid', 
-                   '$descid', '$networkdesc', -2, 1)";
+                   anno_id, anno_text, anno_level, anno_status) VALUES                          
+                   (UTC_TIMESTAMP(), :network_id, :user_id, :root_id, :parent_id,
+                   :anno_id, :anno_text, :anno_level, " . NC_OLD . ")";
+        $stmt = prepexec($this->_db, $sql, $params);
+         
+        return 1;
     }
 
     /**

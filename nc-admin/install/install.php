@@ -267,7 +267,7 @@ $sql = "CREATE TABLE $tabname (
   user_id $vc32col,
   network_id $vc32col,    
   action $vc64col,
-  target_id $vc32col,  
+  target_name $vc32col,  
   value $textcol,
   KEY datetime (datetime),
   KEY network_id (network_id, datetime)
@@ -322,7 +322,7 @@ sqlreport($db, $sql);
 echo "\nLogging installation (1/2):";
 $logtable = $tp . "activity";
 $sql = "INSERT INTO $logtable 
-          (datetime, user_id, network_id, target_id, action, value) VALUES 
+          (datetime, user_id, network_id, target_name, action, value) VALUES 
           (UTC_TIMESTAMP(), 'admin', '', '',
           'installed the NetworkCurator database', '')";
 sqlreport($db, $sql);

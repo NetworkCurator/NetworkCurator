@@ -106,7 +106,7 @@ class NCNetworks extends NCLogger {
         }
 
         // 4/6, create a starting log entry for creation of the network        
-        $this->logActivity($uid, $netid, "created network", $netid, '');
+        $this->logActivity($uid, $netid, "created network", $this->_params['network_name'], $this->_params['network_title']);
 
         // 5/6, create starting annotations for the title, abstract, contents
         // insert annotation for network name       
@@ -153,9 +153,9 @@ class NCNetworks extends NCLogger {
      * 
      * 
      */
-    public function isPublic() {        
-        $netid = $this->getNetworkId($this->_network);        
-        $guestperm = $this->getUserPermissionsNetID($netid, "guest");        
+    public function isPublic() {
+        $netid = $this->getNetworkId($this->_network);
+        $guestperm = $this->getUserPermissionsNetID($netid, "guest");
         return $guestperm !== NC_PERM_NONE;
     }
 
@@ -213,8 +213,8 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
      */
     public function listNetworkUsers() {
 
-        $tu = "" . NC_TABLE_USERS;        
-        $tp = "" . NC_TABLE_PERMISSIONS;        
+        $tu = "" . NC_TABLE_USERS;
+        $tp = "" . NC_TABLE_PERMISSIONS;
         $uid = $this->_uid;
 
         $netid = $this->getNetworkId($this->_network);
@@ -229,10 +229,9 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
                $tu.user_id AS user_id, permissions
                   FROM $tp JOIN $tu ON $tp.user_id = $tu.user_id
                   WHERE BINARY $tp.user_id!='admin' AND $tp.user_id!='guest'
-                     AND $tp.network_id = ? AND $tp.permissions>".NC_PERM_NONE."
+                     AND $tp.network_id = ? AND $tp.permissions>" . NC_PERM_NONE . "
                      ORDER BY $tu.user_id";
-        //return $sql;
-        $stmt = prepexec($this->_db, $sql, [$netid]);        
+        $stmt = prepexec($this->_db, $sql, [$netid]);
         $result = array();
         while ($row = $stmt->fetch()) {
             $result[$row['user_id']] = $row;
@@ -248,7 +247,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
      * @throws Exception
      */
     public function getNetworkMetadata() {
-        
+
         $uid = $this->_uid;
         $network = $this->_network;
 
@@ -266,13 +265,13 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         $tu = "" . NC_TABLE_USERS;
         $ta = "" . NC_TABLE_ANNOTEXT;
         $tp = "" . NC_TABLE_PERMISSIONS;
-       
+
         // find the title, abstract, etc
         $sql = "SELECT network_id, anno_level, anno_text FROM $ta 
               WHERE BINARY network_id = ? AND root_id = ?
-                AND anno_status = " . NC_ACTIVE . " AND anno_level <= " . NC_CONTENT;                
-        $stmt = prepexec($this->_db, $sql, [$netid, $netid]);                
-        
+                AND anno_status = " . NC_ACTIVE . " AND anno_level <= " . NC_CONTENT;
+        $stmt = prepexec($this->_db, $sql, [$netid, $netid]);
+
         // record the results into an array that will eventually be output
         $result = array();
         while ($row = $stmt->fetch()) {
@@ -292,17 +291,17 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
                 default:
                     break;
             }
-        }        
+        }
 
         // find the users who are curators on the network
         $sql = "SELECT user_firstname, user_middlename, user_lastname,
                 $tp.user_id, permissions
                 FROM $tp JOIN $tu ON $tp.user_id = $tu.user_id
-                WHERE $tp.network_id = ? AND $tp.permissions>".NC_PERM_VIEW."
-                    AND $tp.permissions<=".NC_PERM_CURATE."
-                ORDER BY $tu.user_lastname, $tu.user_firstname, $tu.user_middlename";        
-        $stmt = prepexec($this->_db, $sql, [$netid]); 
-        
+                WHERE $tp.network_id = ? AND $tp.permissions>" . NC_PERM_VIEW . "
+                    AND $tp.permissions<=" . NC_PERM_CURATE . "
+                ORDER BY $tu.user_lastname, $tu.user_firstname, $tu.user_middlename";
+        $stmt = prepexec($this->_db, $sql, [$netid]);
+
         // move information from sql result into three new arrays by permission level
         $curators = array();
         $authors = array();
@@ -320,8 +319,82 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         $result['curators'] = $curators;
         $result['authors'] = $authors;
         $result['commentators'] = $commentators;
-        
+
         return $result;
+    }
+
+    public function getNetworkActivity() {
+
+        $netid = $this->getNetworkId($this->_network);
+
+        // settings for limiting output
+        $offset = 0;
+        $limit = 50;
+        $startdate = null;
+        $enddate = null;
+
+        // get values for limiting output from params
+        if (isset($this->_params['offset'])) {
+            $offset = abs((int) ($this->_params['offset']));
+        }
+        if (isset($this->_params['limit'])) {
+            $limit = abs((int) ($this->_params['limit']));
+        }
+        if (isset($this->_params['startdate'])) {
+            $startdate = $this->_params['startdate'];
+        }
+        if (isset($this->_params['enddate'])) {
+            $enddate = $this->_params['enddate'];
+        }
+
+        // some checks on date-based filtering
+        if ((!is_null($startdate) && is_null($enddate)) ||
+                (is_null($startdate) && !is_null($enddate))) {
+            throw new Exception("Invalide date interval");
+        }
+
+        // query the activity log table
+        $sql = "SELECT datetime, user_id, action, target_name, value FROM " .
+                NC_TABLE_ACTIVITY . " WHERE network_id = ? ";
+        $sqlorder = "ORDER BY datetime DESC ";
+        if (is_null($startdate)) {
+            $sql .= $sqlorder ." LIMIT $limit OFFSET $offset";
+            $stmt = prepexec($this->_db, $sql, [$netid]);
+        } else {
+            $sql .= " WHERE datetime >= ? AND datetime <= ? $sqlorder";
+            $stmt = prepexec($this->_db, $sql, [$netid, $startdate, $enddate]);
+        }
+
+        $result = array();
+        while ($row = $stmt->fetch()) {
+            if (strlen($row['value']) > 128) {
+                $row['value'] = substr($row['value'], 0, 125) . "...";
+            }
+            $result[] = $row;
+        }
+
+        return $result;
+    }
+
+    /**
+     * 
+     * @return int
+     * 
+     * total number of entries in the network activity log
+     * 
+     */
+    public function getActivityLogSize() {
+        $netid = $this->getNetworkId($this->_network);
+
+        $sql = "SELECT COUNT(*) AS logsize FROM " .
+                NC_TABLE_ACTIVITY . " WHERE network_id = ? ";
+        $stmt = prepexec($this->_db, $sql, [$netid]);
+        $result = $stmt->fetch();
+        if (!$result) {
+            throw new Exception("Error fetching error log");
+        } else {
+            return $result['logsize'];
+        }
     }
 
 }

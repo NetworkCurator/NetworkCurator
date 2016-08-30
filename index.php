@@ -7,6 +7,7 @@
  */
 // load the settings for the website
 include_once "nc-admin/config/nc-config.php";
+include_once "nc-admin/config/nc-constants.php";
 
 
 // load helper functions

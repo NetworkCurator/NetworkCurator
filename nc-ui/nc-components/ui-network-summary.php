@@ -8,8 +8,7 @@
  */
 ?>
 
-
-<h1 class="nc-mt-10"><?php echo $netmeta['network_title']; ?></h1>
+<h1 class="nc-mt-15"><?php echo $netmeta['network_title']; ?></h1>
 
 <h3 class="nc-mt-10">Abstract</h3>
 <div id="network-abstract" class="nc-mt-10"><?php echo $netmeta['network_abstract']; ?></div>
