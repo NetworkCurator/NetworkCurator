@@ -155,7 +155,7 @@ class NCNetworks extends NCLogger {
      */
     public function isPublic() {
         $netid = $this->getNetworkId($this->_network);
-        $guestperm = $this->getUserPermissionsNetID($netid, "guest");
+        $guestperm = (int) $this->getUserPermissionsNetID($netid, "guest");
         return $guestperm !== NC_PERM_NONE;
     }
 
