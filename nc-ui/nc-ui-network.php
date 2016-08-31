@@ -24,6 +24,7 @@ if (!$upermissions || $upermissions < 1) {
 
 // get network title and description
 $netmeta = $NCapi->getNetworkMetadata($network);
+$netid = $netmeta['network_id'];
 //print_r($netmeta);
 
 // get what aspect of the network to view (summary, graph, log, etc)
@@ -75,7 +76,7 @@ include_once "nc-ui/nc-components/ui-network-$view.php";
 <script>
     $(document).ready(
     function () {           
-        $('#nc-nav-network-title').html('<?php echo $netmeta['network_title'] ?>');
+        $('#nc-nav-network-title').html('<?php echo $netmeta['network_title']." (".$netid.")"; ?>');
         $('body').addClass('body2');
     });
 </script>

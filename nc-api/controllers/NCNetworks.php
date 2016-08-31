@@ -273,7 +273,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         $stmt = prepexec($this->_db, $sql, [$netid, $netid]);
 
         // record the results into an array that will eventually be output
-        $result = array();
+        $result = array('network_id'=>$netid);
         while ($row = $stmt->fetch()) {
             switch ($row['anno_level']) {
                 case NC_NAME:

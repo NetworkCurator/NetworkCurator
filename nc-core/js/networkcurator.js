@@ -318,9 +318,7 @@ function ncUpdatePermissions(netname, uid) {
             if (nowval==0 && uid!=="guest") {                
                 // if setting user to 0, remove the form element from the page
                 var ncfp = $('#ncf-permissions-'+uid);
-                ncfp.hide('normal', function() {
-                    ncfp.remove()
-                }); 
+                ncfp.fadeOut('normal', function() { ncfp.remove() }); 
             }
         });            
 }
@@ -463,8 +461,12 @@ function ncCreateNewClass(netname, parentid, classname, islink, isdirectional) {
 }
 
 
+/**
+ * Send a request to update a class name or parent structure
+ */
 function ncUpdateClassProperties(netname, classid, classname, parentid, islink, isdirectional) {
     
+    //alert("in update: "+netname+" "+classid+" classname:"+classname+" parent:"+parentid+" link:"+islink+" directional:"+isdirectional);    
     if (ncCheckString(classname, 1)<1) {
         ncMsg("Hey!", "Invalid class name");
         exit();
@@ -498,6 +500,36 @@ function ncUpdateClassProperties(netname, classid, classname, parentid, islink, 
         }
     });  
 }
+
+
+// sends a request to remove/disactivate a class
+function ncRemoveClass(netname, classid) {
+
+    //alert("in remove: "+netname+" "+classid);
+        
+    $.post(nc_api, {
+        controller: "NCOntology", 
+        action: "removeClass", 
+        network_name: netname,
+        class_id: classid        
+    }, function(data) {
+        ncAlert(data);      
+        data = $.parseJSON(data);
+        if (data['success']==false) {              
+            ncMsg('Error', data['errormsg']);                
+        } else {   
+            if (data['success']==true) {
+                // the class has been truly removed
+                $('li[val="'+classid+'"]').fadeOut('normal', function() {$(this).remove()} ); 
+            } else {
+                // the class has been deprecated
+                
+            }
+        }
+    });  
+
+}
+
 
 /* ==========================================================================
 * Actions on Log page

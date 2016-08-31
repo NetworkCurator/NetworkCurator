@@ -92,23 +92,48 @@ function ncuiClassTreeWidget(netname, classdata, islink, withbuttons) {
     var root = $('#nc-ontology-nodes');    
     if (islink) {
         root = $('#nc-ontology-links');        
-    }   
-               
+    }                 
+          
     // create a div for children and a new form
     var rootrow = {
         parent_id:'',
         class_id:'',
-        class_name:'generic', 
+        class_name:'', 
         connector:+islink, 
         directional:0
     };
-    var parentsofroot = ncuiClassDisplay(rootrow, 0);
-    parentsofroot += '<div class="nc-classtree-children" val="">'; 
-    rootrow['class_name']='';
+    //var parentsofroot = ncuiClassDisplay(rootrow, 0);
+    var parentsofroot = '<ol class="nc-classtree-children" val="">'; 
+    //rootrow['class_name']='';    
+    parentsofroot += '</ol>';        
     parentsofroot += ncuiClassForm(rootrow, withbuttons);    
-    parentsofroot += '</div>';        
     root.append(parentsofroot);
-         
+     
+    
+    
+    // set up drag-drop of classes     
+    var oldContainer;
+    root.find(".nc-classtree-children").sortable({
+        handle: 'button.nc-btn-move',
+        afterMove: function (placeholder, container) {
+            if(oldContainer != container){
+                if(oldContainer)
+                    oldContainer.el.removeClass("droptarget");
+                container.el.addClass("droptarget");
+
+                oldContainer = container;                                       
+            }
+        },
+        onDrop: function ($item, container, _super) {
+            container.el.removeClass("droptarget");            
+            _super($item, container);      
+            $item.addClass('aftermove');
+            setTimeout(function() {
+                $item.removeClass('aftermove');
+            }, 1500);
+        }
+    });
+     
     // populate the ontology tree
     $.each(classdata, function(key, val){        
         // here val holds a record for a class, create a class entry            
@@ -126,9 +151,19 @@ function ncuiClassTreeWidget(netname, classdata, islink, withbuttons) {
     // clicking to edit an existing class
     root.delegate("div.nc-classdisplay button[val='edit']", "click", function() {                        
         var classid = $(this).parent().attr('val');
-        root.find("div.nc-classdisplay[val='"+classid+"']").toggle();
-        root.find("form.nc-classupdate[val='"+classid+"']").toggle();        
+        // make sure input box shows current classname
+        var classname = $(this).parent().find('.nc-classdisplay-span').html();        
+        var thisform = root.find("form.nc-classupdate[val='"+classid+"']");
+        thisform.find('input').val(classname);
+        // toggle visibility
+        thisform.toggle();        
+        root.find("div.nc-classdisplay[val='"+classid+"']").toggle();        
     });    
+    // clicking to remove a class
+    root.delegate("div.nc-classdisplay button[val='remove']", "click", function() {                                
+        var classid = $(this).parent().attr('val');                      
+        ncRemoveClass(netname, classid)
+    });
     // clicking to cancel updating an existing class
     root.delegate("form.nc-classupdate .nc-btn-class-cancel", "click", function() {                                
         var classid = $(this).attr('val');              
@@ -139,14 +174,14 @@ function ncuiClassTreeWidget(netname, classdata, islink, withbuttons) {
     root.delegate("form.nc-classupdate .nc-btn-class-update", "click", function() {        
         var thisform = $(this).parent().parent();
         var classid=thisform.attr('val');
-        var parentid = thisform.parent().attr('val');        
+        var parentid = thisform.parent().parent().attr('val');        
         var newclassname = thisform.find("input").val();            
         var islink = thisform.find("input.form-check-input").length>0;
         var isdirectional = 0+thisform.find("input.form-check-input").is(":checked");        
         ncUpdateClassProperties(netname, classid, newclassname, parentid, islink, isdirectional);        
         root.find("div.nc-classdisplay[val='"+classid+"']").toggle();
         root.find("form.nc-classupdate[val='"+classid+"']").toggle();                
-    })
+    });    
     
     // after all the tree is populated, only display a small number of elements    
     //root.find("form.nc-classupdate").hide();    
@@ -156,28 +191,28 @@ function ncuiClassTreeWidget(netname, classdata, islink, withbuttons) {
 
 
 /**
- * Creates one row in a class tree
- * Row consists of a div with a label and a div below that will hold children
- */
+     * Creates one row in a class tree
+     * Row consists of a div with a label and a div below that will hold children
+     */
 function ncuiClassTreeRowWidget(classrow, withbuttons) {
     
     // create objects for displaying, editing, and adding subclasses
     var adisplay = ncuiClassDisplay(classrow, withbuttons);    
     var aform = ncuiClassForm(classrow, withbuttons);
-    var achildren = '<div class="nc-classtree-children" val="'+classrow['class_id']+'"></div>';       
+    var achildren = '<ol class="nc-classtree-children" val="'+classrow['class_id']+'"></ol>';       
     
     // create the widget from the components
-    return adisplay + aform + achildren;                
+    return '<li val="'+classrow['class_id']+'">'+adisplay + aform + achildren+'</li>';                
 }
 
 
 /**
- * Creates html that makes up the one row in the classtree (when viewing only)
- * 
- * classrow - array with details on this class
- * withbuttons - logical, set true to display buttons on the RHS.
- * 
- */
+     * Creates html that makes up the one row in the classtree (when viewing only)
+     * 
+     * classrow - array with details on this class
+     * withbuttons - logical, set true to display buttons on the RHS.
+     * 
+     */
 function ncuiClassDisplay(classrow, withbuttons) {
     
     var classid = classrow['class_id'];
@@ -193,9 +228,9 @@ function ncuiClassDisplay(classrow, withbuttons) {
     }
     fg+='</span>';     
     if (withbuttons) {
-        fg += '<button val="remove" class="pull-right btn btn-primary btn-sm nc-btn-remove">Remove</button>';   
-        fg += '<button val="move" class="pull-right btn btn-primary btn-sm nc-btn-move">Move</button>';       
+        fg += '<button val="remove" class="pull-right btn btn-primary btn-sm nc-btn-remove">Remove</button>';           
         fg += '<button val="edit" class="pull-right btn btn-primary btn-sm nc-btn-edit">Edit</button>';   
+        fg += '<button val="move" class="pull-right btn btn-primary btn-sm nc-btn-move">Move</button>';       
     }
     fg += '</div>'; 
                 
@@ -258,39 +293,40 @@ function ncuiClassForm(classrow, withbuttons) {
 
 
 
-
+/**
+ * Create a row in a class tree and insert it into the page
+ */
 function ncAddClassTreeChild(classrow, withbuttons) {  
     
-    // find the root of the relevant tree
-    var islink = +classrow['connector'];
+    // find the root of the relevant tree    
     var root = $('#nc-ontology-nodes');    
-    if (islink) {        
+    if (+classrow['connector']) {        
         root = $('#nc-ontology-links');        
     }  
             
     // find the target div where to insert the node
     var parentid = classrow['parent_id'];    
-    var targetdiv = root.find('div.nc-classtree-children[val="'+parentid+'"]');            
+    var targetdiv = root.find('ol.nc-classtree-children[val="'+parentid+'"]');            
     
     // create the widget for this class
     var newobj = $(ncuiClassTreeRowWidget(classrow, withbuttons));
     newobj.hide();
     
-    // figure out whether to insert before the form or at the end
-    var nonempty = targetdiv.children("form.nc-classcreate").length > 0;           
-    if (nonempty) {         
+    // figure out whether to insert before the form or at the end    
+    if (targetdiv.children("form.nc-classcreate").length > 0) {         
         $(newobj).insertBefore(targetdiv.children('form.nc-classcreate'));
     } else {               
         targetdiv.append(newobj);
-    }
-    
-    // make the element appear    
+    }   
+    targetdiv.find("li").show('normal');
     targetdiv.find("div.nc-classdisplay").show('normal');    
+    
     
 }
 
 
-function ncEditTreeClass(classname) {    
+function ncEditTreeClass(classname) {
+    alert("ncEdit?");
     $('#nc-tree-head-'+classname+' span.nc-classname').toggle();
     $('#nc-tree-head-'+classname+' input').toggle();
     $('#nc-tree-head-'+classname+' span.nc-toolbox').toggle();

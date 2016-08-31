@@ -163,7 +163,7 @@ class NCApiCaller {
         $params['network_name'] = $network;
         return $this->_caller->sendRequest($params);
     }
-
+       
     /**
      * get an array of all the classes defined for nodes in the network
      * 

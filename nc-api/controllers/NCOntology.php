@@ -201,6 +201,38 @@ class NCOntology extends NCLogger {
     }
 
     /**
+     * Fetches current information on a given class
+     * 
+     * @param string $classid
+     * 
+     * id string
+     * 
+     * @return array
+     * 
+     * data describing a given class_name
+     *
+     * @throws Exception
+     * 
+     * when the classid does not match db records
+     * 
+     */
+    private function getClassInfo($classid) {
+        $tc = "" . NC_TABLE_CLASSES;
+        $tat = "" . NC_TABLE_ANNOTEXT;
+        $sql = "SELECT class_id, $tc.parent_id AS parent_id, connector, 
+            directional, class_status, anno_text AS class_name, anno_id 
+            FROM $tc JOIN $tat ON $tc.class_id=$tat.root_id 
+              WHERE $tc.class_id = ? AND $tat.anno_level= " . NC_NAME . "
+                  AND $tat.anno_status=" . NC_ACTIVE;
+        $stmt = prepexec($this->_db, $sql, [$classid]);
+        $classinfo = $stmt->fetch();
+        if (!$classinfo) {
+            throw new Exception("Class does not exist");
+        }
+        return $classinfo;
+    }
+
+    /**
      * Changes properties or annotations associated with a given class
      * 
      * @return string
@@ -210,6 +242,9 @@ class NCOntology extends NCLogger {
     public function updateClass() {
 
         // check for required inputs
+        if (!isset($this->_params['class_id'])) {
+            throw new Exception("Unspecified class id");
+        }
         if (!isset($this->_params['parent_id'])) {
             throw new Exception("Unspecified class parent");
         }
@@ -222,23 +257,11 @@ class NCOntology extends NCLogger {
         if (!isset($this->_params['class_name'])) {
             throw new Exception("Unspecified class name");
         }
-        if (!isset($this->_params['parent_id'])) {
-            throw new Exception("Unspecified parent id");
-        }
-
-        // fetch the current information about this class
         $tc = "" . NC_TABLE_CLASSES;
         $tat = "" . NC_TABLE_ANNOTEXT;
-        $sql = "SELECT class_id, $tc.parent_id AS parent_id, connector, 
-            directional, class_status, anno_text AS class_name, anno_id 
-            FROM $tc JOIN $tat ON $tc.class_id=$tat.root_id 
-              WHERE $tc.class_id = ? AND $tat.anno_level= " . NC_NAME . "
-                  AND $tat.anno_status=" . NC_ACTIVE;
-        $stmt = prepexec($this->_db, $sql, [$this->_params['class_id']]);
-        $olddata = $stmt->fetch();
-        if (!$olddata) {
-            throw new Exception("Class does not exist");
-        }
+
+        // fetch the current information about this class
+        $olddata = $this->getClassInfo($this->_params['class_id']);
 
         // check that new data is different from existing data
         $Q1 = $this->_params['parent_id'] == $olddata['parent_id'];
@@ -272,7 +295,7 @@ class NCOntology extends NCLogger {
             // for links that are non-directional, make sure the parent is also 
             if (!$this->_params['directional'] && $this->_params['connector']) {
                 if ($parentdata['directional'] > $this->_params['directional']) {
-                    throw new Exception("Incompatible parent directional status");
+                    throw new Exception("Incompatible directional status (parent is a directional link)");
                 }
             }
         }
@@ -316,6 +339,70 @@ class NCOntology extends NCLogger {
         }
 
         return 1;
+    }
+
+    /**
+     * Either deletes or inactivates a given class
+     */
+    public function removeClass() {
+
+        if (!isset($this->_params['class_id'])) {
+            throw new Exception("Unspecified class id");
+        }
+
+        // fetch information about the class
+        $classid = $this->_params['class_id'];
+        $olddata = $this->getClassInfo($classid);
+
+        // class exists in db. Check if it has been used already in a nontrivial way
+        $tc = "" . NC_TABLE_CLASSES;
+        $tat = "" . NC_TABLE_ANNOTEXT;
+        $tan = "" . NC_TABLE_ANNONUM;
+
+        // does the class have descendants?
+        $sql = "SELECT class_id FROM $tc WHERE parent_id = ? 
+            AND class_status = " . NC_ACTIVE;
+        $stmt = prepexec($this->_db, $sql, [$classid]);
+        if ($stmt->fetch()) {
+            throw new Exception("Cannot remove: class has active descendants");
+        }
+
+        // are there nodes or links that use this class?
+        $sql = "SELECT COUNT(*) AS count FROM ";
+        if ($olddata['connector']) {
+            $sql .= NC_TABLE_LINKS;
+        } else {
+            $sql .= NC_TABLE_NODES;
+        }
+        $sql .= " WHERE network_id = ? AND class_id = ? ";
+        $stmt = prepexec($this->_db, $sql, [$this->_netid, $classid]);
+        $result = $stmt->fetch();
+        if (!$result) {
+            throw new Exception("Error fetching class usage");
+        }
+        if ($result['count'] == 0) {
+            // class is not used - remove it permanently from the class table            
+            $sql = "DELETE FROM $tc WHERE network_id = ? AND class_id = ?";
+            $stmt = prepexec($this->_db, $sql, [$this->_netid, $classid]);
+            // delete all annotations
+            $sql = "DELETE FROM $tat WHERE network_id = ? AND root_id = ?";
+            $stmt = prepexec($this->_db, $sql, [$this->_netid, $classid]);
+            $sql = "DELETE FROM $tan WHERE network_id = ? AND root_id = ?";
+            $stmt = prepexec($this->_db, $sql, [$this->_netid, $classid]);
+            // log the event
+            $this->logActivity($this->_uid, $this->_netid, "deleted class", $olddata['class_name'], $classid);
+
+            return true; //"Class has been removed entirely";
+        } else {
+            // class is used - set as inactive
+            $sql = "UPDATE $tc SET class_status = " . NC_DEPRECATED . " WHERE 
+                     network_id = ? AND class_id = ? ";
+            $stmt = prepexec($this->_db, $sql, [$this->_netid, $classid]);
+            // log the event
+            $this->logActivity($this->_uid, $this->_netid, "deprecated class", $olddata['class_name'], $classid);
+
+            return false; //"Class id has already been used";
+        }
     }
 
 }

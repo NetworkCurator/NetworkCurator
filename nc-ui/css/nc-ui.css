@@ -160,16 +160,49 @@ hr {
  * Class tree structures
  * -------------------------------------------------------------------------- */
 
-.nc-classdisplay {
-    height: 2.5em;    
+body.dragging, body.dragging * {
+  cursor: move !important;
+}
+.dragged {
+  position: absolute;
+  opacity: 0.4;
+  z-index: 1000;
+}
+ol.droptarget {
+    background-color: #f2f2f2;
+}
+li span {
+    padding: 2px 8px;
+}
+span.nc-directional {
+    padding-left: 0px;
+}
+li.aftermove > div:first-child span {
+    background-color: #f0f0f0;
+    color: #000;
+    font-weight: 600;
+}
+
+.nc-ontology-tree {
+    margin-bottom: 4em;
+}
+.nc-classtree-children {
+    list-style: none;
+    min-height: 5px; 
+    padding: 5px 0px 0px 25px;    
+}
+ol {
+    list-style: none;
+}
+.nc-classdisplay {    
+    padding: 3px 0px;
 }
 .nc-classdisplay-span {
     position: relative;
     vertical-align: middle;
     padding-top: 8px;
 }
-
-.nc-btn-move {
+.nc-btn-edit {
     margin-left: 6px;
     margin-right: 6px;
 }
@@ -183,12 +216,12 @@ hr {
     margin-left: 8px; 
     margin-right: 4px;     
 }
-nc-classname {
-   
-}
-.nc-classtree-children {    
-    padding: 2px 0px 5px 36px;
-}
+
+
+
+/* --------------------------------------------------------------------------
+ * Activity log
+ * -------------------------------------------------------------------------- */
 
 .nc-log-entry-date {
     padding-right: 6px;
@@ -204,4 +237,20 @@ nc-classname {
     position: static;
     top: 0px;
     right: 0px;
+}
+
+
+/* --------------------------------------------------------------------------
+ * Generic elements of the UI
+ * -------------------------------------------------------------------------- */
+
+.nc-tips {
+    margin: 1em; 
+    padding: 1.5em;
+    color: #222;
+    background-color: #f5f5f5;
+}
+
+.nc-tips b {
+    color: #000;
 }
