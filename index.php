@@ -14,6 +14,7 @@ include_once "nc-admin/config/nc-constants.php";
 $PP = $_SERVER['DOCUMENT_ROOT'] . NC_PHP_PATH;
 $UP = $_SERVER['DOCUMENT_ROOT'] . NC_UI_PATH;
 include_once "nc-api/helpers/GeneralApiCaller.php";
+include_once "nc-api/helpers/nc-generic.php";
 include_once $PP . "/NCApiCaller.php";
 include_once $PP . "/nc-sessions.php";
 include_once $PP . "/nc-generic.php";

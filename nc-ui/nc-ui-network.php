@@ -69,6 +69,7 @@ if ($upermissions < 4) {
 // after the menu, include the contents specific
 //echo "<br/>FFF";
 include_once "nc-ui/nc-components/ui-network-$view.php";
+//" (".$netid.")"
 ?>
 
 
@@ -76,7 +77,7 @@ include_once "nc-ui/nc-components/ui-network-$view.php";
 <script>
     $(document).ready(
     function () {           
-        $('#nc-nav-network-title').html('<?php echo $netmeta['network_title']." (".$netid.")"; ?>');
+        $('#nc-nav-network-title').html('<?php echo $netmeta['network_title']; ?>');
         $('body').addClass('body2');
     });
 </script>

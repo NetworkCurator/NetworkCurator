@@ -48,7 +48,7 @@ function makeRandomHexString($stringlength) {
 function ncFullname($a, $prefix = "user_") {
     $firstname = $a[$prefix . 'firstname'];
     $middlename = $a[$prefix . 'middlename'];
-    $lastname = $a[$prefix . 'user_lastname'];
+    $lastname = $a[$prefix . 'lastname'];
     if ($middlename !== "") {
         return "$firstname $middlename $lastname";
     } else {

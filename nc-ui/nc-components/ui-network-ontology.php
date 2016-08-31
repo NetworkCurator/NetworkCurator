@@ -41,7 +41,7 @@ echo "var nc_link_classes=" . json_encode($linkclasses) . ";";
     </div>
 
     <div class="col-sm-4 nc-mt-10">
-        <div class="nc-tips">
+        <div class="nc-tips <?php if ($withbuttons==0) {echo "hidden"; } ?>">
             <h4>Tips</h4>        
             <p>Use the <b>Create new class</b> form to create a new type of node or link.</p>
             <p>Click the <b>Move</b> button and drag to build a hierarchy of classes. 

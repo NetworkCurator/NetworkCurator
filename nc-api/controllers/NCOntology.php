@@ -195,7 +195,7 @@ class NCOntology extends NCLogger {
         $this->insertAnnoText($pp);
 
         // log the activity
-        $this->logActivity($this->_params['user_id'], $this->_netid, "Created new class", $newname, $newid);
+        $this->logActivity($this->_params['user_id'], $this->_netid, "created new class", $newname, $newid);
 
         return $newid;
     }
@@ -319,7 +319,7 @@ class NCOntology extends NCLogger {
                 'anno_id' => $olddata['anno_id'],
                 'anno_level' => NC_NAME];
             $this->updateAnnoText($pp);
-            $this->logActivity($this->_uid, $this->_netid, "Updated class name", $pp['anno_text'], $pp['parent_id']);
+            $this->logActivity($this->_uid, $this->_netid, "updated class name", $pp['anno_text'], $pp['parent_id']);
         }
         if (!$Q1 || !$Q3) {
             // update the class structure and log the activity
@@ -335,7 +335,7 @@ class NCOntology extends NCLogger {
             $stmt = prepexec($this->_db, $sql, $pp);
 
             $value = $pp['parent_id'] . "," . $pp['directional'] . "," . $pp['class_status'];
-            $this->logActivity($this->_uid, $this->_netid, "Updated class properties for class", $this->_params['class_name'], $value);
+            $this->logActivity($this->_uid, $this->_netid, "updated class properties for class", $this->_params['class_name'], $value);
         }
 
         return 1;

@@ -52,9 +52,7 @@ $guestusers = array('guest' => $guestuser);
         $(document).ready(
         function () {                   
             $('#nc-permissions-guest').html(ncuiPermissionsWidget('<?php echo $network ?>', nc_permissions_guest));                
-            $('#nc-permissions-users').html(ncuiPermissionsWidget('<?php echo $network; ?>', nc_permissions_users));              
-            $('#nc-permissions-users').sortable();
-            alert("after");
+            $('#nc-permissions-users').html(ncuiPermissionsWidget('<?php echo $network; ?>', nc_permissions_users));                          
             ncDisabledClick('.btn-group');
         });            
         </script>
