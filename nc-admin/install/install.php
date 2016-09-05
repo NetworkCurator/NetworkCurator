@@ -205,13 +205,14 @@ $sql = "CREATE TABLE $tabname (
   datetime DATETIME NOT NULL,
   anno_id $vc32col,
   anno_level INT NOT NULL DEFAULT 0,
+  owner_id $vc32col,
   user_id $vc32col,  
   network_id $vc32col,  
   root_id $vc32col,
   parent_id $vc32col,  
   anno_text $textcol,  
   anno_status $statuscol,
-  KEY level (anno_level, network_id),
+  KEY level (network_id, anno_level),
   KEY anno_id (anno_id)  
 ) COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
@@ -223,6 +224,7 @@ $sql = "CREATE TABLE $tabname (
   datetime DATETIME NOT NULL,
   anno_id $vc32col,
   anno_level INT NOT NULL DEFAULT 0,
+  owner_id $vc32col,
   user_id $vc32col,  
   network_id $vc32col,  
   root_id $vc32col,
@@ -230,7 +232,7 @@ $sql = "CREATE TABLE $tabname (
   anno_value $dblcol,
   anno_valueunit $vc24col,  
   anno_status $statuscol,
-  KEY level (anno_level, network_id),
+  KEY level (network_id, anno_level),
   KEY anno_id (anno_id)
 ) COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
@@ -368,7 +370,7 @@ $myconf .= "define('NC_TABLE_NETWORKS',\t'" . DB_TABLE_PREFIX . "_networks');\n"
 $myconf .= "define('NC_TABLE_NODES',\t'" . DB_TABLE_PREFIX . "_nodes');\n";
 $myconf .= "define('NC_TABLE_PERMISSIONS',\t'" . DB_TABLE_PREFIX . "_permissions');\n";
 $myconf .= "define('NC_TABLE_USERS',\t'" . DB_TABLE_PREFIX . "_users');\n";
-$myconf .= "define('NC_ID_LEN',\t\t'" . NC_ID_LEN . "_users');\n";
+$myconf .= "define('NC_ID_LEN',\t\t'" . NC_ID_LEN . "');\n";
 $myconf .= "\n// Configuration for web server delivering content\n";
 $myconf .= "define('NC_PATH',\t'$ncpath');\n";
 $myconf .= "define('NC_CORE_PATH',\t'$ncpath/nc-core');\n";

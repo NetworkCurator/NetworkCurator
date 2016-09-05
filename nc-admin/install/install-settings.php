@@ -78,6 +78,6 @@ if (!defined("NC_SITE_ADMIN_PASSWORD")) {
 
 // length of random strings in ids
 if (!defined("NC_ID_LEN")) {
-    define("NC_ID_LEN", 11);
+    define("NC_ID_LEN", 8);
 }
 ?>

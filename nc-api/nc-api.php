@@ -70,10 +70,15 @@ try {
     }
     $controllerI = new $controller($db, $params);
 
-    // execute the requested action in the controller    
+    // check that action is not one of the `private functions`    
+    if (in_array($action, get_class_methods('NCLogger'))) {
+        throw new Exception("Invalid action $action");
+    }
+    // check if action is defined in the controller
     if (method_exists($controllerI, $action) === false) {
         throw new Exception("Invalid action $action");
     }
+    // execute the requested action in the controller    
     $ans['data'] = $controllerI->$action();
 
     // log most actions, except user confirmation    

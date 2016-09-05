@@ -163,6 +163,20 @@ class NCApiCaller {
         $params['network_name'] = $network;
         return $this->_caller->sendRequest($params);
     }
+    
+    /**
+     * get Network title and abstract from annotations
+     * 
+     * @param type $network
+     * @return type
+     */
+    function getNetworkTitle($network) {
+        $params = $this->_p;
+        $params['controller'] = 'NCNetworks';
+        $params['action'] = 'getNetworkTitle';
+        $params['network_name'] = $network;
+        return $this->_caller->sendRequest($params);
+    }
        
     /**
      * get an array of all the classes defined for nodes in the network

@@ -11,9 +11,6 @@
 $nodeclasses = $NCapi->getNodeClasses($network);
 $linkclasses = $NCapi->getLinkClasses($network);
 ?>
-<?php
-//<h1 class="nc-mt-5">Ontology for network <?php echo $network; //</h1>
-?>
 
 <div class="row">
     <div class="col-sm-8">
@@ -27,21 +24,24 @@ $linkclasses = $NCapi->getLinkClasses($network);
         <script>  
 <?php
 echo "var network_name='$network'; ";
-$withbuttons = (int) ($upermissions >= NC_PERM_CURATE);
 echo "var nc_node_classes=" . json_encode($nodeclasses) . ";";
 echo "var nc_link_classes=" . json_encode($linkclasses) . ";";
 ?>                            
     $(document).ready(
     function () {                                               
-        $('#nc-ontology-nodes').html(ncuiClassTreeWidget('<?php echo $network ?>', nc_node_classes, false, <?php echo $withbuttons; ?>));                
-        $('#nc-ontology-links').html(ncuiClassTreeWidget('<?php echo $network; ?>', nc_link_classes, true, <?php echo $withbuttons; ?>));                          
+        $('#nc-ontology-nodes').html(ncuiClassTreeWidget('<?php echo $network ?>', nc_node_classes, false, <?php echo $iscurator; ?>));                
+        $('#nc-ontology-links').html(ncuiClassTreeWidget('<?php echo $network; ?>', nc_link_classes, true, <?php echo $iscurator; ?>));                          
     });            
         </script>
 
     </div>
 
     <div class="col-sm-4 nc-mt-10">
-        <div class="nc-tips <?php if ($withbuttons==0) {echo "hidden"; } ?>">
+        <div class="nc-tips <?php
+if (!$iscurator) {
+    echo "hidden";
+}
+?>">
             <h4>Tips</h4>        
             <p>Use the <b>Create new class</b> form to create a new type of node or link.</p>
             <p>Click the <b>Move</b> button and drag to build a hierarchy of classes. 

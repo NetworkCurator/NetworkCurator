@@ -17,11 +17,18 @@ function ncAlert(x) {
 
 
 /* ==========================================================================
- * Constants
+ * Constants and other globals
  * ========================================================================== */
 
 // used for toggling buttons with feedback
 nc_timeout = 4000;
+
+// markdown to html converter
+nc_m2h = new showdown.Converter({
+    headerLevelStart: 1, 
+    tables: true,
+    tasklists: true
+});
 
 
 /* ==========================================================================
@@ -318,7 +325,9 @@ function ncUpdatePermissions(netname, uid) {
             if (nowval==0 && uid!=="guest") {                
                 // if setting user to 0, remove the form element from the page
                 var ncfp = $('#ncf-permissions-'+uid);
-                ncfp.fadeOut('normal', function() { ncfp.remove() }); 
+                ncfp.fadeOut('normal', function() {
+                    ncfp.remove()
+                }); 
             }
         });            
 }
@@ -520,9 +529,11 @@ function ncRemoveClass(netname, classid) {
         } else {   
             if (data['success']==true) {
                 // the class has been truly removed
-                $('li[val="'+classid+'"]').fadeOut('normal', function() {$(this).remove()} ); 
+                $('li[val="'+classid+'"]').fadeOut('normal', function() {
+                    $(this).remove()
+                } ); 
             } else {
-                // the class has been deprecated
+            // the class has been deprecated
                 
             }
         }
@@ -532,18 +543,18 @@ function ncRemoveClass(netname, classid) {
 
 
 /* ==========================================================================
-* Actions on Log page
-* ========================================================================== */
+ * Actions on Log page
+ * ========================================================================== */
 
 
 /**
-* Invoked from the log page when user requests a 
-*/
+ * Invoked from the log page when user requests a 
+ */
 function ncLoadActivityPage(netname, pagenum, pagelen) {    
     
     $('#nc-activity-log-toolbar li[value!='+pagenum+']').removeClass("active");
     $('#nc-activity-log-toolbar li[value='+pagenum+']').addClass("active");
-    // load the 
+   
     $.post(nc_api, 
     {
         controller: "NCNetworks", 
@@ -565,7 +576,157 @@ function ncLoadActivityPage(netname, pagenum, pagelen) {
 
 
 
+/* ==========================================================================
+ * Editing page elements
+ * ========================================================================== */
 
+/**
+ * Function called on page load to activate all elements relevant for curation
+ */
+function ncCurationStartup() {
+
+    // all users need to have the curation toolbox
+    // the toolbox sets up the div that actually displays content.         
+    var toolbox = ncuiMakeCurationBox(nc_m2h);
+    var alleditable = $('.nc-editable-text');
+    alleditable.html(toolbox);
+    
+    // other functions are for curators only    
+    if (!nc_curator) {
+        return;
+    }
+    
+    // show curation level ui graphics
+    $('.nc-curator').show();
+        
+    // make the curation lock/unlock toggling button responsive
+    var lockbtn = $('#nc-curation-lock');
+    lockbtn.on("click",
+        function() {
+            lockbtn.find('i.fa-lock, i.fa-unlock').toggleClass('fa-lock fa-unlock');
+            lockbtn.toggleClass("nc-editing nc-looking");
+            ncTogglePageEditing();
+        });    
+
+    var allcontents = $('.nc-curation-content');    
+    allcontents.on("click" , function() {       
+        var box = $(this).parent().parent();
+        if (box.hasClass("nc-editable-text-visible")) {
+            box.find('.nc-curation-toolbox').show('normal');
+            box.find('div.nc-curation-content').hide();
+            box.find('textarea').show();
+            box.find('a.nc-save').show();
+        }        
+    });
+    alleditable.on("blur" , function() {
+        $(this).find('.nc-curation-toolbox').hide('normal');
+        $(this).find('a.nc-save').hide();
+    });    
+    $('.nc-curation-toolbox').css("font-size", $('body').css("font-size"));
+    
+}
+
+function ncTogglePageEditing() {
+    var lockbtn = $('#nc-curation-lock');
+    var editobjs = $('.nc-editable-text');
+    if (lockbtn.hasClass("nc-looking")) {        
+        editobjs.removeClass('nc-editable-text-visible');        
+    } else {
+        editobjs.addClass('nc-editable-text-visible');    
+    }
+}
+
+
+
+/* ==========================================================================
+* Markup
+* ========================================================================== */
+
+/**
+* run at startup to convert data in a global object nc_md into html
+* within page elements
+*/
+function ncShowMarkdown() {   
+    //alert("ncShow");    
+    // check if nc_md exists
+    if (typeof nc_md == "undefined") {        
+        return;
+    }
+    //alert("ncShow 2");        
+    // convert the nc_md content into html, assign to a target div
+    $.each(nc_md, function(key, val) {          
+        //alert(key+" "+val);
+        var temp = $('div .nc-md[val="'+key+'"]');
+        temp.find('textarea.nc-curation-content').html(val);
+        temp.find('div.nc-curation-content').html(nc_m2h.makeHtml(val));
+    });        
+}
+
+
+/* ==========================================================================
+* Annotation updates
+* ========================================================================== */
+
+/**
+* This sends an update request to the server
+* 
+* Uses nc_network - network name in global variable
+* Uses nc_md - array of md components 
+*/
+function ncUpdateAnnotationText(annoid) {
+    
+    if (typeof nc_network == "undefined") {        
+        return;
+    }
+    
+    alert("new text: "+nc_md[annoid]);
+    // send a request to the server
+    $.post(nc_api, 
+    {
+        controller: "NCAnnotations", 
+        action: "updateAnnotationText", 
+        network_name: nc_network,
+        anno_id: annoid,
+        anno_text: nc_md[annoid]
+    }, function(data) {        
+        ncAlert(data);  
+        data = $.parseJSON(data);
+        if (!data['success']) {  
+            ncMsg("Hey!", "Got error response from server: "+data['data']);            
+        }
+    });
+
+}
+
+
+/* ==========================================================================
+ * Commenting
+ * ========================================================================== */
+
+function ncShowCommentBox() {
+    // check if the user is allowed to comment on the page
+    if (!nc_commentator) {
+        return;
+    }
+    
+    $('#nc-newcomment').html(ncuiMakeCommentBox(nc_uid, nc_m2h));
+}
+
+
+
+/* ==========================================================================
+* Graph editing
+* ========================================================================== */
+
+
+function ncInitGraph() {
+    // check if this is the graph page
+    var graphdiv = $('#nc-graph-svg-container');
+    if (graphdiv.length==0) {       
+        return;
+    }
+      
+}
 
 
 /* ==========================================================================
@@ -578,9 +739,17 @@ function ncLoadActivityPage(netname, pagenum, pagelen) {
 */
 $(document).ready(
     function () {
-        ncDisabledClick('.btn-group'); 
-    }
-    );
+        // fix some button behavior
+        ncDisabledClick('.btn-group');   
+        // call a function that will perform startup relevant for curating content
+        ncCurationStartup();                   
+        // perform md markup
+        ncShowMarkdown();   
+        // display the commenting box
+        ncShowCommentBox();
+        // display and initialize the graph
+        ncInitGraph();        
+    });
 
 
 

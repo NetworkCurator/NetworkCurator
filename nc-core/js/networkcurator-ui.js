@@ -191,9 +191,9 @@ function ncuiClassTreeWidget(netname, classdata, islink, withbuttons) {
 
 
 /**
-     * Creates one row in a class tree
-     * Row consists of a div with a label and a div below that will hold children
-     */
+ * Creates one row in a class tree
+ * Row consists of a div with a label and a div below that will hold children
+ */
 function ncuiClassTreeRowWidget(classrow, withbuttons) {
     
     // create objects for displaying, editing, and adding subclasses
@@ -207,12 +207,12 @@ function ncuiClassTreeRowWidget(classrow, withbuttons) {
 
 
 /**
-     * Creates html that makes up the one row in the classtree (when viewing only)
-     * 
-     * classrow - array with details on this class
-     * withbuttons - logical, set true to display buttons on the RHS.
-     * 
-     */
+ * Creates html that makes up the one row in the classtree (when viewing only)
+ * 
+ * classrow - array with details on this class
+ * withbuttons - logical, set true to display buttons on the RHS.
+ * 
+ */
 function ncuiClassDisplay(classrow, withbuttons) {
     
     var classid = classrow['class_id'];
@@ -325,12 +325,6 @@ function ncAddClassTreeChild(classrow, withbuttons) {
 }
 
 
-function ncEditTreeClass(classname) {
-    alert("ncEdit?");
-    $('#nc-tree-head-'+classname+' span.nc-classname').toggle();
-    $('#nc-tree-head-'+classname+' input').toggle();
-    $('#nc-tree-head-'+classname+' span.nc-toolbox').toggle();
-}
 
 /* ==========================================================================
  * Log
@@ -382,3 +376,82 @@ function ncFormatOneLogEntry(data) {
 }
 
 
+
+
+/* ==========================================================================
+ * Curation
+ * ========================================================================== */
+
+/**
+ * Create a div with a button toolbox for curation
+ * 
+ * mdconvert - a showdown object use to convert between md and html
+ * 
+ */
+function ncuiMakeCurationBox(mdconverter) {
+    
+    // write static html to define components of the toolbox
+    var html = '<div><div class="nc-curation-toolbox" style="display: none">';
+    html += '<a role="button" class="nc-curation-toolbox-md btn btn-sm btn-default" >Edit</a>';
+    html += '<a role="button" class="nc-curation-toolbox-preview btn btn-sm btn-default">Preview</a>';    
+    html += '<a role="button" class="nc-curation-toolbox-close pull-right">close</a>';
+    html += '</div><div class="nc-curation-content"></div>';
+    html += '<textarea class="nc-curation-content" style="display: none"></textarea>';
+    html += '<a role="button" class="btn btn-sm btn-success nc-save" style="display: none">Save</a></div>';    
+    
+    // create DOM objects, then add actions to the toolbox buttons
+    var toolbox = $(html);
+            
+    // clicking pen/edit/md hides the div and shows raw md in the textarea
+    toolbox.find('a.nc-curation-toolbox-md').click(function() {
+        var annodiv = $(this).parent().parent();                             
+        annodiv.find('div.nc-curation-content').hide();
+        annodiv.find('textarea').html(nc_md[annodiv.attr("val")]).show();                        
+        annodiv.find('a.btn-success').show();
+    });
+    // clicking preview converts textarea md to html, updates the md object in the background
+    toolbox.find('a.nc-curation-toolbox-preview').click(function() {
+        var annodiv = $(this).parent().parent().parent();        
+        var annomd = annodiv.find('textarea').hide().val();              
+        nc_md[annodiv.attr("val")] = annomd;        
+        annodiv.find('div.nc-curation-content').html(mdconverter.makeHtml(annomd)).show();        
+    });
+    // clicking save sends the md to the server
+    //alert("ll: "+ toolbox.find('a').length);
+    toolbox.find('a.nc-save').click(function() {                
+        $(this).parent().find('a.nc-curation-toolbox-preview').click();
+        var annoid = $(this).parent().parent().attr("val");        
+        ncUpdateAnnotationText(annoid);
+    });
+    // clicking close triggers preview and makes the toolbox disappear
+    toolbox.find('a.nc-curation-toolbox-close').click(function() {        
+        var thisp = $(this).parent();
+        thisp.parent().find('a.nc-save').hide("normal");        
+        thisp.hide("normal").find('a.nc-curation-toolbox-preview').click();        
+    });
+        
+    return toolbox;
+}
+
+
+
+/* ==========================================================================
+ * Comments
+ * ========================================================================== */
+
+
+function ncuiMakeCommentBox(uid, mdconverter) {
+    
+    var html = '<div class="media">';
+    html+='<p>Write a new comment</p>';
+    html+='<a class="media-left">'
+    html+= '<img class="media-object" src="'+uid+'.png"></a>';  
+    html+='<div class="media-body"></div></div>'
+    
+    var commentbox = $(html);
+    commentbox.find('.media-body').append(ncuiMakeCurationBox(mdconverter));
+    commentbox.find('.nc-curation-toolbox').toggle();
+    commentbox.find('.nc-curation-content').toggle();
+    commentbox.find('.nc-curation-toolbox-close').hide();
+    return commentbox;    
+}

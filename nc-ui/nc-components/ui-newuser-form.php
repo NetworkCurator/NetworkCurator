@@ -6,7 +6,7 @@
 ?>
 
 <div class="row">
-    <div class="col-sm-5 offset-sm-2">
+    <div class="col-sm-5">
         <h1>Register a new user</h1> 
         <form role="form" id="ncf-newuser" onsubmit="ncSendCreateUser(); return false;">
             <div id="ncfg-firstname" class="form-group">

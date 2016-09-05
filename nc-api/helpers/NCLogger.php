@@ -51,7 +51,7 @@ class NCLogger {
         $newid = "";
         $keeplooking = true;
         while ($keeplooking) {
-            $newid = $idprefix . makeRandomHexString($stringlength);
+            $newid = $idprefix . makeRandomString($stringlength);
             $sql = "SELECT $idcolumn FROM $dbtable WHERE $idcolumn='$newid'";
             $keeplooking = $this->_db->query($sql)->fetchAll();
         }
@@ -133,15 +133,15 @@ class NCLogger {
         // insert the annotation into the table
         // (this is somewhat inelegant, uses twice the named placeholders with A/B.
         $sql = "INSERT INTO $tat 
-                   (datetime, network_id, user_id, root_id, parent_id, 
+                   (datetime, network_id, owner_id, user_id, root_id, parent_id, 
                    anno_id, anno_text, anno_level, anno_status) VALUES 
-                   (UTC_TIMESTAMP(), :network_idA, :user_idA, :root_idA, :parent_idA,
+                   (UTC_TIMESTAMP(), :network_idA, :owner_idA, :user_idA, :root_idA, :parent_idA,
                    :anno_idA, :anno_textA, :anno_levelA, " . NC_ACTIVE . "),        
-                   (UTC_TIMESTAMP(), :network_idB, :user_idB, :root_idB, :parent_idB,
+                   (UTC_TIMESTAMP(), :network_idB, :owner_idB, :user_idB, :root_idB, :parent_idB,
                    :anno_idB, :anno_textB, :anno_levelB, " . NC_OLD . ")";
         $stmt = $this->_db->prepare($sql);
         // get a new array with just the parameters that are needed
-        $keys = ['network_id', 'user_id', 'root_id', 'parent_id',
+        $keys = ['network_id', 'owner_id', 'user_id', 'root_id', 'parent_id',
             'anno_id', 'anno_text', 'anno_level'];
         $pp = array();
         for ($i = 0; $i < count($keys); $i++) {
@@ -150,9 +150,7 @@ class NCLogger {
             $pp[$nowkey . "B"] = $params[$nowkey];
         }
         $stmt->execute($pp);
-
-        // add an activity entry?
-
+        
         return 1;
     }
 
@@ -175,26 +173,25 @@ class NCLogger {
     public function updateAnnoText($params) {
 
         $tat = "" . NC_TABLE_ANNOTEXT;
-
+               
         // prepare a statement setting all anno_status to disabled for a given anno_id
         $sql = "UPDATE $tat SET 
-                          datetime = UTC_TIMESTAMP(), 
+                          datetime = UTC_TIMESTAMP(), user_id = :user_id,
                           root_id = :root_id, parent_id = :parent_id,
                           anno_text = :anno_text
                 WHERE network_id = :network_id AND anno_id = :anno_id 
+                   AND owner_id = :owner_id 
                    AND anno_level= :anno_level AND anno_status=" . NC_ACTIVE;
         // the update statement does not change the original user_id, so 
-        // here $pp is a subset of $params
-        $pp = $params;
-        unset($pp['user_id']);
-        $stmt = prepexec($this->_db, $sql, $pp);
+        // here $pp is a subset of $params        
+        $stmt = prepexec($this->_db, $sql, $params);
 
         // insert an extra copy for historical records
         $sql = "INSERT INTO $tat 
-                   (datetime, network_id, user_id, root_id, parent_id, 
+                   (datetime, network_id, owner_id, user_id, root_id, parent_id, 
                    anno_id, anno_text, anno_level, anno_status) VALUES                          
-                   (UTC_TIMESTAMP(), :network_id, :user_id, :root_id, :parent_id,
-                   :anno_id, :anno_text, :anno_level, " . NC_OLD . ")";
+                   (UTC_TIMESTAMP(), :network_id, :owner_id, :user_id, :root_id, :parent_id,
+                   :anno_id, :anno_text, :anno_level, " . NC_OLD . ")";        
         $stmt = prepexec($this->_db, $sql, $params);
          
         return 1;

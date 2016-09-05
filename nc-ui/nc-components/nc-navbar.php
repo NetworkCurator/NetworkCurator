@@ -13,8 +13,8 @@
         </div>
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse">            
-            <ul class="nav navbar-nav navbar-right">   
-                <p class="navbar-text"><b><?php echo ncUserFullname(); ?></b></p>
+            <ul class="nav navbar-nav navbar-right">                 
+                    <p class="navbar-text"><b><?php echo ncUserFullname(); ?></b></p>
                 <li>
                     <?php
                     if (ncIsUserSignedIn()) {

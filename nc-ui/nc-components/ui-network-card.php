@@ -7,16 +7,17 @@
 ?>
 
 <?php
-$nowlink = "?page=network&network=$networkname";
+$nowlink = "?page=network&network=$netname";
 ?>
 <div class="media nc-mt-20">    
     <div class="media-body">
         <h3 class="media-heading">
             <a href='<?php echo $nowlink; ?>'>
-                <?php echo $networktitle ?>
+                <?php echo $nettitle ?>
             </a>
         </h3>
-        <?php echo $networkabstract; ?>
+        <div class="nc-md" val="<?php echo $netabstractid; ?>"></div>
+        <?php //echo $networkabstract; ?>
     </div>
 </div>
 

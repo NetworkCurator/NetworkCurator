@@ -1,13 +1,13 @@
 /** 
  * Custom theme for NetworkCurator
  *
- */
+*/
 
- 
+
 /* --------------------------------------------------------------------------
  * General page/body elements
  * -------------------------------------------------------------------------- */
- 
+
 html {
     position: relative;
     min-height: 100%;
@@ -32,7 +32,7 @@ body {
 
 .nc-navbar { 
     min-height:32px; 
- }
+}
 .nc-navbar .navbar-brand { 
     padding: 0px 15px; 
     font-size: inherit;
@@ -43,7 +43,7 @@ body {
     line-height: 32px; 
 }
 .nc-navbar .navbar-text { 
-    padding: 0px 15px;
+    padding: 0px 15px 0px 0px;
     margin: 0px 15px;
     line-height: 32px; 
 }
@@ -134,7 +134,7 @@ form {
     color: inherit;
 }
 
-.admin > a {
+.nc-curator > a {
     color: #d43f3a !important;
 }
 
@@ -161,12 +161,12 @@ hr {
  * -------------------------------------------------------------------------- */
 
 body.dragging, body.dragging * {
-  cursor: move !important;
+    cursor: move !important;
 }
 .dragged {
-  position: absolute;
-  opacity: 0.4;
-  z-index: 1000;
+    position: absolute;
+    opacity: 0.4;
+    z-index: 1000;
 }
 ol.droptarget {
     background-color: #f2f2f2;
@@ -232,13 +232,37 @@ ol {
     font-weight: 600;
     color: #333333;
 }
-.nc-toolbox {
+.nc-log-toolbox {
     padding-left: 14px;
     position: static;
     top: 0px;
     right: 0px;
 }
 
+/* --------------------------------------------------------------------------
+* Curation
+ * -------------------------------------------------------------------------- */
+
+.nc-curation-toolbox-save {
+    margin-left: 24px;
+}
+
+
+/* --------------------------------------------------------------------------
+ * Generic elements of the UI
+ * -------------------------------------------------------------------------- */
+
+.nc-new-nodelink {
+    border: solid #ddd 1px;
+    padding: 0px 22px;
+}
+.nc-new-nodelink .input-group-btn button {
+    width: 100%;
+    border-radius: 4px !important;
+} 
+.nc-new-nodelink .input-group-btn button > .caret {
+    margin-top: 6px;
+}
 
 /* --------------------------------------------------------------------------
  * Generic elements of the UI
@@ -254,3 +278,17 @@ ol {
 .nc-tips b {
     color: #000;
 }
+
+.nc-nav-icon {    
+    line-height: 24px;
+}
+
+#nc-curation-lock {
+
+}
+a.nc-curation-toolbox-close {
+    font-weight: 300;
+}
+
+
+

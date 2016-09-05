@@ -6,25 +6,44 @@
  * Assumes the array $netmeta was already obtained in nc-ui-network
  * 
  */
+
+// re-fetch metadata, this time with extended content
+$netmeta = $NCapi->getNetworkMetadata($network);
 ?>
 
-<h1 class="nc-mt-15"><?php echo $netmeta['network_title']; ?></h1>
 
-<h4 class="nc-mt-10">Curators</h4>
-<?php echo ui_listnames($netmeta['curators']); ?>
-<h4 class="nc-mt-10">Authors</h4>
-<?php echo ui_listnames($netmeta['authors']); ?>
-<h4 class="nc-mt-10">Commentators</h4>
-<?php echo ui_listnames($netmeta['commentators']); ?>
-<hr/>
+<div class="row">
+    <div class="col-sm-8">
+        <h1><div id="nc-network-title" class="nc-editable-text nc-md" 
+                 val="<?php echo $netmeta['network_title_id']; ?>">        
+                     <?php echo $netmeta['network_title']; ?>
+            </div></h1>
 
-<h3 class="nc-mt-10">Abstract</h3>
-<div id="network-abstract" class="nc-mt-10"><?php echo $netmeta['network_abstract']; ?></div>
-<hr/>
+        <h4 class="nc-mt-10">Curators</h4>
+        <?php echo ui_listnames($netmeta['curators']); ?>
+        <h4 class="nc-mt-10">Authors</h4>
+        <?php echo ui_listnames($netmeta['authors']); ?>
+        <h4 class="nc-mt-10">Commentators</h4>
+        <?php echo ui_listnames($netmeta['commentators']); ?>
+        <hr/>
 
-<h3>Description</h3>
-<div id="network-content" class="nc-mt-10"><?php echo $netmeta['network_content']; ?></div>
+        <h3 class="nc-mt-10 nc-mb-10">Abstract</h3>
+        <div id="nc-network-abstract" class="nc-editable-text nc-md"
+             val="<?php echo $netmeta['network_abstract_id']; ?>"></div>
+        <hr/>
 
+        <h3 class="nc-mb-10">Description</h3>
+        <div id="nc-network-content" class="nc-editable-text nc-md" 
+             val="<?php echo $netmeta['network_content_id']; ?>"></div>
+        <hr/>
 
-<hr/>
+        <div id="nc-newcomment"val="<?php echo $uid; ?>"></div>
+    
+    </div>
+</div>
 
+<?php
+foreach (["title", "content", "abstract"] as $i) {
+    $md[$netmeta["network_" . $i . "_id"]] = $netmeta["network_" . $i];
+}
+?>

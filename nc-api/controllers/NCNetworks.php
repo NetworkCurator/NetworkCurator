@@ -110,8 +110,9 @@ class NCNetworks extends NCLogger {
 
         // 5/6, create starting annotations for the title, abstract, contents
         // insert annotation for network name       
-        $nameparams = array('network_id' => $netid, 'user_id' => $uid, 'root_id' => $netid,
-            'parent_id' => $netid, 'anno_level' => NC_NAME, 'anno_text' => $this->_params['network_name']);
+        $nameparams = array('network_id' => $netid, 'user_id' => $uid, 'owner_id' => $uid,
+            'root_id' => $netid, 'parent_id' => $netid, 'anno_level' => NC_NAME,
+            'anno_text' => $this->_params['network_name']);
         $this->insertAnnoText($nameparams);
         // insert annotation for network title
         $titleparams = $nameparams;
@@ -182,17 +183,20 @@ class NCNetworks extends NCLogger {
         $ta = "" . NC_TABLE_ANNOTEXT;
         $tac = $ta . ".anno_level";
         $tat = $ta . ".anno_text";
+        $tai = $ta . ".anno_id";
         $ni = "network_id";
 
         $sql = "
 SELECT $ni,
-    GROUP_CONCAT(name SEPARATOR '') AS network_name,
-    GROUP_CONCAT(title SEPARATOR '') AS network_title,
-    GROUP_CONCAT(abstract SEPARATOR '') AS network_abstract    
+    GROUP_CONCAT(name SEPARATOR '') AS network_name,         
+    GROUP_CONCAT(title SEPARATOR '') AS network_title,    
+    GROUP_CONCAT(abstract SEPARATOR '') AS network_abstract,
+    GROUP_CONCAT(abstract_id SEPARATOR '') AS network_abstract_id        
 FROM (SELECT $tp.$ni AS $ni,
     (CASE WHEN $tac = " . NC_NAME . " THEN $tat ELSE '' END) AS 'name',
     (CASE WHEN $tac = " . NC_TITLE . " THEN $tat ELSE '' END) AS 'title',
-    (CASE WHEN $tac = " . NC_ABSTRACT . " THEN $tat ELSE '' END) AS 'abstract'    
+    (CASE WHEN $tac = " . NC_ABSTRACT . " THEN $tat ELSE '' END) AS 'abstract',
+    (CASE WHEN $tac = " . NC_ABSTRACT . " THEN $tai ELSE '' END) AS 'abstract_id'    
 FROM $ta JOIN $tp ON $ta.$ni = $tp.$ni
     WHERE BINARY $tp.user_id = '$uid' AND $tp.permissions>" . NC_PERM_NONE . "
     AND $ta.anno_status = 1 AND $tac <=" . NC_ABSTRACT . "
@@ -267,26 +271,30 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         $tp = "" . NC_TABLE_PERMISSIONS;
 
         // find the title, abstract, etc
-        $sql = "SELECT network_id, anno_level, anno_text FROM $ta 
+        $sql = "SELECT network_id, anno_id, anno_level, anno_text FROM $ta 
               WHERE BINARY network_id = ? AND root_id = ?
                 AND anno_status = " . NC_ACTIVE . " AND anno_level <= " . NC_CONTENT;
         $stmt = prepexec($this->_db, $sql, [$netid, $netid]);
 
         // record the results into an array that will eventually be output
-        $result = array('network_id'=>$netid);
+        $result = array('network_id' => $netid);
         while ($row = $stmt->fetch()) {
             switch ($row['anno_level']) {
                 case NC_NAME:
                     $result['network_name'] = $row['anno_text'];
+                    $result['network_name_id'] = $row['anno_id'];
                     break;
                 case NC_TITLE:
                     $result['network_title'] = $row['anno_text'];
+                    $result['network_title_id'] = $row['anno_id'];
                     break;
                 case NC_ABSTRACT:
                     $result['network_abstract'] = $row['anno_text'];
+                    $result['network_abstract_id'] = $row['anno_id'];
                     break;
                 case NC_CONTENT:
                     $result['network_content'] = $row['anno_text'];
+                    $result['network_content_id'] = $row['anno_id'];
                     break;
                 default:
                     break;
@@ -323,6 +331,40 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         return $result;
     }
 
+    /**
+     * Fetch title for a given network. This is a short verion of getNetworkMetadata
+     * 
+     * @return array
+     * @throws Exception
+     */
+    public function getNetworkTitle() {
+
+        // find the network id that corresponds to the name
+        $netid = $this->getNetworkId($this->_network);
+        if ($netid == "") {
+            throw new Exception("Network does not exist");
+        }
+
+        // check if user has permission to view the table        
+        if ($this->getUserPermissionsNetID($netid, $this->_uid) < NC_PERM_VIEW) {
+            throw new Exception("Insufficient permission to view the network");
+        }
+
+        $ta = "" . NC_TABLE_ANNOTEXT;
+        // find the title, abstract, etc
+        $sql = "SELECT anno_text FROM $ta 
+              WHERE BINARY network_id = ? AND root_id = ?
+                AND anno_status = " . NC_ACTIVE . " AND anno_level = " . NC_TITLE;
+        $stmt = prepexec($this->_db, $sql, [$netid, $netid]);
+        $result = $stmt->fetch();
+        if (!$result) {
+            throw new Exception("Error fetching network title");
+        }
+
+        // the output is just the title text
+        return $result['anno_text'];
+    }
+
     public function getNetworkActivity() {
 
         $netid = $this->getNetworkId($this->_network);
@@ -350,7 +392,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         // some checks on date-based filtering
         if ((!is_null($startdate) && is_null($enddate)) ||
                 (is_null($startdate) && !is_null($enddate))) {
-            throw new Exception("Invalide date interval");
+            throw new Exception("Invalid date interval");
         }
 
         // query the activity log table
@@ -358,7 +400,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
                 NC_TABLE_ACTIVITY . " WHERE network_id = ? ";
         $sqlorder = "ORDER BY datetime DESC ";
         if (is_null($startdate)) {
-            $sql .= $sqlorder ." LIMIT $limit OFFSET $offset";
+            $sql .= $sqlorder . " LIMIT $limit OFFSET $offset";
             $stmt = prepexec($this->_db, $sql, [$netid]);
         } else {
             $sql .= " WHERE datetime >= ? AND datetime <= ? $sqlorder";

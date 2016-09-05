@@ -14,7 +14,9 @@ try {
     // this case handles situations where the network code is not a valid network name
     $upermissions = 0;
 }
-//echo "uperm: $upermissions";
+
+$iscurator = ($upermissions >= NC_PERM_CURATE);
+$iscommentator = ($upermissions >= NC_PERM_COMMENT);
 
 // if user does not have at least view permissions, redirect
 if (!$upermissions || $upermissions < 1) {
@@ -23,9 +25,10 @@ if (!$upermissions || $upermissions < 1) {
 }
 
 // get network title and description
-$netmeta = $NCapi->getNetworkMetadata($network);
-$netid = $netmeta['network_id'];
-//print_r($netmeta);
+$nettitle = $NCapi->getNetworkTitle($network);
+
+// start making an object with all the markdown components
+$netmd = [];
 
 // get what aspect of the network to view (summary, graph, log, etc)
 $view = 'summary';
@@ -36,15 +39,12 @@ if ($view !== 'graph' && $view !== 'log'
         && $view !== 'permissions' && $view !== "ontology") {
     $view = 'summary';
 }
-?>
 
-
-<?php
 // some helper objects used to insert into the menu
 $coreurl = "?page=network&network=$network&view=";
-$ca = array('summary' => '', 'graph' => '', 'permissions' => '', 'ontology'=>'', 'log' => '');
+$ca = array('summary' => '', 'graph' => '', 'permissions' => '', 'ontology' => '', 'log' => '');
 $ca[$view] = "class='active'";
-if ($upermissions < 4) {
+if ($upermissions < NC_PERM_CURATE) {
     $ca['users'] = "class='hidden'";
     $ca['classes'] = "class='hidden'";
 }
@@ -53,12 +53,15 @@ if ($upermissions < 4) {
     <div class="container">
         <div class="navbar-collapse"> 
             <ul class="nav navbar-nav">  
-                <li class='<?php if ($view=='summary') echo 'active'; ?>'><a href='<?php echo $coreurl . 'summary'; ?>'>Summary</a></li>
-                <li class='<?php if ($view=='graph') echo 'active'; ?>'><a href='<?php echo $coreurl . 'graph'; ?>'>Graph</a></li>                
-                <li class='<?php if ($view=='ontology') echo 'active'; ?>'><a href='<?php echo $coreurl . 'ontology'; ?>'>Ontology</a></li>                
-                <li class='<?php if ($view=='log') echo 'active'; ?>'><a href='<?php echo $coreurl . 'log'; ?>'>Log</a></li>      
-                <li class='admin<?php if ($upermissions < 4) echo " hidden"; if ($view=='permissions') echo ' active';?>'>
+                <li class='<?php if ($view == 'summary') echo 'active'; ?>'><a href='<?php echo $coreurl . 'summary'; ?>'>Summary</a></li>
+                <li class='<?php if ($view == 'graph') echo 'active'; ?>'><a href='<?php echo $coreurl . 'graph'; ?>'>Graph</a></li>                
+                <li class='<?php if ($view == 'ontology') echo 'active'; ?>'><a href='<?php echo $coreurl . 'ontology'; ?>'>Ontology</a></li>                
+                <li class='<?php if ($view == 'log') echo 'active'; ?>'><a href='<?php echo $coreurl . 'log'; ?>'>Log</a></li>      
+                <li class='nc-curator<?php if ($view == 'permissions') echo ' active'; ?>' style="display: none">
                     <a href='<?php echo $coreurl . 'permissions'; ?>'>Permissions</a></li>
+            </ul>
+            <ul class="nav navbar-nav pull-right nc-nav-icon">                
+                <li class="nc-curator" style="display: none"><a role="button" id="nc-curation-lock" class="nc-looking"><i class="fa fa-lock fa-lg fa-fw"></i></a></li>
             </ul>
         </div>
     </div>
@@ -66,25 +69,22 @@ if ($upermissions < 4) {
 
 
 <?php
-// after the menu, include the contents specific
-//echo "<br/>FFF";
+// after the menu, include the contents specific to each view
 include_once "nc-ui/nc-components/ui-network-$view.php";
-//" (".$netid.")"
 ?>
 
 
-
 <script>
+    var nc_uid = '<?php echo $uid; ?>';
+    var nc_curator = <?php echo (int) ($iscurator == true); ?>;
+    var nc_commentator = <?php echo (int) ($iscommentator == true); ?>;
+    var nc_md = <?php echo json_encode($md); ?>;
+    var nc_network = '<?php echo $network ?>';
     $(document).ready(
     function () {           
-        $('#nc-nav-network-title').html('<?php echo $netmeta['network_title']; ?>');
+        $('#nc-nav-network-title').html('<?php echo $nettitle; ?>');        
         $('body').addClass('body2');
-    });
+    });    
+    
 </script>
-
-
-
-
-
-
 

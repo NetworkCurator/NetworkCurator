@@ -11,24 +11,41 @@
  * Output: random string.
  * 
  */
-function makeRandomHexString($stringlength) {
+function makeRandomHexString($stringlength) {    
+    return makeRandomString($stringlength, $okchars="1234567890abcdef");
+}
 
-    // the random string will be composed of hex digits 
-    // (The ! at the end is actually not used in the random character picking)
-    $okchars = "1234567890abcdef!";
+
+/**
+ * Generate a random string composed of characters
+ * 
+ * @param integer $stringlength
+ * @param string $okchars
+ * 
+ * string with characters that are allowed in the output random string. By 
+ * default the string holds alphanumeric characters without vowels. This 
+ * helps avoid 'funny' random string like 'poop'.
+ * 
+ * @return string
+ */
+function makeRandomString($stringlength, $okchars="1234567890bcdfghjklmnpqrstvwxz") {
+
+    // helper object 
     $oklen = strlen($okchars);
 
     // generate random string one character at a time
     $ans = "";
     $anslen = 0;
     while ($anslen < $stringlength) {
-        $temppos = rand(0, $oklen - 2);
+        $temppos = rand(0, $oklen - 1);
         $ans .= substr($okchars, $temppos, 1);
         $anslen++;
     }
 
     return $ans;
 }
+
+
 
 /**
  * Get a string with the username's full name from an array
