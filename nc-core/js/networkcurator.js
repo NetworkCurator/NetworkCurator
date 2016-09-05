@@ -678,8 +678,7 @@ function ncUpdateAnnotationText(annoid) {
     if (typeof nc_network == "undefined") {        
         return;
     }
-    
-    alert("new text: "+nc_md[annoid]);
+        
     // send a request to the server
     $.post(nc_api, 
     {
