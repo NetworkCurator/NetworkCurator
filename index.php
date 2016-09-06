@@ -17,13 +17,20 @@ include_once "nc-api/helpers/GeneralApiCaller.php";
 include_once "nc-api/helpers/nc-generic.php";
 include_once $PP . "/NCApiCaller.php";
 include_once $PP . "/nc-sessions.php";
-//include_once $PP . "/nc-generic.php";
 include_once $UP . "/nc-components.php";
 
 
 // get two common fields from the url
-$page = $_REQUEST['page'];
-$network = $_REQUEST['network'];
+if (isset($_REQUEST['page'])) {
+    $page = $_REQUEST['page'];
+} else {
+    $page = '';
+}
+if (isset($_REQUEST['network'])) {
+    $network = $_REQUEST['network'];
+} else {
+    $network = '';
+}
 
 
 // collect information about the user from the session
@@ -37,7 +44,7 @@ if (!isset($_SESSION['uid'])) {
 }
 $NCapi = new NCApiCaller($uid, $upw);
 $userin = $NCapi->checkLogin();
-if (!$userin) {    
+if (!$userin) {
     $uid = "guest";
 }
 $userip = $_SERVER['REMOTE_ADDR'];
