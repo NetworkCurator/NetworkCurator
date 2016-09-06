@@ -108,9 +108,7 @@ function ncuiClassTreeWidget(netname, classdata, islink, withbuttons) {
     parentsofroot += '</ol>';        
     parentsofroot += ncuiClassForm(rootrow, withbuttons);    
     root.append(parentsofroot);
-     
-    
-    
+             
     // set up drag-drop of classes     
     var oldContainer;
     root.find(".nc-classtree-children").sortable({
@@ -292,7 +290,6 @@ function ncuiClassForm(classrow, withbuttons) {
 }
 
 
-
 /**
  * Create a row in a class tree and insert it into the page
  */
@@ -388,10 +385,10 @@ function ncFormatOneLogEntry(data) {
  * mdconvert - a showdown object use to convert between md and html
  * 
  */
-function ncuiMakeCurationBox(mdconverter) {
+function ncuiMakeAnnoEditBox(mdconverter) {
     
     // write static html to define components of the toolbox
-    var html = '<div><div class="nc-curation-toolbox" style="display: none">';
+    var html = '<div class="nc-curation-box"><div class="nc-curation-toolbox" style="display: none">';
     html += '<a role="button" class="nc-curation-toolbox-md btn btn-sm btn-default" >Edit</a>';
     html += '<a role="button" class="nc-curation-toolbox-preview btn btn-sm btn-default">Preview</a>';    
     html += '<a role="button" class="nc-curation-toolbox-close pull-right">close</a>';
@@ -410,14 +407,15 @@ function ncuiMakeCurationBox(mdconverter) {
         annodiv.find('a.btn-success').show();
     });
     // clicking preview converts textarea md to html, updates the md object in the background
-    toolbox.find('a.nc-curation-toolbox-preview').click(function() {
-        var annodiv = $(this).parent().parent().parent();        
-        var annomd = annodiv.find('textarea').hide().val();              
+    toolbox.find('a.nc-curation-toolbox-preview').click(function() {        
+        var annodiv = $(this).parent().parent().parent();  
+        var textdiv = annodiv.find('textarea');
+        //var textheight = textdiv.height();
+        var annomd = textdiv.hide().val();                      
         nc_md[annodiv.attr("val")] = annomd;        
-        annodiv.find('div.nc-curation-content').html(mdconverter.makeHtml(annomd)).show();        
+        annodiv.find('div.nc-curation-content').html(mdconverter.makeHtml(annomd)).show()      
     });
-    // clicking save sends the md to the server
-    //alert("ll: "+ toolbox.find('a').length);
+    // clicking save sends the md to the server    
     toolbox.find('a.nc-save').click(function() {                
         $(this).parent().find('a.nc-curation-toolbox-preview').click();
         var annoid = $(this).parent().parent().attr("val");        
@@ -430,6 +428,17 @@ function ncuiMakeCurationBox(mdconverter) {
         thisp.hide("normal").find('a.nc-curation-toolbox-preview').click();        
     });
         
+    //var allcontents = ;    
+    toolbox.find('.nc-curation-content').on("click" , function() {       
+        var box = $(this).parent().parent();
+        if (box.hasClass("nc-editable-text-visible")) {
+            box.find('.nc-curation-toolbox').show('normal');
+            box.find('div.nc-curation-content').hide();
+            box.find('textarea').show();
+            box.find('a.nc-save').show();
+        }        
+    });
+        
     return toolbox;
 }
 
@@ -439,19 +448,76 @@ function ncuiMakeCurationBox(mdconverter) {
  * Comments
  * ========================================================================== */
 
-
-function ncuiMakeCommentBox(uid, mdconverter) {
+/**
+ * Creates a box where the user can type in a new comment
+ */
+function ncuiMakeCommentBox(uid, rootid, parentid, commenttext, mdconverter) {
     
     var html = '<div class="media">';
-    html+='<p>Write a new comment</p>';
-    html+='<a class="media-left">'
-    html+= '<img class="media-object" src="'+uid+'.png"></a>';  
-    html+='<div class="media-body"></div></div>'
+    if (commenttext=='') {
+        html += '<p>Write a new comment</p>';
+    }
+    html += '<a class="media-left">'
+    html += '<img class="media-object" src="nc-data/users/'+uid+'.png"></a>';  
+    html += '<div class="media-body"></div></div>'
     
     var commentbox = $(html);
-    commentbox.find('.media-body').append(ncuiMakeCurationBox(mdconverter));
-    commentbox.find('.nc-curation-toolbox').toggle();
-    commentbox.find('.nc-curation-content').toggle();
-    commentbox.find('.nc-curation-toolbox-close').hide();
+    commentbox.find('.media-body').append(ncuiMakeAnnoEditBox(mdconverter));
+    if (commenttext=='') {
+        commentbox.find('.nc-curation-toolbox').toggle();
+        commentbox.find('.nc-curation-content').toggle();
+        commentbox.find('.nc-curation-toolbox-close').hide();
+        // redefine the click event on the  submit button
+        // here, send the 
+        commentbox.find('a.nc-save').off("click").show();
+        commentbox.find('a.nc-save').click(function() {        
+            var annotext = $(this).parent().find("textarea").val();
+            ncCreateNewComment(annotext, rootid, parentid);
+        });
+    }
+    
     return commentbox;    
+}
+
+
+
+function ncuiAddCommentBox(datetime, ownerid, rootid, parentid, annoid, annotext, mdconverter) {
+    var cbox = $('#nc-comments');   
+    
+    var html = '<div class="nc-mb-5"><span class="nc-log-entry-date">'+datetime+'</span>';
+    html += '<span class="nc-log-entry-user">'+ownerid+'</span></div>';    
+    var commentbox = ncuiMakeCommentBox(ownerid, rootid, parentid, annotext, mdconverter);
+    nc_md[annoid] = annotext;
+    commentbox.find('textarea').html(annotext);
+    commentbox.find('.media-body a.nc-curation-toolbox-preview').click();                        
+    commentbox.find('.media-body').prepend(html)
+    .addClass("nc-editable-text").attr("val", annoid);    
+    cbox.append(commentbox);    
+    
+    // when a new comment is added live, the date is null, make animation
+    if (datetime=='just now') {
+        commentbox.hide();    
+        commentbox.show('normal');
+    }
+}
+
+/**
+ * 
+ */
+function ncuiPopulateCommentsBox(comments, mdconverter) {
+    //alert("popcombox");
+    var cbox = $('#nc-comments');
+    var rootid = cbox.attr("rootid");
+    
+    //alert("ppp "+rootid);
+    $.each(comments, function(key, val){                   
+        if (val['parent_id']==rootid) {
+            // first-level comment
+            ncuiAddCommentBox(val['datetime'], val['owner_id'], rootid, val['parent_id'], 
+                val['anno_id'], val['anno_text'], mdconverter);            
+        } else {
+            // sub-comment
+            alert("subcomment");
+        }
+    })
 }

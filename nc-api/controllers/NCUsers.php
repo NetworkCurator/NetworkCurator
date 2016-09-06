@@ -1,5 +1,9 @@
 <?php
 
+$nowdir = dirname(__FILE__);
+include_once $nowdir . "/../helpers/NCIdenticons.php";
+
+//
 /**
  * Class handling requests for user accounts (new user, change permissions, etc.)
  * 
@@ -63,7 +67,7 @@ class NCUsers extends NCLogger {
 
         // check that the network does not already exist?                  
         $sql = "SELECT user_id FROM " . NC_TABLE_USERS . " WHERE user_id = ? ";
-        $stmt = prepexec($this->_db, $sql, ['target_id']);
+        $stmt = prepexec($this->_db, $sql, $this->_params['target_id']);
         if ($stmt->fetchAll()) {
             throw new Exception("Target user id exists");
         }
@@ -83,6 +87,11 @@ class NCUsers extends NCLogger {
             'target_firstname', 'target_middlename', 'target_lastname',
             'target_email', 'target_password', 'target_extpwd']);
         $stmt = prepexec($this->_db, $sql, $pp);
+
+        // create a user identicon        
+        $userimg = new NCIdenticons();
+        $imgfile = dirname(__FILE__) . "/../../nc-data/users/" . $pp['target_id'] . ".png";
+        imagepng($userimg->getIdenticon(), $imgfile);
 
         // log the activity        
         $fullname = ncFullname($this->_params, $prefix = "target_");

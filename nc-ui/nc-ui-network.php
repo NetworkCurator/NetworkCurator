@@ -27,8 +27,9 @@ if (!$upermissions || $upermissions < 1) {
 // get network title and description
 $nettitle = $NCapi->getNetworkTitle($network);
 
-// start making an object with all the markdown components
+// start making an object with all the markdown components, and all the comments
 $netmd = [];
+$netcomments = [];
 
 // get what aspect of the network to view (summary, graph, log, etc)
 $view = 'summary';
@@ -78,7 +79,8 @@ include_once "nc-ui/nc-components/ui-network-$view.php";
     var nc_uid = '<?php echo $uid; ?>';
     var nc_curator = <?php echo (int) ($iscurator == true); ?>;
     var nc_commentator = <?php echo (int) ($iscommentator == true); ?>;
-    var nc_md = <?php echo json_encode($md); ?>;
+    var nc_md = <?php echo json_encode($netmd); ?>;
+    var nc_comments = <?php echo json_encode($netcomments); ?>;
     var nc_network = '<?php echo $network ?>';
     $(document).ready(
     function () {           

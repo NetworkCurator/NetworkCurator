@@ -49,7 +49,7 @@ try {
     $dbroot = new PDO('mysql:host=' . DB_SERVER . ';dbname=' . DB_NAME . ';charset=utf8mb4', DB_ROOT, DB_ROOT_PASSWD);
     $dbroot->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $dbroot->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-   
+
     echo "Dropping existing database:";
     $sql = "DROP DATABASE IF EXISTS " . DB_NAME . " ";
     sqlreport($dbroot, $sql);
@@ -60,7 +60,6 @@ try {
     sqlreport($dbroot, $sql);
 
     $dbroot = null;
-    
 } catch (Exception $e) {
     echo "DROP/CREATE operations failed: " . $e->getMessage();
     echo "\n\n";
@@ -315,6 +314,13 @@ $sql = "INSERT INTO $userstable
             'Guest', '', '', '', 1)";
 sqlreport($db, $sql);
 
+
+// Create an icon for the admin
+$img = imagecreate(48, 48);
+$imgbg = imagecolorallocate($img, 0, 0, 0);
+$imgfile = "../../nc-data/users/admin.png";
+imagepng($img, $imgfile);        
+        
 
 
 /* --------------------------------------------------------------------------

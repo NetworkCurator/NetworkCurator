@@ -37,13 +37,16 @@ $netmeta = $NCapi->getNetworkMetadata($network);
              val="<?php echo $netmeta['network_content_id']; ?>"></div>
         <hr/>
 
-        <div id="nc-newcomment"val="<?php echo $uid; ?>"></div>
-    
+        <div id="nc-comments" rootid="<?php echo $netmeta['network_content_id']; ?>"></div>
+        <hr/>
+        <div id="nc-newcomment" uid="<?php echo $uid; ?>" rootid="<?php echo $netmeta['network_content_id']; ?>"></div>
+
     </div>
 </div>
 
 <?php
+
 foreach (["title", "content", "abstract"] as $i) {
-    $md[$netmeta["network_" . $i . "_id"]] = $netmeta["network_" . $i];
+    $netmd[$netmeta["network_" . $i . "_id"]] = $netmeta["network_" . $i];
 }
 ?>

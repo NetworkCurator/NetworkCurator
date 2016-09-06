@@ -587,7 +587,7 @@ function ncCurationStartup() {
 
     // all users need to have the curation toolbox
     // the toolbox sets up the div that actually displays content.         
-    var toolbox = ncuiMakeCurationBox(nc_m2h);
+    var toolbox = ncuiMakeAnnoEditBox(nc_m2h);
     var alleditable = $('.nc-editable-text');
     alleditable.html(toolbox);
     
@@ -608,20 +608,11 @@ function ncCurationStartup() {
             ncTogglePageEditing();
         });    
 
-    var allcontents = $('.nc-curation-content');    
-    allcontents.on("click" , function() {       
-        var box = $(this).parent().parent();
-        if (box.hasClass("nc-editable-text-visible")) {
-            box.find('.nc-curation-toolbox').show('normal');
-            box.find('div.nc-curation-content').hide();
-            box.find('textarea').show();
-            box.find('a.nc-save').show();
-        }        
-    });
-    alleditable.on("blur" , function() {
-        $(this).find('.nc-curation-toolbox').hide('normal');
-        $(this).find('a.nc-save').hide();
-    });    
+    
+    //alleditable.on("blur" , function() {
+    //    $(this).find('.nc-curation-toolbox').hide('normal');
+    //    $(this).find('a.nc-save').hide();
+    //});    
     $('.nc-curation-toolbox').css("font-size", $('body').css("font-size"));
     
 }
@@ -647,12 +638,12 @@ function ncTogglePageEditing() {
 * within page elements
 */
 function ncShowMarkdown() {   
-    //alert("ncShow");    
+   
     // check if nc_md exists
     if (typeof nc_md == "undefined") {        
         return;
     }
-    //alert("ncShow 2");        
+   
     // convert the nc_md content into html, assign to a target div
     $.each(nc_md, function(key, val) {          
         //alert(key+" "+val);
@@ -702,14 +693,85 @@ function ncUpdateAnnotationText(annoid) {
  * Commenting
  * ========================================================================== */
 
-function ncShowCommentBox() {
+/**
+ * run at startup to show a box where the current user can write a new comment
+ */
+function ncShowNewCommentBox() {
     // check if the user is allowed to comment on the page
     if (!nc_commentator) {
         return;
     }
     
-    $('#nc-newcomment').html(ncuiMakeCommentBox(nc_uid, nc_m2h));
+    var rootid = $('#nc-newcomment').attr('rootid');
+    $('#nc-newcomment').html(ncuiMakeCommentBox(nc_uid, rootid, rootid, '', nc_m2h));
 }
+
+/**
+ * run when user presses "save" and tries to submit a new comment
+ */
+function ncCreateNewComment(annotext, rootid, parentid) {
+        
+    if (typeof nc_network == "undefined") return; 
+    
+    // avoid sending a comment that is too short
+    if (annotext.length<2) exit();        
+
+    // provide click feedback
+    $('#nc-newcomment a.nc-save').removeClass('btn-success').addClass('btn-default')
+    .html('Sending...');
+        
+    // send a request to the server
+    $.post(nc_api, 
+    {
+        controller: "NCAnnotations", 
+        action: "createNewComment", 
+        network_name: nc_network, 
+        root_id: rootid,
+        parent_id: parentid,
+        anno_text: annotext
+    }, function(data) {        
+        ncAlert(data);  
+        data = $.parseJSON(data);
+        if (!data['success']) {  
+            ncMsg("Hey!", "Got error response from server: "+data['data']);            
+        }
+        // provide feedback in the button
+        $('#nc-newcomment a.nc-save').html('Done');        
+        setTimeout(function(){
+            $('#nc-newcomment a.nc-save').addClass('btn-success').removeClass('btn-default').html('Save');
+        }, nc_timeout);         
+        // add the comment to the page
+        ncuiAddCommentBox('just now', nc_uid, rootid, parentid, 
+                data['data'], annotext, nc_m2h);
+        $('#nc-newcomment textarea').val('');
+    });
+
+}
+
+
+/**
+ * run at startup, fetches comments associated with the nc-comments box.
+ */
+function ncLoadComments() {
+        
+    $.post(nc_api, 
+    {
+        controller: "NCAnnotations", 
+        action: "getComments", 
+        network_name: nc_network, 
+        root_id: $('#nc-comments').attr("rootid")
+    }, function(data) {        
+        ncAlert(data);  
+        data = $.parseJSON(data);
+        if (!data['success']) {  
+            ncMsg("Hey!", "Got error response from server: "+data['data']);  
+            exit();
+        }        
+        // populate the comments box with the 
+        ncuiPopulateCommentsBox(data['data'], nc_m2h);        
+    });
+}
+
 
 
 
@@ -743,9 +805,11 @@ $(document).ready(
         // call a function that will perform startup relevant for curating content
         ncCurationStartup();                   
         // perform md markup
-        ncShowMarkdown();   
+        ncShowMarkdown();
+        // fetch all the comments
+        ncLoadComments();
         // display the commenting box
-        ncShowCommentBox();
+        ncShowNewCommentBox();
         // display and initialize the graph
         ncInitGraph();        
     });

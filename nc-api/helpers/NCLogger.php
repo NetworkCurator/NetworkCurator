@@ -115,7 +115,10 @@ class NCLogger {
      * for history tracking only. One row is set at active and is intended 
      * when looking up the current version.
      * 
-     * @param type $params
+     * @param array $params
+     * 
+     * the array should have entries: 
+     * network_id, owner_id, user_id, root_id, parent_id, anno_text, anno_level
      * 
      * @return 
      * 
@@ -151,7 +154,7 @@ class NCLogger {
         }
         $stmt->execute($pp);
         
-        return 1;
+        return $newid;
     }
 
     /**

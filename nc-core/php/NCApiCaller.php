@@ -214,6 +214,16 @@ class NCApiCaller {
         $params['network_name'] = $network;
         return $this->_caller->sendRequest($params);
     }
+    
+    function getComments($network, $rootid) {
+        $params = $this->_p;
+        $params['controller'] = 'NCAnnotations';
+        $params['action'] = 'getComments';
+        $params['network_name'] = $network;
+        $params['root_id'] = $rootid;
+        return $this->_caller->sendRequest($params);
+    }
+    
 }
 
 ?>
