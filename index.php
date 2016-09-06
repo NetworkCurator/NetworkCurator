@@ -17,7 +17,7 @@ include_once "nc-api/helpers/GeneralApiCaller.php";
 include_once "nc-api/helpers/nc-generic.php";
 include_once $PP . "/NCApiCaller.php";
 include_once $PP . "/nc-sessions.php";
-include_once $PP . "/nc-generic.php";
+//include_once $PP . "/nc-generic.php";
 include_once $UP . "/nc-components.php";
 
 
