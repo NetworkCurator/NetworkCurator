@@ -190,8 +190,10 @@ class NCOntology extends NCLogger {
         $stmt = prepexec($this->_db, $sql, $pp);
 
         // create an annotation entry (registers the name of the class)         
-        $pp = ['network_id' => $this->_netid, 'user_id' => $this->_uid, 'root_id' => $newid,
-            'parent_id' => $newid, 'anno_text' => $newname, 'anno_level' => NC_NAME];
+        $pp = ['network_id' => $this->_netid, 
+            'owner_id'=>$this->_uid, 'user_id' => $this->_uid, 
+            'root_id' => $newid, 'parent_id' => $newid, 
+            'anno_text' => $newname, 'anno_level' => NC_NAME];
         $this->insertAnnoText($pp);
 
         // log the activity

@@ -365,6 +365,13 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         return $result['anno_text'];
     }
 
+    /**
+     * get an array with a summary of activity relevant to a network
+     * 
+     * @return array
+     * 
+     * @throws Exception
+     */
     public function getNetworkActivity() {
 
         $netid = $this->getNetworkId($this->_network);
