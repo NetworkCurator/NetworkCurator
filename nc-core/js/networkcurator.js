@@ -754,12 +754,18 @@ function ncCreateNewComment(annotext, rootid, parentid) {
  */
 function ncLoadComments() {
         
+    // find out if this page has a space for comments
+    var cbox = $('#nc-comments');
+    if (cbox.length==0) {
+        exit();
+    }
+        
     $.post(nc_api, 
     {
         controller: "NCAnnotations", 
         action: "getComments", 
         network_name: nc_network, 
-        root_id: $('#nc-comments').attr("rootid")
+        root_id: cbox.attr("rootid")
     }, function(data) {        
         ncAlert(data);  
         data = $.parseJSON(data);
