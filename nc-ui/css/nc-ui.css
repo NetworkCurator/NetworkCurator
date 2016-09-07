@@ -149,12 +149,6 @@ form {
 }
 
 
-/**
-hr {  
-    border-top: 1px solid #333333;    
-}
-*/
-
 
 /* --------------------------------------------------------------------------
  * Class tree structures
@@ -274,8 +268,23 @@ ol {
 .nc-curation-box textarea {
     margin-bottom: 6px;
 }
-
-
+a.nc-comment-response {
+    color: #777;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+.media {
+    padding-top: 8px;
+    padding-bottom: 8px;    
+}
+img.nc-comment-primary {
+    height: 48p;
+    width: 48px;
+}
+img.nc-comment-response {
+    height: 32p;
+    width: 32px;
+}
 
 /* --------------------------------------------------------------------------
  * Generic elements of the UI

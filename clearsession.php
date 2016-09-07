@@ -2,7 +2,7 @@
 
 echo "signing out<br/>";
 
-include_once "php/nc-sessions.php";
+include_once "nc-core/php/nc-sessions.php";
 ncSignout();
 
 echo "complete";

@@ -37,9 +37,9 @@ $netmeta = $NCapi->getNetworkMetadata($network);
              val="<?php echo $netmeta['network_content_id']; ?>"></div>
         <hr/>
 
-        <div id="nc-comments" rootid="<?php echo $netmeta['network_content_id']; ?>"></div>
+        <div id="nc-comments" class="media-body" val="<?php echo $netmeta['network_content_id']; ?>"></div>        
         <hr/>
-        <div id="nc-newcomment" uid="<?php echo $uid; ?>" rootid="<?php echo $netmeta['network_content_id']; ?>"></div>
+        <div class="nc-mt-10" id="nc-newcomment" uid="<?php echo $uid; ?>" val="<?php echo $netmeta['network_content_id']; ?>"></div>
 
     </div>
 </div>

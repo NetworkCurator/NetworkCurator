@@ -179,7 +179,7 @@ class NCLogger {
                
         // prepare a statement setting all anno_status to disabled for a given anno_id
         $sql = "UPDATE $tat SET 
-                          datetime = UTC_TIMESTAMP(), user_id = :user_id,
+                          user_id = :user_id,
                           root_id = :root_id, parent_id = :parent_id,
                           anno_text = :anno_text
                 WHERE network_id = :network_id AND anno_id = :anno_id 

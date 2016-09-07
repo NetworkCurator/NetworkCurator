@@ -64,7 +64,7 @@ function ncCheckString(x, type) {
     var xlen = x.length;
     if (type>=0) {
         if (xlen<2) return 0;    
-        if (type==3 && xlen<8) return 0;            
+        if (type==3 && xlen<7) return 0;            
     }
     for (var i=0; i<xlen; i++) {        
         if (ok.indexOf(x[i])<0) return 0; 
@@ -586,10 +586,10 @@ function ncLoadActivityPage(netname, pagenum, pagelen) {
 function ncCurationStartup() {
 
     // all users need to have the curation toolbox
-    // the toolbox sets up the div that actually displays content.         
+    // the toolbox sets up the div that actually displays content.     
     var toolbox = ncuiMakeAnnoEditBox(nc_m2h);
-    var alleditable = $('.nc-editable-text');
-    alleditable.html(toolbox);
+    var alleditable = $('.nc-editable-text');    
+    alleditable.html(toolbox);    
     
     // other functions are for curators only    
     if (!nc_curator) {
@@ -607,14 +607,8 @@ function ncCurationStartup() {
             lockbtn.toggleClass("nc-editing nc-looking");
             ncTogglePageEditing();
         });    
-
-    
-    //alleditable.on("blur" , function() {
-    //    $(this).find('.nc-curation-toolbox').hide('normal');
-    //    $(this).find('a.nc-save').hide();
-    //});    
-    $('.nc-curation-toolbox').css("font-size", $('body').css("font-size"));
-    
+          
+    $('.nc-curation-toolbox').css("font-size", $('body').css("font-size"));   
 }
 
 function ncTogglePageEditing() {
@@ -664,11 +658,11 @@ function ncShowMarkdown() {
 * Uses nc_network - network name in global variable
 * Uses nc_md - array of md components 
 */
-function ncUpdateAnnotationText(annoid) {
+function ncUpdateAnnotationText(annoid, annomd) {
     
     if (typeof nc_network == "undefined") {        
         return;
-    }
+    }    
         
     // send a request to the server
     $.post(nc_api, 
@@ -677,7 +671,7 @@ function ncUpdateAnnotationText(annoid) {
         action: "updateAnnotationText", 
         network_name: nc_network,
         anno_id: annoid,
-        anno_text: nc_md[annoid]
+        anno_text: annomd
     }, function(data) {        
         ncAlert(data);  
         data = $.parseJSON(data);
@@ -702,23 +696,25 @@ function ncShowNewCommentBox() {
         return;
     }
     
-    var rootid = $('#nc-newcomment').attr('rootid');
-    $('#nc-newcomment').html(ncuiMakeCommentBox(nc_uid, rootid, rootid, '', nc_m2h));
+    var rootid = $('#nc-newcomment').attr('val');
+    $('#nc-newcomment').html(ncuiMakeCommentBox(nc_uid, rootid, rootid, '', '', nc_m2h));
 }
 
 /**
  * run when user presses "save" and tries to submit a new comment
  */
-function ncCreateNewComment(annotext, rootid, parentid) {
+function ncCreateNewComment(annomd, rootid, parentid) {
         
     if (typeof nc_network == "undefined") return; 
     
     // avoid sending a comment that is too short
-    if (annotext.length<2) exit();        
+    if (annomd.length<2) exit();        
 
     // provide click feedback
     $('#nc-newcomment a.nc-save').removeClass('btn-success').addClass('btn-default')
     .html('Sending...');
+        
+    alert("creating: "+rootid+" "+parentid+" "+annomd);
         
     // send a request to the server
     $.post(nc_api, 
@@ -728,7 +724,7 @@ function ncCreateNewComment(annotext, rootid, parentid) {
         network_name: nc_network, 
         root_id: rootid,
         parent_id: parentid,
-        anno_text: annotext
+        anno_text: annomd
     }, function(data) {        
         ncAlert(data);  
         data = $.parseJSON(data);
@@ -742,7 +738,10 @@ function ncCreateNewComment(annotext, rootid, parentid) {
         }, nc_timeout);         
         // add the comment to the page
         ncuiAddCommentBox('just now', nc_uid, rootid, parentid, 
-                data['data'], annotext, nc_m2h);
+            data['data'], annomd, nc_m2h);
+        if (rootid!=parentid) {
+            $('.media-body .media[val=""]').hide();    
+        }
         $('#nc-newcomment textarea').val('');
     });
 
@@ -765,7 +764,7 @@ function ncLoadComments() {
         controller: "NCAnnotations", 
         action: "getComments", 
         network_name: nc_network, 
-        root_id: cbox.attr("rootid")
+        root_id: cbox.attr("val")
     }, function(data) {        
         ncAlert(data);  
         data = $.parseJSON(data);
