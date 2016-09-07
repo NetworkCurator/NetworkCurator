@@ -495,8 +495,7 @@ function ncuiMakeCommentBox(uid, rootid, parentid, annoid, annomd, mdconverter) 
             var responsebox = ncuiMakeCommentBox(nc_uid, rootid, annoid, '', '', mdconverter);            
             $(this).hide().parent().append(responsebox);
             responsebox.find('a.nc-save').off("click").show();
-            responsebox.find('a.nc-save').click(function() {
-                alert("in this type of create");                
+            responsebox.find('a.nc-save').click(function() {                
                 var annotext = $(this).parent().find("textarea").val();
                 ncCreateNewComment(annotext, rootid, annoid);
             })
