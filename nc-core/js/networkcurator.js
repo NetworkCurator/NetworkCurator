@@ -714,8 +714,6 @@ function ncCreateNewComment(annomd, rootid, parentid) {
     $('#nc-newcomment a.nc-save').removeClass('btn-success').addClass('btn-default')
     .html('Sending...');
         
-    alert("creating: "+rootid+" "+parentid+" "+annomd);
-        
     // send a request to the server
     $.post(nc_api, 
     {
