@@ -1,11 +1,26 @@
 /* 
- * networkcurator-ui.js
+ * nc-ui.js
  * 
- * Javascript functions for NetworkCurator that generate ui elements,
- * for example widgets for user permissions
+ * Functions that generate ui elements/widgets. 
+ * In some cases the widgets come with events/methods. 
  * 
  * 
  */
+
+if (typeof nc == "undefined") {
+    throw new Error("nc is undefined");
+}
+nc.ui = {};
+
+
+
+/* ==========================================================================
+ * Constants that determine user experience
+ * ========================================================================== */
+
+// timeout used when animating some
+nc.ui.timeout = 4000;
+
 
 
 /* ==========================================================================
@@ -14,13 +29,12 @@
 
 /**
  * create html with a form for updating user permissions
- * 
- * netname - string with network name
- * udata - json encoded array, each element should be an object describing 
+ *  
+ * @param udata - json encoded array, each element should be an object describing 
  * one user
  */
-function ncuiPermissionsWidget(netname, udata) {
-        
+nc.ui.PermissionsWidget = function(udata) {
+            
     // internal function for making a button
     // val - 0-3 determines label on the button
     // uid - the user id (used to disactivate some buttons for the guest user)
@@ -44,31 +58,36 @@ function ncuiPermissionsWidget(netname, udata) {
         return html;
     }
          
-    var ans = '';
-    $.each(udata, function(key, val){        
+    var ans = $('<div></div>');
+    $.each(udata, function(key, val){ 
+        
         var uid = val['user_id'];        
         var up = val['permissions'];        
-        var nowlab = uid;        
+        var nowlab = uid;                
         if (uid != "guest") {            
             nowlab += " ("+val['user_firstname']+" "+val['user_middlename']+" "+val['user_lastname']+")";
         }
         
         // structure will be form > form-group with (label, btn-group, btn)
-        var html = '<form id="ncf-permissions-'+ uid+'" class="form-inline nc-form-permissions" onsubmit="return false;">';        
-        html += '<div class="form-group" id="ncfg-permissions-'+uid+'" style="width:100%">';
+        var html = '<form class="form-inline nc-form-permissions" val="'+uid+'" onsubmit="return false;">';        
+        html += '<div class="form-group" style="width:100%">';
         html += '<label class="col-form-label nc-fg-name">'+nowlab+'</label>';
         html += '<div class="btn-group" data-toggle="buttons">';                
         for (var pp=0; pp<5; pp++) 
             html += ncuiPB(pp, uid, up);   
         html += '</div>'; // closes the btn-group
-        html += '<button class="btn btn-success" ';
-        html += 'onclick="javascript:ncUpdatePermissions(\''+netname+ '\' , \''+uid+'\'); return false;">';
-        html += 'Update</button></div></form>';                
+        html += '<button class="btn btn-success" val="'+uid+'">Update</button>';        
+        html += '</div></form>';                
+        
+        html = $(html);
+        html.find('button').click(function() { 
+            nc.users.updatePermissions(uid); 
+        });
         
         // append to the main answer
-        ans += html;
+        ans.append(html);
     });        
-        
+                
     return ans;                            
 }
       
@@ -86,8 +105,8 @@ function ncuiPermissionsWidget(netname, udata) {
  * readonly - boolean, true to simplify the tree and avoid editing buttons 
  * 
  */
-function ncuiClassTreeWidget(netname, classdata, islink, withbuttons) {
-        
+nc.ui.ClassTreeWidget = function(classdata, islink) {
+                    
     // get the root div for the treee
     var root = $('#nc-ontology-nodes');    
     if (islink) {
@@ -106,9 +125,9 @@ function ncuiClassTreeWidget(netname, classdata, islink, withbuttons) {
     var parentsofroot = '<ol class="nc-classtree-children" val="">'; 
     //rootrow['class_name']='';    
     parentsofroot += '</ol>';        
-    parentsofroot += ncuiClassForm(rootrow, withbuttons);    
+    parentsofroot += nc.ui.ClassForm(rootrow);    
     root.append(parentsofroot);
-             
+        
     // set up drag-drop of classes     
     var oldContainer;
     root.find(".nc-classtree-children").sortable({
@@ -133,18 +152,17 @@ function ncuiClassTreeWidget(netname, classdata, islink, withbuttons) {
     });
      
     // populate the ontology tree
-    $.each(classdata, function(key, val){        
-        // here val holds a record for a class, create a class entry            
-        ncAddClassTreeChild(val, withbuttons);          
+    $.each(classdata, function(key, val){                
+        nc.ui.addClassTreeRow(val);          
     });
-        
+                
     // create functions that respond to events on the tree
     // submitting a new class
     root.delegate("form.nc-classcreate", "submit", function() {
         var parentid=$(this).attr('val');        
         var newclassname = $(this).find("input").val();            
         var isdirectional = +$(this).find("input.form-check-input").is(":checked");        
-        ncCreateNewClass(netname, parentid, newclassname, islink, isdirectional); 
+        nc.ontology.createClass(parentid, newclassname, islink, isdirectional); 
     });  
     // clicking to edit an existing class
     root.delegate("div.nc-classdisplay button[val='edit']", "click", function() {                        
@@ -160,7 +178,7 @@ function ncuiClassTreeWidget(netname, classdata, islink, withbuttons) {
     // clicking to remove a class
     root.delegate("div.nc-classdisplay button[val='remove']", "click", function() {                                
         var classid = $(this).parent().attr('val');                      
-        ncRemoveClass(netname, classid)
+        nc.ontology.removeClass(classid);
     });
     // clicking to cancel updating an existing class
     root.delegate("form.nc-classupdate .nc-btn-class-cancel", "click", function() {                                
@@ -176,7 +194,7 @@ function ncuiClassTreeWidget(netname, classdata, islink, withbuttons) {
         var newclassname = thisform.find("input").val();            
         var islink = thisform.find("input.form-check-input").length>0;
         var isdirectional = 0+thisform.find("input.form-check-input").is(":checked");        
-        ncUpdateClassProperties(netname, classid, newclassname, parentid, islink, isdirectional);        
+        nc.ontology.updateClassProperties(classid, newclassname, parentid, islink, isdirectional);        
         root.find("div.nc-classdisplay[val='"+classid+"']").toggle();
         root.find("form.nc-classupdate[val='"+classid+"']").toggle();                
     });    
@@ -191,12 +209,14 @@ function ncuiClassTreeWidget(netname, classdata, islink, withbuttons) {
 /**
  * Creates one row in a class tree
  * Row consists of a div with a label and a div below that will hold children
+ * 
+ * @param classrow - array with components class_id, etc. (see ClassForm)
  */
-function ncuiClassTreeRowWidget(classrow, withbuttons) {
+nc.ui.ClassTreeRowWidget = function(classrow) {
     
     // create objects for displaying, editing, and adding subclasses
-    var adisplay = ncuiClassDisplay(classrow, withbuttons);    
-    var aform = ncuiClassForm(classrow, withbuttons);
+    var adisplay = nc.ui.ClassDisplay(classrow);    
+    var aform = nc.ui.ClassForm(classrow);
     var achildren = '<ol class="nc-classtree-children" val="'+classrow['class_id']+'"></ol>';       
     
     // create the widget from the components
@@ -205,27 +225,22 @@ function ncuiClassTreeRowWidget(classrow, withbuttons) {
 
 
 /**
- * Creates html that makes up the one row in the classtree (when viewing only)
+ * Creates html displays one row in the classtree (when viewing only)
  * 
- * classrow - array with details on this class
- * withbuttons - logical, set true to display buttons on the RHS.
+ * @param classrow - array with details on this class 
  * 
  */
-function ncuiClassDisplay(classrow, withbuttons) {
-    
-    var classid = classrow['class_id'];
-    var classname = classrow['class_name'];    
-    var directional = +classrow['directional'];
-    
+nc.ui.ClassDisplay = function(classrow) {
+        
     // create a div with one label (possible a directional comment) and one button
-    var fg = '<div val="'+classid+'" class="nc-classdisplay"><span class="nc-classdisplay-span">'+classname+'</span>';
+    var fg = '<div val="'+classrow['class_id']+'" class="nc-classdisplay"><span class="nc-classdisplay-span">'+classrow['class_name']+'</span>';
     // forms for links include a checkbox for directional links    
     fg += '<span class="nc-classdisplay-span nc-directional">';
-    if (directional) {
+    if (+classrow['directional']) {
         fg+= ' (directional)';
     }
     fg+='</span>';     
-    if (withbuttons) {
+    if (nc.curator) {
         fg += '<button val="remove" class="pull-right btn btn-primary btn-sm nc-btn-remove">Remove</button>';           
         fg += '<button val="edit" class="pull-right btn btn-primary btn-sm nc-btn-edit">Edit</button>';   
         fg += '<button val="move" class="pull-right btn btn-primary btn-sm nc-btn-move">Move</button>';       
@@ -242,9 +257,9 @@ function ncuiClassDisplay(classrow, withbuttons) {
  * islink, isdirectional - settings for link class configuration
  * classname - name of existing class (or empty if new class)
  */
-function ncuiClassForm(classrow, withbuttons) {
+nc.ui.ClassForm = function(classrow) {
     
-    if (!withbuttons) {
+    if (!nc.curator) {
         return "";
     }
     
@@ -293,8 +308,8 @@ function ncuiClassForm(classrow, withbuttons) {
 /**
  * Create a row in a class tree and insert it into the page
  */
-function ncAddClassTreeChild(classrow, withbuttons) {  
-    
+nc.ui.addClassTreeRow = function(classrow) {  
+         
     // find the root of the relevant tree    
     var root = $('#nc-ontology-nodes');    
     if (+classrow['connector']) {        
@@ -306,7 +321,7 @@ function ncAddClassTreeChild(classrow, withbuttons) {
     var targetdiv = root.find('ol.nc-classtree-children[val="'+parentid+'"]');            
     
     // create the widget for this class
-    var newobj = $(ncuiClassTreeRowWidget(classrow, withbuttons));
+    var newobj = $(nc.ui.ClassTreeRowWidget(classrow));
     newobj.hide();
     
     // figure out whether to insert before the form or at the end    
@@ -330,36 +345,34 @@ function ncAddClassTreeChild(classrow, withbuttons) {
 /**
  * Create a toolbar for the activity log
  */
-function ncBuildActivityLogToolbar(netname, logsize) {
-    //alert("here");
+nc.ui.ActivityLogToolbar = function(logsize, pagelen) {    
     var html = '<ul class="pagination">';
-    var numpages = logsize/50;
+    var numpages = logsize/pagelen;
     
     for (var i=0; i<numpages; i++) {
-        html += '<li value='+i+'><a href="javascript:ncLoadActivityPage(\''+netname+'\', '+i+', '+50+')">'+(i+1)+'</a></li>';
+        html += '<li value='+i+'><a href="javascript:nc.loadActivity('+i+', '+pagelen+')">'+(i+1)+'</a></li>';
     }
-    html += '</ul>';
-        
-    $('#nc-activity-log-toolbar').append(html);           
-    ncLoadActivityPage(netname, 0, 50);
+    html += '</ul><div id="nc-log-contents"></div>';
+     
+    return(html);     
 }
 
 /**
- * data - an array of arrays
+ * @param data - an array of arrays
  * each element in array should hold data on one row in the log table
  */
-function ncPopulateActivityArea(data) {
+nc.ui.populateActivityArea = function(data) {
     var ans = '';
     $.each(data, function(key, val){        
-        ans += ncFormatOneLogEntry(val);
-    });
-    $('#nc-activity-log').html(ans);
+        ans += nc.ui.OneLogEntry(val);
+    });    
+    $('#nc-log-contents').html(ans);
 }
 
 /**
  * Provides html to write out one line in the log table
  */
-function ncFormatOneLogEntry(data) {
+nc.ui.OneLogEntry = function(data) {
     var html = '<div class="media nc-log-entry">';    
     html += '<span class="nc-log-entry-date">'+data['datetime']+' </span>';
     html+= '<span class="nc-log-entry-user">'+data['user_id']+' </span>';
@@ -372,6 +385,43 @@ function ncFormatOneLogEntry(data) {
     return html;    
 }
 
+
+
+/* ==========================================================================
+ * Generic, i.e. small-scale widgets
+ * ========================================================================== */
+
+/**
+ * Create a button with a dropdown list
+ */
+nc.ui.DropdownButton=function(atype, aa, aval) {
+        
+    var caret = '<span class="caret"></span>';
+    
+    var html = '<div class="btn-group nc-toolbar-group nc-toolbar-group-new" role="group">';    
+    html += '<div class="btn-group" role="group">';        
+    html += '<button class="btn btn-primary dropdown-toggle" val="'+aval+'" data-toggle="dropdown">'+atype+' [None] '+caret+'</button>';  
+    html += '<ul class="dropdown-menu">';
+    for (var i in aa) {
+        html += '<li><a href="#">' + aa[i] + '</a></li>'
+    }
+    html += '</ul>';
+    html += '</div></div>'; // this closes dropdown and btn-group
+    
+    // create object
+    var dropb = $(html);
+    
+    // attach handlers for the dropdown links
+    dropb.find("a").click(function() {
+        // find the text and add it
+        var nowoption = $(this).html();        
+        var p4 = $(this).parent().parent().parent().parent();
+        p4.find('button.dropdown-toggle').html(atype+' '+nowoption + caret);
+        p4.find('button').addClass('active');
+    });       
+    
+    return dropb;
+}
 
 
 
@@ -389,7 +439,7 @@ function ncFormatOneLogEntry(data) {
  * mdconvert - a showdown object use to convert between md and html
  *
  */
-function ncuiMakeAnnoEditBox(mdconverter) {
+nc.ui.AnnoEditBox = function() {
         
     // write static html to define components of the toolbox
     var html = '<div class="nc-curation-box">';
@@ -453,7 +503,7 @@ function ncuiMakeAnnoEditBox(mdconverter) {
  * ========================================================================== */
 
 /**
- * Creates a box where the user can type in a new comment
+ * Creates a box to display a comment or type in a comment
  */
 function ncuiMakeCommentBox(uid, rootid, parentid, annoid, annomd, mdconverter) {
     

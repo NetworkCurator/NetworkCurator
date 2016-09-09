@@ -75,13 +75,13 @@ include_once "nc-ui/nc-components/ui-network-$view.php";
 ?>
 
 
-<script>
-    var nc_uid = '<?php echo $uid; ?>';
-    var nc_curator = <?php echo (int) ($iscurator == true); ?>;
-    var nc_commentator = <?php echo (int) ($iscommentator == true); ?>;
-    var nc_md = <?php echo json_encode($netmd); ?>;
-    var nc_comments = <?php echo json_encode($netcomments); ?>;
-    var nc_network = '<?php echo $network ?>';
+<script>    
+<?php
+echo 'nc.curator =' . (int) ($iscurator == true) . ';';
+echo 'nc.commentator = ' . (int) ($iscommentator == true) . ';';
+echo 'nc.md = ' . json_encode($netmd) . ';';
+echo 'nc.comments = ' . json_encode($netcomments) . ';';
+?>;
     $(document).ready(
     function () {           
         $('#nc-nav-network-title').html('<?php echo $nettitle; ?>');        

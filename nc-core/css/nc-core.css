@@ -1,0 +1,125 @@
+/* 
+ * networkcurator.css
+ *
+ * CSS for NetworkCurator (extends bootstrap.css)
+ *
+*/
+
+
+/*
+ * some classes that add some margin at the top of an element
+*/
+.nc-mt-5 { margin-top: 0.5em; }
+.nc-mt-10 { margin-top: 1.0em; }
+.nc-mt-15 { margin-top: 1.5em; }
+.nc-mt-20 { margin-top: 2.0em; }
+.nc-mb-5 { margin-bottom: 0.5em; }
+.nc-mb-10 { margin-bottom: 1.0em; }
+.nc-mb-15 { margin-bottom: 1.5em; }
+.nc-mb-20 { margin-bottom: 2.0em; }
+
+
+/**
+ * editifiers for features accessible only to curators
+ */
+.nc-curator > a {
+    color: #d43f3a !important;
+}
+
+/*
+ * definitions defining editable elements
+ */
+.nc-editable-text-visible {
+    background-color: #f2f2f2;
+    border: 1px dashed #bbbbbb;
+    margin: -7px -7px; 
+    padding: 6px 6px;
+}
+
+.nc-curation-toolbox {    
+    margin-bottom: 0.5em;
+}
+textarea.nc-curation-content {
+    width: 100%;
+    height: 100%;
+}
+
+
+/* --------------------------------------------------------------------------
+ * Activity log
+ * -------------------------------------------------------------------------- */
+
+#nc-log-contents {
+    margin-top: 1em;
+}
+.media.nc-log-entry {
+    margin-top: 0;
+    padding-top: 4px;
+    padding-bottom: 6px;    
+}
+.nc-log-entry-date {
+    padding-right: 6px;
+    color: #777777;
+}
+
+.nc-log-entry-user, .nc-log-entry-target {
+    font-weight: 600;
+    color: #333333;
+}
+.nc-log-toolbox {
+    padding-left: 14px;
+    position: static;
+    top: 0px;
+    right: 0px;
+}
+
+/* --------------------------------------------------------------------------
+ * Graph editor
+ * -------------------------------------------------------------------------- */
+
+svg {
+    height: 100%;
+    width: 100%;
+}
+#nc-graph-svg-container {
+    border: #ddd solid 1px;    
+    padding: 0 0 0 0;
+    resize: vertical;
+    overflow: hidden;
+    height: 480px;
+}
+textarea {
+    resize: vertical;
+    overflow: auto;
+}
+
+/* --------------------------------------------------------------------------
+ * Graph editor
+ * -------------------------------------------------------------------------- */
+
+.nc-nav-img {
+    width: 20px;
+    height: 20px;
+    margin-top: -2px;
+}
+
+/* --------------------------------------------------------------------------
+ * Graph editor
+ * -------------------------------------------------------------------------- */
+
+#nc-graph-toolbar {
+    margin-bottom: 8px;
+}
+.nc-toolbar-group {
+    margin-right: 8px;
+}
+.nc-toolbar-group-new button {
+    width: 94px;
+}
+.nc-toolbar-group-new button.dropdown-toggle {
+    width: 200px;
+}
+.nc-toolbar-group span.caret {
+    margin-left: 6px;
+}
+

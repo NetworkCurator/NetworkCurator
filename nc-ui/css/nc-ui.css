@@ -217,21 +217,7 @@ ol {
  * Activity log
  * -------------------------------------------------------------------------- */
 
-.nc-log-entry-date {
-    padding-right: 6px;
-    color: #777777;
-}
 
-.nc-log-entry-user, .nc-log-entry-target {
-    font-weight: 600;
-    color: #333333;
-}
-.nc-log-toolbox {
-    padding-left: 14px;
-    position: static;
-    top: 0px;
-    right: 0px;
-}
 
 /* --------------------------------------------------------------------------
 * Curation
@@ -278,12 +264,12 @@ a.nc-comment-response {
     padding-bottom: 8px;    
 }
 img.nc-comment-primary {
-    height: 48p;
-    width: 48px;
+    height: 40p;
+    width: 40px;
 }
 img.nc-comment-response {
-    height: 32p;
-    width: 32px;
+    height: 30p;
+    width: 30px;
 }
 
 /* --------------------------------------------------------------------------

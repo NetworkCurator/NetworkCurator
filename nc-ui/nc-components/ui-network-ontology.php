@@ -10,6 +10,8 @@
 // get all the classes for the network
 $nodeclasses = $NCapi->getNodeClasses($network);
 $linkclasses = $NCapi->getLinkClasses($network);
+
+
 ?>
 
 <div class="row">
@@ -20,19 +22,14 @@ $linkclasses = $NCapi->getLinkClasses($network);
         <h3 class="nc-mt-15">Links</h3>
         <div id="nc-ontology-links" class="nc-ontology-tree">
         </div>
-
-        <script>  
+    
 <?php
-echo "var network_name='$network'; ";
-echo "var nc_node_classes=" . json_encode($nodeclasses) . ";";
-echo "var nc_link_classes=" . json_encode($linkclasses) . ";";
+echo "<script>";
+echo "nc.ontology.nodes=" . json_encode($nodeclasses) . ";";
+echo "nc.ontology.links=" . json_encode($linkclasses) . ";";
+echo "</script>";
 ?>                            
-    $(document).ready(
-    function () {                                               
-        $('#nc-ontology-nodes').html(ncuiClassTreeWidget('<?php echo $network ?>', nc_node_classes, false, <?php echo $iscurator; ?>));                
-        $('#nc-ontology-links').html(ncuiClassTreeWidget('<?php echo $network; ?>', nc_link_classes, true, <?php echo $iscurator; ?>));                          
-    });            
-        </script>
+
 
     </div>
 
@@ -47,8 +44,7 @@ if (!$iscurator) {
             <p>Click the <b>Move</b> button and drag to build a hierarchy of classes. 
                 Then use the <b>Edit/Update</b> button to register the changes in the database.</p>
             <p>Use the <b>Edit/Update</b> button to change the name associated with a node/link class.</p>        
-            <p>Click and hold the <b>Remove</b> button to deprecate a given class.</p>
-            <p><b>Reload</b> the page to abandon changes and start again.</p>        
+            <p>Click the <b>Remove</b> button to deprecate a given class.</p>            
         </div>
     </div>
 </div>

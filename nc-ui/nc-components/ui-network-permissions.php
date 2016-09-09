@@ -32,8 +32,7 @@ if ($ispublic === false) {
 $guestusers = array('guest' => $guestuser);
 ?>
 
-<h1 class="nc-mt-5">Configuration for network <?php echo $network; ?></h1>
-
+<!-- <h1 class="nc-mt-5">Configuration for network <?php echo $network; ?></h1> -->
 
 <div class="row">
     <div class="col-sm-12">
@@ -46,15 +45,9 @@ $guestusers = array('guest' => $guestuser);
 
         <script>  
         <?php
-        echo "var nc_permissions_guest=" . json_encode($guestusers) . ";";
-        echo "var nc_permissions_users=" . json_encode($netusers) . ";";
-        ?>                            
-        $(document).ready(
-        function () {                   
-            $('#nc-permissions-guest').html(ncuiPermissionsWidget('<?php echo $network ?>', nc_permissions_guest));                
-            $('#nc-permissions-users').html(ncuiPermissionsWidget('<?php echo $network; ?>', nc_permissions_users));                          
-            ncDisabledClick('.btn-group');
-        });            
+        echo "nc.permissions.guest=" . json_encode($guestusers) . ";";
+        echo "nc.permissions.users=" . json_encode($netusers) . ";";
+        ?>                                            
         </script>
 
         <h3 class="nc-mt-15">Add users to the network</h3>

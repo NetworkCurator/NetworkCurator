@@ -321,6 +321,12 @@ $imgbg = imagecolorallocate($img, 0, 0, 0);
 $imgfile = "../../nc-data/users/admin.png";
 imagepng($img, $imgfile);        
         
+// Create an icon for the guest
+$img = imagecreate(48, 48);
+$imgbg = imagecolorallocate($img, 127, 127, 127);
+$imgfile = "../../nc-data/users/guest.png";
+imagepng($img, $imgfile);        
+
 
 
 /* --------------------------------------------------------------------------

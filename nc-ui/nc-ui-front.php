@@ -54,7 +54,7 @@ $md = [];
 
 <script>
 <?php
-echo "var nc_md=" . json_encode($md) . ";";
+echo "var nc.md=" . json_encode($md) . ";";
 ?>    
 </script>
 

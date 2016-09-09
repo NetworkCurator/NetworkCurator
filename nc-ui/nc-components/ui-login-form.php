@@ -6,17 +6,17 @@
 ?>
 
 <h1>Login</h1>
-<form role="form" onsubmit="ncSendLogin(); return false;">    
-    <div id="ncfg-userid" class="form-group">
+<form role="form" onsubmit="nc.users.sendLogin('fg-userid', 'fg-password', 'fg-remember'); return false;">    
+    <div id="fg-userid" class="form-group">
         <label for="email">User id:</label>
-        <input type="text" class="form-control" id="nc-userid" placeholder="User id">
+        <input type="text" class="form-control" placeholder="User id">
     </div>    
-    <div id="ncfg-password" class="form-group">
+    <div id="fg-password" class="form-group">
         <label for="pwd">Password:</label>
-        <input type="password" class="form-control" id="nc-pwd" placeholder="Password">
+        <input type="password" class="form-control" placeholder="Password">
     </div>
-    <div class="checkbox form-group">
-        <label><input type="checkbox" id="nc-remember">Remember me</label>
+    <div id="fg-remember" class="checkbox form-group">
+        <label><input type="checkbox">Remember me</label>
     </div>
     <button type="submit" class="btn btn-success submit">Log in</button>    
 </form>
