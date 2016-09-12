@@ -95,8 +95,7 @@ nc.users.lookup = function() {
         action: "queryPermissions", 
         network_name: nc.network,
         target_id: targetid        
-    }, function(data) {
-        alert(data);
+    }, function(data) {        
         nc.utils.alert(data);        
         data = $.parseJSON(data);
         btn.html('Lookup').removeClass('btn-warning disabled').addClass('btn-success');                    
