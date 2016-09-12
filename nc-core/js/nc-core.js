@@ -167,6 +167,7 @@ nc.init.initGraph = function() {
     if ($('#nc-graph-svg').length==0) return;    
     nc.graph.initToolbar();    
     nc.graph.initSimulation();
+    nc.graph.simUnpause();
 }
 
 /**

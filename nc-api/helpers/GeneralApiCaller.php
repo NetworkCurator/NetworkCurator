@@ -38,8 +38,7 @@ class GeneralApiCaller {
      *      
      */
     public function sendRequest($params) {
-
-        // echo "sendRequest\n";
+        
         // encrypt the request                        
         $request = base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $this->_app_key, json_encode($params), MCRYPT_MODE_ECB));
 

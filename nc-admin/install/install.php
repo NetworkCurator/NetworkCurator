@@ -204,7 +204,8 @@ $sql = "CREATE TABLE $tabname (
   anno_text $textcol,  
   anno_status $statuscol,
   KEY level (network_id, anno_level),
-  KEY anno_id (anno_id)  
+  KEY anno_id (anno_id),  
+  KEY root_id (root_id)  
 ) COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
 

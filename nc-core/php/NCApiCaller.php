@@ -232,6 +232,13 @@ class NCApiCaller {
         return $this->_caller->sendRequest($params);
     }
     
+    function getAllLinks($network) {        
+        $params = $this->_p;        
+        $params['controller'] = 'NCGraphs';        
+        $params['action'] = 'getAllLinks';        
+        $params['network_name'] = $network;        
+        return $this->_caller->sendRequest($params);
+    }
 }
 
 ?>

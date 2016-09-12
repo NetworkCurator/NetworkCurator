@@ -19,7 +19,7 @@ nc.ui = {};
  * ========================================================================== */
 
 // timeout used when animating some
-nc.ui.timeout = 4000;
+nc.ui.timeout = 3000;
 
 
 

@@ -120,7 +120,7 @@ textarea {
  * -------------------------------------------------------------------------- */
 
 .nc-default-node {
-    fill: #449944;
+    fill: #449944;    
 }
 .nc-default-link {
     stroke: #999999;
@@ -129,13 +129,13 @@ textarea {
 
 .nc-newnode {
     stroke: #000000;
-    stroke-width: 2;
-    stroke-dasharray: 2 1;
+    stroke-width: 2;    
+    stroke-dasharray: 3 3;
     fill: #dddddd;
 }
 .nc-newlink, .nc-draggedlink {
     stroke: #aaaaaa;
-    stroke-width: 6;
+    stroke-width: 6;    
     stroke-dasharray: 7 5;
 }
 
@@ -149,12 +149,12 @@ textarea {
 
 .nc-newlink-source {
     stroke-width: 3;
-    stroke: #000000;
+    stroke: #000000;    
     stroke-dasharray: 3 2;
 }
 .nc-newlink-target {
     stroke-width: 3;
-    stroke: #000000;
+    stroke: #000000;    
     stroke-dasharray: 3 2;
 }
 

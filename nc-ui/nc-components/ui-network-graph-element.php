@@ -9,7 +9,7 @@
 // block for displaying generic details about nodes/links
 ?>
 <div id="nc-graph-details" class="nc-graph-details">
-    hello
+    [To do - this will display short info on the node/link]
     <h2><div id="nc-graph-details-title" class="nc-editable-text nc-md" val=""></div></h2>
     <div id="nc-graph-details-abstract" class="nc-editable-text nc-md" val=""></div>
 </div> 
@@ -32,7 +32,8 @@
                 <label>Node class:</label> 
                 <div class="input-group-btn"></div>
             </div>  
-            <button type="submit" class="btn btn-success submit">Create</button>                
+            <button type="submit" class="btn btn-success submit">Create</button>     
+            <button type="button" onclick="nc.graph.removeNode();" class="btn btn-warning">Remove</button>
         </form>
 </div>
 
@@ -60,6 +61,7 @@
                 <label>Target:</label>
                 <input type="text" class="form-control" disabled>
             </div>
-            <button type="submit" class="btn btn-success submit">Create</button>                
+            <button type="submit" class="btn btn-success submit">Create</button>        
+            <button type="button" onclick="nc.graph.removeLink();" class="btn btn-warning">Remove</button>
         </form>
 </div>

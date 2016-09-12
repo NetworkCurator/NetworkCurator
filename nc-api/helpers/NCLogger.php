@@ -153,7 +153,7 @@ class NCLogger {
             $pp[$nowkey . "B"] = $params[$nowkey];
         }
         $stmt->execute($pp);
-        
+
         return $newid;
     }
 
@@ -176,7 +176,7 @@ class NCLogger {
     public function updateAnnoText($params) {
 
         $tat = "" . NC_TABLE_ANNOTEXT;
-               
+
         // prepare a statement setting all anno_status to disabled for a given anno_id
         $sql = "UPDATE $tat SET 
                           user_id = :user_id,
@@ -194,9 +194,9 @@ class NCLogger {
                    (datetime, network_id, owner_id, user_id, root_id, parent_id, 
                    anno_id, anno_text, anno_level, anno_status) VALUES                          
                    (UTC_TIMESTAMP(), :network_id, :owner_id, :user_id, :root_id, :parent_id,
-                   :anno_id, :anno_text, :anno_level, " . NC_OLD . ")";        
+                   :anno_id, :anno_text, :anno_level, " . NC_OLD . ")";
         $stmt = prepexec($this->_db, $sql, $params);
-         
+
         return 1;
     }
 
@@ -284,12 +284,54 @@ class NCLogger {
      * 
      * The root id, or empty string when the name annotation does not match
      */
-    protected function getNameAnnoRootId($netid, $nameanno) {
-       $sql = "SELECT root_id, anno_status FROM ".NC_TABLE_ANNOTEXT . "
+    protected function getNameAnnoRootId($netid, $nameanno, $throw = true) {
+        $sql = "SELECT root_id, anno_status FROM " . NC_TABLE_ANNOTEXT . "
            WHERE BINARY network_id = ? AND anno_text = ? AND 
-           anno_level = ".NC_NAME."";
-       $stmt = prepexec($this->_db, $sql, [$netid, $nameanno]);
-       return $stmt->fetch();       
+           anno_level = " . NC_NAME . "";
+        $stmt = prepexec($this->_db, $sql, [$netid, $nameanno]);
+        $result = $stmt->fetch();        
+        if ($throw) {
+            if (!$result) {
+                throw new Exception("Name does not match any annotations");
+            }
+        }
+        return $result;
+    }
+
+    
+    /**
+     * Helper function to create a set of annotations for 
+     * name, title, abstract, content
+     * 
+     * Only the annotation name and title are set. The others are created, but
+     * set empty. 
+     * 
+     * @param type $netid
+     * @param type $uid
+     * @param type $rootid
+     * @param type $annoname
+     * @param type $annotitle
+     */
+    protected function insertNewAnnosSimple($netid, $uid, $rootid, $annoname, $annotitle) {
+          // create starting annotations for the title, abstract and content        
+        $nameparams = array('network_id' => $netid, 'user_id' => $uid, 'owner_id' => $uid,
+            'root_id' => $rootid, 'parent_id' => $rootid, 'anno_level' => NC_NAME,
+            'anno_text' => $annoname);
+        $this->insertAnnoText($nameparams);
+        // insert annotation for network title
+        $titleparams = $nameparams;
+        $titleparams['anno_text'] = $annotitle;
+        $titleparams['anno_level'] = NC_TITLE;
+        $this->insertAnnoText($titleparams);
+        // insert annotation for network abstract        
+        $descparams = $titleparams;
+        $descparams['anno_text'] = '';
+        $descparams['anno_level'] = NC_ABSTRACT;
+        $this->insertAnnoText($descparams);
+        // insert annotation for network content (more than an abstract)
+        $contentparams = $descparams;
+        $contentparams['anno_level'] = NC_CONTENT;
+        $this->insertAnnoText($contentparams);
     }
     
 }

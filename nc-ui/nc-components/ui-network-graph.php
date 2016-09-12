@@ -9,10 +9,17 @@ include_once "nc-core/php/nc-helper-classes.php";
 $nodeclasses = $NCapi->getNodeClasses($network);
 $linkclasses = $NCapi->getLinkClasses($network);
 $graphnodes = $NCapi->getAllNodes($network);
+$graphlinks = $NCapi->getAllLinks($network);
+
+//echo "<br/><br/>AA<br/>";
+//print_r($graphnodes);
+//echo "<br/><br/>AA<br/>";
+//print_r($graphlinks);
 
 echo ncScriptObject("nc.ontology.nodes", $nodeclasses);
 echo ncScriptObject("nc.ontology.links", $linkclasses);
 echo ncScriptObject("nc.graph.nodes", $graphnodes);
+echo ncScriptObject("nc.graph.links", $graphlinks);
 
 ?>
 
@@ -39,6 +46,7 @@ echo ncScriptObject("nc.graph.nodes", $graphnodes);
         $('#nc-debugging').html(JSON.stringify(nc.graph.links));
     }
     </script>
+    <div class="nc-mt-10">Debugging</div>    
 <a onclick="javascript:debugNodes(); return false;">Show nodes</a>
 <a onclick="javascript:debugLinks(); return false;">Show links</a>
 <div id="nc-debugging">

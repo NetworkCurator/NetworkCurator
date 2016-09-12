@@ -22,12 +22,12 @@ nc.graph = {
 };
 
 
-nc.graph.links = [
-{
-    id: "hello",
-    source: "Npw8g4p2z", 
-    target: "Nrcszc0zk"
-}];
+//nc.graph.links = [
+//{
+//    id: "hello",
+//    source: "Npw8g4p2z", 
+//    target: "Nrcszc0zk"
+//}];
  
 
 
@@ -116,7 +116,7 @@ nc.graph.addNode = function() {
 }
 
 nc.graph.addClassedNode = function(point, nodeclass, styleclass) {      
-    var newid = "_"+nodeclass+"_"+Date.now(),    
+    var newid = "+"+nodeclass+"_"+Date.now(),    
     newnode = {
         "id": newid,
         "name": newid,
@@ -142,8 +142,9 @@ nc.graph.addClassedLink = function(linkclass, styleclass) {
    
     // identify the temporary link
     var draggedlink = nc.graph.svg.select('line[class="nc-draggedlink"]');       
+    
     // create a new entity for the links array
-    var newid = "_"+linkclass+"_"+Date.now();
+    var newid = "+"+linkclass+"_"+Date.now();
     var newlink = {
         "id": newid,
         "class_name": linkclass,
@@ -151,8 +152,9 @@ nc.graph.addClassedLink = function(linkclass, styleclass) {
         "source": draggedlink.attr("source"),
         "target": draggedlink.attr("target")       
     }
-    //alert("newlink: "+JSON.stringify(newlink));
+    
     // update the simulation
+    nc.graph.simStop();
     nc.graph.links.push(newlink);
     nc.graph.initSimulation();
 }
@@ -170,23 +172,28 @@ nc.graph.select = function(d) {
     // un-highlight existing
     nc.graph.svg.selectAll('circle').classed('nc-node-highlight',false);
     nc.graph.svg.selectAll('line').classed('nc-link-highlight',false);       
-           
+    if ("source" in d) {
+        nc.graph.svg.select('line[id="'+d.id+'"]').classed('nc-link-highlight', true);
+    } else {
+        nc.graph.svg.select('circle[id="'+d.id+'"]').classed('nc-node-highlight', true);
+    }    
+        
     var nowid = d.id;    
-    if (nowid[0]=="_") {
-        $('#nc-graph-details').hide();   
-        if ("source" in d) {
-            alert(JSON.stringify(d));
+    if (nowid[0]=="+") {
+        $('#nc-graph-details').hide();  
+        nc.graph.resetForms();
+        if ("source" in d) {            
             var newlinkdiv = $('#nc-graph-newlink');
             // selected link            
             newlinkdiv.show();
-            $('#nc-graph-newnode').hide();                                    
-            nc.graph.svg.select('line[id="'+d.id+'"]').classed('nc-link-highlight', true);            
+            $('#nc-graph-newnode').hide();                                                
             // transfer the temporary link id into the create box 
             $('#nc-graph-newlink #fg-linkname input').val(nowid);
             $('#nc-graph-newlink #fg-linktitle input').val(nowid);
+            $('#nc-graph-newlink form').attr('val', nowid);
             // set the dropdown with the class
             newlinkdiv.find('button.dropdown-toggle span.nc-classname-span').html(d.class_name);
-            newlinkdiv.find('button.dropdown-toggle').attr('val', d.class_name);
+            newlinkdiv.find('button.dropdown-toggle').attr('selection', d.class_name);
             // set the source and target text boxes
             $('#nc-graph-newlink #fg-linksource input').val(d.source.name);
             $('#nc-graph-newlink #fg-linktarget input').val(d.target.name);
@@ -195,39 +202,32 @@ nc.graph.select = function(d) {
             $('#nc-graph-newlink').hide();
             var newnodediv = $('#nc-graph-newnode')
             newnodediv.show(); 
-            // highlight the selected node            
-            nc.graph.svg.select('circle[id="'+nowid+'"]').classed('nc-node-highlight', true);            
             // transfer the temporary node id into the create box
             $('#nc-graph-newnode #fg-nodename input').val(nowid);
             $('#nc-graph-newnode #fg-nodetitle input').val(nowid);
             $('#nc-graph-newnode form').attr('val', nowid);
             // set the dropdown with the class
             newnodediv.find('button.dropdown-toggle span.nc-classname-span').html(d.class_name);
-            newnodediv.find('button.dropdown-toggle').attr('val', d.class_name);        
+            newnodediv.find('button.dropdown-toggle').attr('selection', d.class_name);        
         }    
     } else {        
         $('#nc-graph-details').show();
-        $('#nc-graph-newlink,#nc-graph-newnode').hide();   
-        if ("source" in d) {
-            nc.graph.svg.select('line[id="'+d.id+'"]').classed('nc-link-highlight', true);
-        } else {
-            nc.graph.svg.select('circle[id="'+d.id+'"]').classed('nc-node-highlight', true);
-        }
+        $('#nc-graph-newlink,#nc-graph-newnode').hide();           
     }
                     
 }
 
 /* ==========================================================================
-* Handlers for graph editing
-* ========================================================================== */
+ * Handlers for graph editing
+ * ========================================================================== */
 
 
 /**
-* This function initializes the behavior of the graph svg simulation.
-* 
-* Uses D3.
-*
-*/
+ * This function initializes the behavior of the graph svg simulation.
+ * 
+ * Uses D3.
+ *
+ */
 nc.graph.initSimulation = function() {
         
     // set up zooming
@@ -246,7 +246,7 @@ nc.graph.initSimulation = function() {
     .force("charge", d3.forceManyBody())
     .force("center", d3.forceCenter(width / 2, height / 2))
     .velocityDecay(0.6);    
-        
+           
     if (nc.graph.nodes.length>0) {
         nc.graph.simStart();
     }
@@ -254,13 +254,14 @@ nc.graph.initSimulation = function() {
 
 
 /**
-* add elements into the graph svg and run the simulation
-* 
-*/
+ * add elements into the graph svg and run the simulation
+ * 
+ */
 nc.graph.simStart = function() {
     
     // first clear the existing svg if it already contains elements
     nc.graph.svg.selectAll("g").remove();
+    nc.graph.sim.alpha(0);
     
     // set up node draggin
     var nodedrag = d3.drag()
@@ -276,7 +277,7 @@ nc.graph.simStart = function() {
     .enter().append("line")
     .attr("class", function(d) {
         if ("class" in d) {
-            return d["class"];
+            return "nc-default-link "+d["class"];
         } else {
             return "nc-default-link";
         }
@@ -291,8 +292,7 @@ nc.graph.simStart = function() {
     .attr("class", "nodes")
     .selectAll("circle")
     .data(nc.graph.nodes)
-    .enter().append("circle")
-    .attr("r", 9)
+    .enter().append("circle").attr("r", 9)    
     .attr("id", function(d) {        
         return d.id;
     })
@@ -318,17 +318,18 @@ nc.graph.simStart = function() {
 
 
 /**
-* Stop the simulation
-*/
+ * Stop the simulation
+ */
 nc.graph.simStop = function() {
     nc.graph.sim.stop();
 }
 
 /**
-* Start/unpause the simulation
-*/
+ * Start/unpause the simulation
+ */
 nc.graph.simUnpause = function() {
-    nc.graph.sim.restart();
+    //alert("unpausing");
+    nc.graph.sim.alpha(0.7).restart();
 }
 
 var dsourcex = function(d) {
@@ -352,8 +353,8 @@ var dy = function(d) {
 
 
 /**
-* @param d the object that is being dragged
-*/
+ * @param d the object that is being dragged
+ */
 nc.graph.dragstarted = function(d) {   
     switch (nc.graph.mode) {
         case "select":
@@ -372,8 +373,8 @@ nc.graph.dragstarted = function(d) {
 }
 
 /**
-* @param d the object that is being dragged 
-*/
+ * @param d the object that is being dragged 
+ */
 nc.graph.dragged = function(d) {     
     var point = d3.mouse(this);    
     switch (nc.graph.mode) {
@@ -424,8 +425,24 @@ nc.graph.zoom = function() {
 
 
 /* ==========================================================================
-* Helper functions
-* ========================================================================== */
+ * Helper functions
+ * ========================================================================== */
+
+/**
+ * Make the new link/new node forms look normal
+ */
+nc.graph.resetForms = function() {
+    $('#fg-linkname,#fg-linktitle,#fg-linkclass,#fg-linksource,#fg-linktarget').removeClass('has-warning has-error has-success');
+    $('#fg-linkname label').html("Link name:");
+    $('#fg-linktitle label').html("Link title:");
+    $('#fg-linkclass label').html("Link class:");
+    $('#fg-linksource label').html("Source:");
+    $('#fg-linktarget label').html("Target:");
+    $('#fg-nodename,#fg-nodetitle,#fg-nodeclass').removeClass('has-warning has-error has-success');   
+    $('#fg-nodename label').html("Node name");
+    $('#fg-nodetitle label').html("Node title");
+    $('#fg-nodeclass label').html("Node class");       
+}
 
 /**
  * Find the node that is nearest to the given point
@@ -491,15 +508,18 @@ nc.graph.replaceLinkId = function(oldid, newid) {
 }
 
 /* ==========================================================================
-* Communicating with server
-* ========================================================================== */
+ * Communicating with server
+ * ========================================================================== */
 
 
+/**
+ * Processes the new node form submit action
+ */
 nc.graph.createNode = function() {
     
-    var allfg = '#fg-nodename,#fg-nodetitle,#fg-nodeclass';
-    $(allfg).removeClass('has-warning has-error');
-    // basic checks on the network name text box    
+    nc.graph.resetForms();        
+   
+    // basic checks on the text boxes    
     if (nc.utils.checkFormInput('fg-nodename', "node name", 1)+
         nc.utils.checkFormInput('fg-nodetitle', "node title", 2) < 2) return 0;    
    
@@ -530,11 +550,9 @@ nc.graph.createNode = function() {
             if (data['success']==false || data['data']==false) {
                 $('#fg-nodename').addClass('has-error has-feedback');                
                 $('#fg-nodename label').html("Please choose another node name:");                
-            } else if (data['success']==true) { 
-                //alert("exchaging "+oldid+" "+data['data']);
-                $(allfg).addClass('has-success has-feedback');                                
-                $('form button.submit').removeClass('btn-success').addClass('btn-default disabled').html("Success!");                
-                $('form,form button.submit').attr("disabled", true);    
+            } else if (data['success']==true) {                                                                 
+                $('#nc-graph-newnode form').attr("disabled", true);    
+                $('#nc-graph-newnode button.submit').attr("disabled", true);    
                 // replace the node id in from the temporary one to the real one
                 var nodeindex = nc.graph.replaceNodeId(oldid, data['data']);
                 nc.graph.nodes[nodeindex].name = newname;
@@ -542,22 +560,143 @@ nc.graph.createNode = function() {
                 nc.graph.svg.select('circle[id="'+oldid+'"]')
                 .attr("id", data['data'])
                 .classed('nc-newnode', false).classed('nc-node-highlight', false).
-                classed(newclass, true).classed('nc-node-highlight', true);                
+                classed(newclass, true).classed('nc-node-highlight', true); 
+                $('#nc-graph-newnode').hide();
             }
-        }                 
-        // make user wait a little
-        setTimeout(function() {
-            $('#nc-graph-newnode button.submit')
-            .addClass('btn-success').removeClass("btn-default")
-            .html("Create").attr("disabled", false); 
-        }, nc.ui.timeout/4);
+        } 
         
-    //alert("after nodes: "+JSON.stringify(nc.graph.nodes));
+        // make user wait a little before next attempt
+        setTimeout(function() {
+            $('#nc-graph-newnode form').attr("disabled", false);
+            $('#nc-graph-newnode button.submit')
+            .addClass('btn-success').removeClass("btn-default disabled").html("Create node")
+            .attr("disabled", false);
+        }, nc.ui.timeout/4);
     }
+
     );    
 }
 
-
+/**
+* * Processes the new link form submit action
+*/
 nc.graph.createLink = function() {
     
+    nc.graph.resetForms();
+    
+    // basic checks on the text boxes    
+    if (nc.utils.checkFormInput('fg-linkname', "link name", 1) +
+        nc.utils.checkFormInput('fg-linksource', "link source", 1) +
+        nc.utils.checkFormInput('fg-linktarget', "link target", 1) +        
+        nc.utils.checkFormInput('fg-linktitle', "link title", 2) < 4) return 0;    
+    
+    // fetch from form into variables here
+    var oldid = $('#nc-graph-newlink form').attr('val');
+    var newname = $('#fg-linkname input').val();    
+    var newclass = $('#fg-linkclass button.dropdown-toggle').attr('selection');
+   
+    // give feedback on the form that a request is being sent
+    $('#nc-graph-newlink button.submit')
+    .removeClass('btn-success').addClass("btn-default")
+    .html("Sending...").attr("disabled", true); 
+   
+    // send a request to create node
+    // post the registration request 
+    $.post(nc.api, 
+    {
+        controller: "NCGraphs", 
+        action: "createNewLink", 
+        network_name: nc.network,
+        link_name: newname,
+        link_title: $('#fg-linktitle input').val(),
+        class_name: newclass,
+        source_name: $('#fg-linksource input').val(),
+        target_name: $('#fg-linktarget input').val()
+    }, function(data) {          
+        nc.utils.alert(data);        
+        //alert(data);
+        data = $.parseJSON(data);
+        if (nc.utils.checkAPIresult(data)) {            
+            if (data['success']==false || data['data']==false) {
+                $('#fg-linkname').addClass('has-error has-feedback');                
+                $('#fg-linkname label').html("Please choose another link name:");                
+            } else if (data['success']==true) {                 
+                $('#nc-graph-newlink form').attr("disabled", true);    
+                $('#nc-graph-newlink button.submit').attr("disabled", true);    
+                // replace the node id in from the temporary one to the real one
+                var linkindex = nc.graph.replaceLinkId(oldid, data['data']);
+                nc.graph.links[linkindex].name = newname;
+                nc.graph.links[linkindex]["class"] = newclass;
+                nc.graph.svg.select('line[id="'+oldid+'"]')
+                .attr("id", data['data'])
+                .classed('nc-newlink', false).classed('nc-link-highlight', false).
+                classed(newclass, true).classed('nc-link-highlight', true);    
+                $('#nc-graph-newlink').hide();            
+            }
+        }                 
+        // make user wait a little before next attempt
+        setTimeout(function() {
+            $('#nc-graph-newlink form').attr("disabled", false);
+            $('#nc-graph-newlink button.submit')
+            .addClass('btn-success').removeClass("btn-default disabled").html("Create link")
+            .attr("disabled", false);              
+        }, nc.ui.timeout/4);
+            
     }
+    );
+   
+    
+}
+
+
+
+/**
+* remove a node from the viz (not from the server)
+*/
+nc.graph.removeNode = function() {    
+    // pause the simulation just in case
+    nc.graph.simStop();
+    
+    // identify the selected node        
+    var nodeid = nc.graph.svg.select("circle.nc-node-highlight").attr("id");
+         
+    // get rid of the node id from the array
+    nc.graph.nodes = nc.graph.nodes.filter(function(value, index, array) {
+        return (value.id!=nodeid);
+    });
+    // for links, first reset the source and target to simple labels (not arrays)
+    // then remove the links that point to the node
+    for (var i=0; i<nc.graph.links.length; i++) {
+        nc.graph.links[i].source = nc.graph.links[i].source.id;
+        nc.graph.links[i].target = nc.graph.links[i].target.id;
+    }    
+    nc.graph.links = nc.graph.links.filter(function(value, index, array) {
+        return (value.source!=nodeid && value.target!=nodeid); 
+    });
+        
+    // restart the simulation
+    nc.graph.initSimulation();
+    
+    $('#nc-graph-newnode').hide();
+}
+
+
+/**
+* remove a highlighted link from the viz
+*/
+nc.graph.removeLink = function() {    
+    // pause the simulation just in case
+    nc.graph.simStop();
+    
+    // identify the selected link        
+    var linkid = nc.graph.svg.select("line.nc-link-highlight").attr("id");
+             
+    // remove the link with that id
+    nc.graph.links = nc.graph.links.filter(function(value, index, array) {
+        return (value.id!=linkid); 
+    });
+        
+    // restart the simulation
+    nc.graph.initSimulation();
+    $('#nc-graph-newlink').hide();
+}
