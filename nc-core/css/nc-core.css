@@ -19,16 +19,28 @@
 .nc-mb-20 { margin-bottom: 2.0em; }
 
 
+.dropdown-toggle .caret {
+  margin-top: 8px;    
+}
+
+
+/*
+ * The curator style hides objects until they are turned visible via js
+*/
+.nc-curator {
+    display: none;
+}
+
 /**
  * editifiers for features accessible only to curators
- */
+*/
 .nc-curator > a {
     color: #d43f3a !important;
 }
 
 /*
  * definitions defining editable elements
- */
+*/
 .nc-editable-text-visible {
     background-color: #f2f2f2;
     border: 1px dashed #bbbbbb;
@@ -104,8 +116,53 @@ textarea {
 }
 
 /* --------------------------------------------------------------------------
+ * New nodes 
+ * -------------------------------------------------------------------------- */
+
+.nc-default-node {
+    fill: #449944;
+}
+.nc-default-link {
+    stroke: #999999;
+    stroke-width: 5;
+}
+
+.nc-newnode {
+    stroke: #000000;
+    stroke-width: 2;
+    stroke-dasharray: 2 1;
+    fill: #dddddd;
+}
+.nc-newlink, .nc-draggedlink {
+    stroke: #aaaaaa;
+    stroke-width: 6;
+    stroke-dasharray: 7 5;
+}
+
+.nc-node-highlight {
+    stroke: #000000;
+    stroke-width: 4;    
+}
+.nc-link-highlight {
+    stroke: #000000;
+}
+
+.nc-newlink-source {
+    stroke-width: 3;
+    stroke: #000000;
+    stroke-dasharray: 3 2;
+}
+.nc-newlink-target {
+    stroke-width: 3;
+    stroke: #000000;
+    stroke-dasharray: 3 2;
+}
+
+
+/* --------------------------------------------------------------------------
  * Graph editor
  * -------------------------------------------------------------------------- */
+
 
 #nc-graph-toolbar {
     margin-bottom: 8px;
@@ -123,3 +180,18 @@ textarea {
     margin-left: 6px;
 }
 
+.nc-graph-details {
+    display: none;
+    border: solid #ddd 1px;
+    padding: 0px 22px;
+    width: 100%;
+    border-radius: 4px !important;
+    margin-top: 0px;
+}
+.nc-graph-detail .caret {
+    margin-top: 6px;
+}
+
+.nc-graph-details .btn-group {
+    width: 100%;
+}

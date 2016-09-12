@@ -232,17 +232,11 @@ ol {
  * Generic elements of the UI
  * -------------------------------------------------------------------------- */
 
-.nc-new-nodelink {
-    border: solid #ddd 1px;
-    padding: 0px 22px;
-}
-.nc-new-nodelink .input-group-btn button {
+.input-group-btn button {
     width: 100%;
     border-radius: 4px !important;
 } 
-.nc-new-nodelink .input-group-btn button > .caret {
-    margin-top: 6px;
-}
+
 
 /* --------------------------------------------------------------------------
  * Curation/Editing box

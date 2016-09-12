@@ -139,11 +139,7 @@ echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (  
   network_id $vc32col,
   node_id $vc32col,
-  class_id $vc32col,
-  node_name $vc64col,  
-  node_value $dblcol,
-  node_valueunit $vc24col,
-  node_score $dblcol,
+  class_id $vc32col,    
   node_status $statuscol,
   PRIMARY KEY (node_id),
   KEY class_id (class_id)
@@ -159,17 +155,13 @@ echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (  
   network_id $vc32col,
   link_id $vc32col,
-  from_id $vc32col,
-  to_id $vc32col,
-  class_id $vc32col,
-  link_name $vc64col,  
-  link_value $dblcol,
-  link_valueunit $vc24col,
-  link_score $dblcol,
+  source_id $vc32col,
+  target_id $vc32col,
+  class_id $vc32col,  
   link_status $statuscol,
   PRIMARY KEY (link_id),
-  KEY from_id (from_id),
-  KEY to_id (to_id),
+  KEY source_id (source_id),
+  KEY target_id (target_id),
   KEY class_id (network_id, class_id)
 ) COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);

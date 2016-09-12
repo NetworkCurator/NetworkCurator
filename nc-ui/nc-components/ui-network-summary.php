@@ -11,7 +11,6 @@
 $netmeta = $NCapi->getNetworkMetadata($network);
 ?>
 
-
 <div class="row">
     <div class="col-sm-8">
         <h1><div id="nc-network-title" class="nc-editable-text nc-md" 
@@ -20,11 +19,11 @@ $netmeta = $NCapi->getNetworkMetadata($network);
             </div></h1>
 
         <h4 class="nc-mt-10">Curators</h4>
-        <?php echo ui_listnames($netmeta['curators']); ?>
+        <?php echo ncListnames($netmeta['curators']); ?>
         <h4 class="nc-mt-10">Authors</h4>
-        <?php echo ui_listnames($netmeta['authors']); ?>
+        <?php echo ncListnames($netmeta['authors']); ?>
         <h4 class="nc-mt-10">Commentators</h4>
-        <?php echo ui_listnames($netmeta['commentators']); ?>
+        <?php echo ncListNames($netmeta['commentators']); ?>
         <hr/>
 
         <h3 class="nc-mt-10 nc-mb-10">Abstract</h3>
@@ -45,7 +44,6 @@ $netmeta = $NCapi->getNetworkMetadata($network);
 </div>
 
 <?php
-
 foreach (["title", "content", "abstract"] as $i) {
     $netmd[$netmeta["network_" . $i . "_id"]] = $netmeta["network_" . $i];
 }

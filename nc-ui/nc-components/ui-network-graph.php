@@ -8,26 +8,39 @@ include_once "nc-core/php/nc-helper-classes.php";
 // get all the classes for the network
 $nodeclasses = $NCapi->getNodeClasses($network);
 $linkclasses = $NCapi->getLinkClasses($network);
+$graphnodes = $NCapi->getAllNodes($network);
 
-// convert from complex structure to simpler arrays, write it out in json
-echo "<script>nc_node_classes= ".json_encode(getFlatClassList($nodeclasses))."; 
-    nc_link_classes= ".json_encode(getFlatClassList($linkclasses))."; </script>";
+echo ncScriptObject("nc.ontology.nodes", $nodeclasses);
+echo ncScriptObject("nc.ontology.links", $linkclasses);
+echo ncScriptObject("nc.graph.nodes", $graphnodes);
+
 ?>
 
 
 <div class="row">
-    <div id="nc-graph" class="col-sm-8">
-        <div id="nc-graph-toolbar"></div>
-    </div>
+    <div id="nc-graph-toolbar" class="col-sm-8"></div>
 </div>
 <div class="row">
-    <div class="col-sm-8">
-        <div id="nc-graph-svg-container">
-            <svg id="nc-graph-svg"></svg>            
-        </div>
+    <div id="nc-graph-svg-container" class="col-sm-8">        
+        <svg id="nc-graph-svg"></svg>                    
     </div>
-    <div class="col-sm-4">
-        <?php include_once "ui-network-graph-newelement.php"; ?>
+    <div class="col-sm-4">        
+        <?php include_once "ui-network-graph-element.php"; ?>
     </div>
 </div>
 
+
+
+<script>
+    debugNodes = function() {
+        $('#nc-debugging').html(JSON.stringify(nc.graph.nodes));
+    }
+    debugLinks = function() {
+        $('#nc-debugging').html(JSON.stringify(nc.graph.links));
+    }
+    </script>
+<a onclick="javascript:debugNodes(); return false;">Show nodes</a>
+<a onclick="javascript:debugLinks(); return false;">Show links</a>
+<div id="nc-debugging">
+    
+</div>

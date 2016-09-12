@@ -24,21 +24,13 @@ $linkclasses = $NCapi->getLinkClasses($network);
         </div>
     
 <?php
-echo "<script>";
-echo "nc.ontology.nodes=" . json_encode($nodeclasses) . ";";
-echo "nc.ontology.links=" . json_encode($linkclasses) . ";";
-echo "</script>";
+echo ncScriptObject("nc.ontology.nodes", $nodeclasses);
+echo ncScriptObject("nc.ontology.links", $linkclasses);
 ?>                            
-
-
     </div>
 
     <div class="col-sm-4 nc-mt-10">
-        <div class="nc-tips <?php
-if (!$iscurator) {
-    echo "hidden";
-}
-?>">
+        <div class="nc-tips nc-curator">
             <h4>Tips</h4>        
             <p>Use the <b>Create new class</b> form to create a new type of node or link.</p>
             <p>Click the <b>Move</b> button and drag to build a hierarchy of classes. 

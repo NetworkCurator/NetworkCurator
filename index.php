@@ -5,10 +5,13 @@
  * All user interaction should got through here.
  * 
  */
+/* --------------------------------------------------------------------------
+ * Housekeeping 
+ * -------------------------------------------------------------------------- */
+
 // load the settings for the website
 include_once "nc-admin/config/nc-config.php";
 include_once "nc-admin/config/nc-constants.php";
-
 
 // load helper functions
 $PP = $_SERVER['DOCUMENT_ROOT'] . NC_PHP_PATH;
@@ -17,21 +20,17 @@ include_once "nc-api/helpers/GeneralApiCaller.php";
 include_once "nc-api/helpers/nc-generic.php";
 include_once $PP . "/NCApiCaller.php";
 include_once $PP . "/nc-sessions.php";
-include_once $UP . "/nc-components.php";
-
+include_once $PP . "/nc-helpers.php";
 
 // get two common fields from the url
+$page = '';
 if (isset($_REQUEST['page'])) {
     $page = $_REQUEST['page'];
-} else {
-    $page = '';
 }
+$network = '';
 if (isset($_REQUEST['network'])) {
     $network = $_REQUEST['network'];
-} else {
-    $network = '';
 }
-
 
 // collect information about the user from the session
 session_start();
@@ -49,6 +48,19 @@ if (!$userin) {
 }
 $userip = $_SERVER['REMOTE_ADDR'];
 
+// determine permission levels for this user
+try {
+    $upermissions = $NCapi->querySelfPermissions($network);
+} catch (Exception $e) {
+    $upermissions = 0;
+}
+$iscurator = 0 + ($upermissions >= NC_PERM_CURATE);
+$iscommentator = 0 + ($upermissions >= NC_PERM_COMMENT);
+
+
+/* --------------------------------------------------------------------------
+ * Create user-viewable page 
+ * -------------------------------------------------------------------------- */
 
 if ($page === "logout") {
     ncSignout();
@@ -62,15 +74,13 @@ include_once "nc-ui/nc-navbar.php";
 if ($page == "login" || $page == "logout" || $page == "admin") {
     // these are pages that require only a user id
     include_once "nc-ui/nc-ui-$page.php";
-} else if ($page == "network") {
-    // these are pages that require a set network name
-    if (!$network) {
-        include_once "nc-ui/nc-ui-front.php";
-    } else {
-        include_once "nc-ui/nc-ui-$page.php";
-    }
-} else {
+} else if ($page == "network" && $network) {
+    // these are pages that require a network name
+    include_once "nc-ui/nc-ui-$page.php";
+} else if ($page=="front" || $page=='') {
     include_once "nc-ui/nc-ui-front.php";
+} else {
+    include_once "nc-ui/nc-ui-custompage.php";
 }
 
 // the footer is common to all pages

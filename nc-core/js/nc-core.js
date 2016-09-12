@@ -23,6 +23,7 @@ var nc = {
     lastname: '',
     // the current network name
     network: '',
+    networktitle : '',
     // objects holding markdown and comment content
     md: {},
     comments: {},
@@ -81,13 +82,17 @@ nc.msg = function(h, b) {
  * is relevant for the current page and either returns quickly or performs its
  * startup duties.
  */
-nc.init.all = function() {
+nc.init.all = function() {    
+    nc.init.initNetwork();
     nc.init.initPermissions();
     nc.init.initLog();
-    nc.init.initMarkdown();
-    nc.init.initComments();    
-    nc.init.initOntology();
+    //alert("going to initCuration");
     nc.init.initCuration();
+    //alert("going to initMarkdown");
+    nc.init.initMarkdown();
+    //alert("going to initComments");
+    nc.init.initComments();    
+    nc.init.initOntology();    
     nc.init.initGraph();       
 }
 
@@ -115,15 +120,19 @@ nc.init.initPermissions = function() {
  * 
  */
 nc.init.initOntology = function() {
+    // compute long names for classes that include hierarchy structure
+    nc.ontology.nodes = nc.ontology.addLongnames(nc.ontology.nodes);
+    nc.ontology.links = nc.ontology.addLongnames(nc.ontology.links);
+    
     // check if this function applies on the page
     var ontnodes = $('#nc-ontology-nodes');
     var ontlinks = $('#nc-ontology-links');    
     if (ontnodes.length==0 || ontlinks.length==0) {
         return;
     }
-    // add ontology trees        
+    // add ontology trees     
     ontnodes.html(nc.ui.ClassTreeWidget(nc.ontology.nodes, false));                    
-    ontlinks.html(nc.ui.ClassTreeWidget(nc.ontology.links, true));                                 
+    ontlinks.html(nc.ui.ClassTreeWidget(nc.ontology.links, true));               
 }
 
 /** 
@@ -155,7 +164,9 @@ nc.init.initLog = function() {
  * Initialize a graph editing toolbar and graph viewer
  */
 nc.init.initGraph = function() {
-
+    if ($('#nc-graph-svg').length==0) return;    
+    nc.graph.initToolbar();    
+    nc.graph.initSimulation();
 }
 
 /**
@@ -204,15 +215,15 @@ nc.init.initComments = function() {
 nc.init.initCuration = function() {
     
     // all users need to have the anno edit boxes
-    // these boxes actually displays content.     
+    // these boxes actually displays content.        
     var box = nc.ui.AnnoEditBox();
     var alleditable = $('.nc-editable-text');    
     alleditable.html(box);    
-    
+             
     // other functions are for curators only    
     if (!nc.curator) {
         return;
-    }
+    }    
     
     // show curation level ui graphics, add an event to toggle curation on/off
     $('.nc-curator').show();    
@@ -231,14 +242,24 @@ nc.init.initCuration = function() {
 * run at startup to convert data in a global object nc_md into html
 * within page elements
 */
-nc.init.initMarkdown = function() {   
-       
+nc.init.initMarkdown = function() {                 
     // convert the nc_md content into html, assign to a target div
-    $.each(nc.md, function(key, val) {                  
+    $.each(nc.md, function(key, val) {          
         var temp = $('div .nc-md[val="'+key+'"]');
         temp.find('textarea.nc-curation-content').html(val);
         temp.find('div.nc-curation-content').html(nc.mdconverter.makeHtml(val));
     });        
+}
+
+
+/**
+ * When page holds a specific network title, it displays the title in the navbar
+ */
+nc.init.initNetwork = function() {       
+    if (nc.networktitle!='') {
+        $('#nc-nav-network-title').html(nc.networktitle);        
+        $('body').addClass('body2');
+    }          
 }
 
 
@@ -287,21 +308,19 @@ nc.loadActivity = function(pagenum, pagelen) {
 /**
 * This sends an update request to the server
 * 
-* Uses nc_network - network name in global variable
-* Uses nc_md - array of md components 
+* @param annoid - id of annotation to modify
+* @param annomd - new markdown text for the annotation
+* 
 */
-nc.updateAnnotationText = function(annoid, annomd) {
-    
-    if (typeof nc_network == "undefined") {        
-        return;
-    }    
-        
-    // send a request to the server
+nc.updateAnnotationText = function(annoid, annomd) {  
+
+    if (nc.network=='') return;        
+                     
     $.post(nc.api, 
     {
         controller: "NCAnnotations", 
         action: "updateAnnotationText", 
-        network_name: nc_network,
+        network_name: nc.network,
         anno_id: annoid,
         anno_text: annomd
     }, function(data) {        
@@ -311,7 +330,6 @@ nc.updateAnnotationText = function(annoid, annomd) {
             nc.msg("Hey!", "Got error response from server: "+data['data']);            
         }
     });
-
 }
 
 
@@ -319,19 +337,13 @@ nc.updateAnnotationText = function(annoid, annomd) {
 * Commenting
 * ========================================================================== */
 
-/**
-* run at startup to show a box where the current user can write a new comment
-*/
-nc.showNewCommentBox = function() {
-    
-}
 
 /**
 * run when user presses "save" and tries to submit a new comment
 */
-nc.createNewComment = function(annomd, rootid, parentid) {
+nc.createComment = function(annomd, rootid, parentid) {
         
-    if (typeof nc_network == "undefined") return; 
+    if (nc.network=='') return; 
     
     // avoid sending a comment that is too short
     if (annomd.length<2) exit();        
@@ -347,7 +359,7 @@ nc.createNewComment = function(annomd, rootid, parentid) {
     {
         controller: "NCAnnotations", 
         action: "createNewComment", 
-        network_name: nc_network, 
+        network_name: nc.network, 
         root_id: rootid,
         parent_id: parentid,
         anno_text: annomd
@@ -363,7 +375,7 @@ nc.createNewComment = function(annomd, rootid, parentid) {
             $('#nc-newcomment a.nc-save').addClass('btn-success').removeClass('btn-default').html('Save');
         }, timeout);         
         // add the comment to the page
-        nc.ui.addCommentBox('just now', nc_uid, rootid, parentid, 
+        nc.ui.addCommentBox('just now', nc.userid, rootid, parentid, 
             data['data'], annomd);
         if (rootid!=parentid) {
             $('.media-body .media[val=""]').hide();    
@@ -379,30 +391,9 @@ nc.createNewComment = function(annomd, rootid, parentid) {
 * ========================================================================== */
 
 /**
-* This fixes a "bug" in bootstrap that allows radio buttons to accept clicks
-* and change active state even if they are set to disabled
+* This starts the page initialization code
 */
 $(document).ready(
     function () {
-        nc.init.all();
-        //alert("DL2");
-        // call a function that will perform startup relevant for curating content
-        nc.curationStartup();                   
-        //alert("DL3");
-        // perform md markup
-        nc.showMarkdown();
-        //alert("DL4");
-        // fetch all the comments
-        nc.loadComments();
-        //alert("DL5");
-        nc.loadLog();
-        // display the commenting box
-        nc.showNewCommentBox();       
-    //alert("DL6");
+        nc.init.all();      
     });
-
-
-
-/* ==========================================================================
-* misc code, leftovers
-* ========================================================================== */

@@ -17,7 +17,7 @@ nc.utils = {};
 /**
  * for debugging, turn on/off
  */
-nc.utils.debug = true;
+nc.utils.debug = false;
 
 
 /**
@@ -125,3 +125,24 @@ nc.utils.checkAPIresult = function(x) {
     }
 }
 
+
+
+/** 
+ * Helper function sorts an array by one of the elements (key)
+ * 
+ * @param arr array each element is assumed to be another sub-array
+ * @param key one of the keys in the sub-arrays
+ */
+nc.utils.sortByKey = function(arr, key) {
+    
+    return arr.sort(function(a, b) {
+        var x = a[key]; var y = b[key];
+        if (x<y) {
+            return -1;
+        } else if (x>y) {
+            return 1;
+        } else {
+            return 0;
+        }        
+    });
+}

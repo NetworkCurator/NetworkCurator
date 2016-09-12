@@ -54,10 +54,10 @@ nc.ontology.createClass = function(parentid, classname, islink, isdirectional) {
 }
 
 /**
-* Send a request to update a class name or parent structure
-*/
+ * Send a request to update a class name or parent structure
+ */
 nc.ontology.updateClassProperties = function(classid, classname, parentid, 
-    islink, isdirectional) {
+islink, isdirectional) {
         
     if (nc.utils.checkString(classname, 1)<1) {
         nc.msg("Hey!", "Invalid class name");
@@ -115,9 +115,51 @@ nc.ontology.removeClass = function(classid) {
                     $(this).remove()
                 } ); 
             } else {
-            // the class has been deprecated
+                // the class has been deprecated
                 
             }
         }
     });  
+}
+
+
+
+/**
+ * gives an object with class data, adds a fields to each class type with a long
+ * class name that includes the hierarchy.  
+ * 
+ * @param ontolist string 'nodes' or 'links'
+ * 
+ */
+nc.ontology.addLongnames = function(ontolist) {
+    
+    var tree = $('<div><div val="" text=""></div></div>');
+    
+    var counter = 0;
+    var targetcount = Object.keys(ontolist).length;
+    while (counter<targetcount) {        
+        counter=0;
+        $.each(ontolist, function(key, val){        
+            var thisid = val['class_id'],
+            thisname = val['class_name'],
+            thisparent = val['parent_id'],
+            longname = thisname;
+        
+            if (tree.find('div[val="'+thisid+'"]').length==1) {
+                counter++;
+            } else {
+                var parentdiv = tree.find('div[val="'+thisparent+'"]')
+                if (parentdiv.length==1) {                    
+                    if (thisparent!="") {
+                        longname = parentdiv.attr('text')+":"+thisname;
+                    }
+                    parentdiv.append('<div val="'+thisid+'" text="'+longname+'"></div>');
+                    ontolist[thisid].class_longname = longname;
+                    counter++;
+                } 
+            }
+        });       
+    }
+    
+    return ontolist;            
 }

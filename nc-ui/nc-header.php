@@ -25,7 +25,9 @@ echo "nc.userid='$uid',
           nc.firstname='$firstname', 
           nc.middlename='$middlename', 
           nc.lastname='$lastname',
-          nc.network='$network'";
+          nc.network='$network',
+          nc.curator=". (int) ($iscurator == true) . ",
+          nc.commentator=". (int) ($iscommentator == true) . ";";
 ?>
         </script>
         <script type='text/javascript' src='<?php echo NC_JS_PATH; ?>/nc-admin.js'></script>                

@@ -272,6 +272,26 @@ class NCLogger {
         }
     }
 
+    /**
+     * Get the root id associated with a given name-level annotation.
+     * E.g. if we know a class name is "GOOD_NODE", this function will
+     * return the "Cxxxxxx" code associated with this class name.
+     * 
+     * @param type $netname
+     * @param type $nameanno
+     * 
+     * @return string 
+     * 
+     * The root id, or empty string when the name annotation does not match
+     */
+    protected function getNameAnnoRootId($netid, $nameanno) {
+       $sql = "SELECT root_id, anno_status FROM ".NC_TABLE_ANNOTEXT . "
+           WHERE BINARY network_id = ? AND anno_text = ? AND 
+           anno_level = ".NC_NAME."";
+       $stmt = prepexec($this->_db, $sql, [$netid, $nameanno]);
+       return $stmt->fetch();       
+    }
+    
 }
 
 ?>
