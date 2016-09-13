@@ -82,8 +82,7 @@ nc.graph.initToolbar = function() {
     var jsvg = $('#nc-graph-svg');
     jsvg.mouseenter(function() {   
         var newnode = $('#nc-graph-toolbar button[val="node"]');
-        var newlink = $('#nc-graph-toolbar button[val="link"]');    
-        //var select = $('#nc-graph-toolbar button[val="select"]');        
+        var newlink = $('#nc-graph-toolbar button[val="link"]');            
         if (newnode.hasClass("active")) {
             jsvg.css("cursor", "crosshair");   
             nc.graph.svg.on("click", nc.graph.addNode); 
@@ -263,14 +262,25 @@ nc.graph.simStart = function() {
     nc.graph.svg.selectAll("g").remove();
     nc.graph.sim.alpha(0);
     
-    // set up node draggin
-    var nodedrag = d3.drag()
-    .on("start", nc.graph.dragstarted)
-    .on("drag", nc.graph.dragged)
-    .on("end", nc.graph.dragended);
+    // set up node dragging
+    var nodedrag = d3.drag().on("start", nc.graph.dragstarted)
+    .on("drag", nc.graph.dragged).on("end", nc.graph.dragended);
+    // set up svg dragging (panning)
+    var svgpan = d3.drag().on("start", nc.graph.panstarted).
+    on("drag", nc.graph.panned).on("end", nc.graph.panended);
+    
+    // create a rect in the svg that will help with panning    
+    var svgwidth = nc.graph.svg.style("width").replace("px","");
+    var svgheight = nc.graph.svg.style("height").replace("px","");            
+    nc.graph.svg.append("rect").classed("nc-svg-background", true)
+    .attr("width", svgwidth).attr("height", svgheight)
+    .style("fill", "none").style("pointer-events", "all").call(svgpan);
+    
+    nc.graph.svg.append("g").classed("nc-svg-content", true)
+    .attr("transform", "translate(0,0)scale(1)");            
     
     // create var with set of links (used in the tick function)
-    var link = nc.graph.svg.append("g")
+    var link = nc.graph.svg.select("g.nc-svg-content").append("g")
     .attr("class", "links")
     .selectAll("line")
     .data(nc.graph.links)
@@ -288,7 +298,7 @@ nc.graph.simStart = function() {
     .on("click", nc.graph.select);                    
     
     // create a var with a set of nodes (used in the tick function)
-    var node = nc.graph.svg.append("g")
+    var node = nc.graph.svg.select("g.nc-svg-content").append("g")
     .attr("class", "nodes")
     .selectAll("circle")
     .data(nc.graph.nodes)
@@ -303,8 +313,7 @@ nc.graph.simStart = function() {
             return "nc-default-node";
         }
     })
-    .call(nodedrag).on("click", nc.graph.select);
-        
+    .call(nodedrag).on("click", nc.graph.select).on("dblclick", nc.graph.unpin);        
     
     // performed at each simulation step to reposition the nodes and links
     var tick = function() {        
@@ -352,10 +361,30 @@ var dy = function(d) {
 }
 
 
+/* ==========================================================================
+ * Interactions (dragging, panning, zooming)
+ * ========================================================================== */
+
+
 /**
- * @param d the object that is being dragged
+ * Unpin the position of a node
  */
-nc.graph.dragstarted = function(d) {   
+nc.graph.unpin = function(d) {    
+    if ("index" in d) {
+        nc.graph.nodes[d.index].fx = null;
+        nc.graph.nodes[d.index].fy = null;                   
+    }
+}
+
+
+/**
+ * @param d the object (node) that is being dragged
+ */
+nc.graph.dragstarted = function(d) {  
+    
+    // pass on the event to "select" - this will highlights the dragged object
+    nc.graph.select(d);
+    
     switch (nc.graph.mode) {
         case "select":
             if (!d3.event.active) nc.graph.sim.alphaTarget(0.3).restart();    
@@ -373,7 +402,7 @@ nc.graph.dragstarted = function(d) {
 }
 
 /**
- * @param d the object that is being dragged 
+ * @param d the object (node) that is being dragged 
  */
 nc.graph.dragged = function(d) {     
     var point = d3.mouse(this);    
@@ -399,8 +428,10 @@ nc.graph.dragged = function(d) {
     }    
 }
 
-nc.graph.dragended = function(d) {
-    var point = d3.mouse(this);    
+/**
+ * @param d the object (node) that was dragged
+ */
+nc.graph.dragended = function(d) {    
     var dindex = d.index;    
     switch (nc.graph.mode) {
         case "select":
@@ -409,14 +440,44 @@ nc.graph.dragended = function(d) {
             nc.graph.nodes[dindex].fy = null;    
             break;
         case "newlink":
-            nc.graph.addLink();
+            nc.graph.addLink(); // this is here to make links respond to drag events
             break;
         case "default":
             break;
-    }
-    
-    
+    }        
 }
+
+// for panning it helps to keep track of the pan-start point
+nc.graph.point = [0,0];
+
+/**
+ * activates when user drags the background
+ */
+nc.graph.panstarted = function() {
+    var p = d3.mouse(this);  
+     // get original translation 
+    var oldtrans = nc.graph.svg.select("g.nc-svg-content").attr("transform").split(/\(|,|\)/);
+    // record the drag start location
+    nc.graph.point = [p[0]-oldtrans[1], p[1]-oldtrans[2]];   
+}
+
+/**
+ * Performs the panning by adjusting the g.nc-svg-content transformation
+ */
+nc.graph.panned = function() {
+    // compute the content transformation from the current mouse position and the 
+    // drag start position
+    var thispoint = d3.mouse(this);
+    var diffx = thispoint[0]-nc.graph.point[0];
+    var diffy = thispoint[1]-nc.graph.point[1];
+    nc.graph.svg.select("g.nc-svg-content").
+        attr("transform", "translate(" + diffx +","+ diffy +")");    
+}
+
+nc.graph.panended = function() {
+   
+}
+
 
 nc.graph.zoom = function() {
     nc.graph.svg.attr("transform", 
@@ -519,6 +580,11 @@ nc.graph.createNode = function() {
     
     nc.graph.resetForms();        
    
+    // check if the user is allowed to create users
+    if (!nc.editor) {
+        return;
+    }
+   
     // basic checks on the text boxes    
     if (nc.utils.checkFormInput('fg-nodename', "node name", 1)+
         nc.utils.checkFormInput('fg-nodetitle', "node title", 2) < 2) return 0;    
@@ -583,7 +649,12 @@ nc.graph.createNode = function() {
 nc.graph.createLink = function() {
     
     nc.graph.resetForms();
-    
+   
+    // check if user has permissions for the action
+    if (!nc.editor) {
+        return;
+    }
+   
     // basic checks on the text boxes    
     if (nc.utils.checkFormInput('fg-linkname', "link name", 1) +
         nc.utils.checkFormInput('fg-linksource', "link source", 1) +

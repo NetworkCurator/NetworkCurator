@@ -45,10 +45,14 @@ echo ncScriptObject("nc.graph.links", $graphlinks);
     debugLinks = function() {
         $('#nc-debugging').html(JSON.stringify(nc.graph.links));
     }
+    debugUser = function() {
+        alert("curate: "+nc.curator+" edit: "+nc.editor+" comment: "+nc.commentator);
+    }
     </script>
     <div class="nc-mt-10">Debugging</div>    
 <a onclick="javascript:debugNodes(); return false;">Show nodes</a>
 <a onclick="javascript:debugLinks(); return false;">Show links</a>
+<a onclick="javascript:debugUser(); return false">Show user data</a>
 <div id="nc-debugging">
     
 </div>

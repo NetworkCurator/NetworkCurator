@@ -32,7 +32,7 @@
                 <label>Node class:</label> 
                 <div class="input-group-btn"></div>
             </div>  
-            <button type="submit" class="btn btn-success submit">Create</button>     
+            <button type="submit" class="btn btn-success nc-editor submit">Create</button>     
             <button type="button" onclick="nc.graph.removeNode();" class="btn btn-warning">Remove</button>
         </form>
 </div>
@@ -61,7 +61,7 @@
                 <label>Target:</label>
                 <input type="text" class="form-control" disabled>
             </div>
-            <button type="submit" class="btn btn-success submit">Create</button>        
+            <button type="submit" class="btn btn-success nc-editor submit">Create</button>        
             <button type="button" onclick="nc.graph.removeLink();" class="btn btn-warning">Remove</button>
         </form>
 </div>

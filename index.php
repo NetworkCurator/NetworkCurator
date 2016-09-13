@@ -56,6 +56,7 @@ try {
 }
 $iscurator = 0 + ($upermissions >= NC_PERM_CURATE);
 $iscommentator = 0 + ($upermissions >= NC_PERM_COMMENT);
+$iseditor = 0 + ($upermissions >= NC_PERM_EDIT);
 
 
 /* --------------------------------------------------------------------------

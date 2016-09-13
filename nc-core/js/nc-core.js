@@ -97,7 +97,7 @@ nc.init.all = function() {
 }
 
 /**
- * Invoked at page startup - builds widgets for guest and user permissions 
+ * Invoked at page startup - builds widgets for managing guest and user permissions 
  */
 nc.init.initPermissions = function() {       
     // check if this is the permissions page
@@ -260,7 +260,18 @@ nc.init.initNetwork = function() {
     if (nc.networktitle!='') {
         $('#nc-nav-network-title').html(nc.networktitle);        
         $('body').addClass('body2');
-    }          
+    }
+    
+    // hide certain components depending on current users permissions level
+    if (!nc.curator) {
+        $('.nc-curator').hide();
+    }
+    if (!nc.editor) {
+        $('.nc-editor').hide();
+    }
+    if (!nc.commentator) {
+        $('.nc-commentator').hide();
+    }
 }
 
 

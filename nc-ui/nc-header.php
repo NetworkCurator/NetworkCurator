@@ -27,6 +27,7 @@ echo "nc.userid='$uid',
           nc.lastname='$lastname',
           nc.network='$network',
           nc.curator=". (int) ($iscurator == true) . ",
+          nc.editor=". (int) ($iseditor == true) .", 
           nc.commentator=". (int) ($iscommentator == true) . ";";
 ?>
         </script>
