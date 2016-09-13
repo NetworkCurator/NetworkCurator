@@ -269,13 +269,12 @@ nc.graph.simStart = function() {
     var svgpan = d3.drag().on("start", nc.graph.panstarted).
     on("drag", nc.graph.panned).on("end", nc.graph.panended);
     
-    // create a rect in the svg that will help with panning    
-    var svgwidth = nc.graph.svg.style("width").replace("px","");
-    var svgheight = nc.graph.svg.style("height").replace("px","");            
+    // create a rect in the svg that will help with panning                   
     nc.graph.svg.append("rect").classed("nc-svg-background", true)
-    .attr("width", svgwidth).attr("height", svgheight)
-    .style("fill", "none").style("pointer-events", "all").call(svgpan);
-    
+    .attr("width", "100%").attr("height", "100%")
+    .style("fill", "none").style("pointer-events", "all")    
+    .call(svgpan);    
+            
     nc.graph.svg.append("g").classed("nc-svg-content", true)
     .attr("transform", "translate(0,0)scale(1)");            
     
@@ -455,7 +454,7 @@ nc.graph.point = [0,0];
  */
 nc.graph.panstarted = function() {
     var p = d3.mouse(this);  
-     // get original translation 
+    // get original translation 
     var oldtrans = nc.graph.svg.select("g.nc-svg-content").attr("transform").split(/\(|,|\)/);
     // record the drag start location
     nc.graph.point = [p[0]-oldtrans[1], p[1]-oldtrans[2]];   
@@ -471,12 +470,12 @@ nc.graph.panned = function() {
     var diffx = thispoint[0]-nc.graph.point[0];
     var diffy = thispoint[1]-nc.graph.point[1];
     nc.graph.svg.select("g.nc-svg-content").
-        attr("transform", "translate(" + diffx +","+ diffy +")");    
+    attr("transform", "translate(" + diffx +","+ diffy +")");    
 }
 
 nc.graph.panended = function() {
    
-}
+    }
 
 
 nc.graph.zoom = function() {
