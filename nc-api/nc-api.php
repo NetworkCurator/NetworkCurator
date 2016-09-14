@@ -82,7 +82,7 @@ try {
     $ans['data'] = $controllerI->$action();
 
     // log most actions, except user confirmation    
-    if ($action !== "confirm") {
+    if ($action == "verify") {
         if (isset($params['target_password'])) {
             $params['target_password'] = 'password';
         }

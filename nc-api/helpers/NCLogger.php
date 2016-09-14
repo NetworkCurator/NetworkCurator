@@ -124,8 +124,9 @@ class NCLogger {
      * 
      * id code for the new annotation
      * 
+     * @deprecated
      */
-    public function insertAnnoText($params) {
+    public function insertAnnoText2($params) {
 
         // get a new annotation id
         $tat = "" . NC_TABLE_ANNOTEXT;
@@ -158,6 +159,41 @@ class NCLogger {
     }
 
     /**
+     * Execute a db query that insert an annotation into the table. 
+     * 
+     * The action insert one row with status set to active.
+     * 
+     * @param array $params
+     * 
+     * the array should have entries: 
+     * network_id, owner_id, user_id, root_id, parent_id, anno_text, anno_level
+     * 
+     * @return 
+     * 
+     * id code for the new annotation
+     * 
+     */
+    public function insertAnnoText($params) {
+
+        // get a new annotation id
+        $tat = "" . NC_TABLE_ANNOTEXT;
+        $newid = $this->makeRandomID($tat, 'anno_id', 'AT', NC_ID_LEN);
+
+        $params['anno_id'] = $newid;
+
+        // insert the annotation into the table
+        // (this is somewhat inelegant, uses twice the named placeholders with A/B.
+        $sql = "INSERT INTO $tat 
+                   (datetime, network_id, owner_id, user_id, root_id, parent_id, 
+                   anno_id, anno_text, anno_level, anno_status) VALUES 
+                   (UTC_TIMESTAMP(), :network_id, :owner_id, :user_id, :root_id, :parent_id,
+                   :anno_id, :anno_text, :anno_level, " . NC_ACTIVE . ")";
+        $stmt = prepexec($this->_db, $sql, $params);
+
+        return $newid;
+    }
+
+    /**
      * Updates the annotext table with some new data.
      * Updating means changing the active "status=1" entry, and adding
      * a "status=0" entry for historical records.
@@ -172,8 +208,9 @@ class NCLogger {
      * 
      * integer 1 upon success
      * 
+     * @deprecated
      */
-    public function updateAnnoText($params) {
+    public function updateAnnoText2($params) {
 
         $tat = "" . NC_TABLE_ANNOTEXT;
 
@@ -195,6 +232,41 @@ class NCLogger {
                    anno_id, anno_text, anno_level, anno_status) VALUES                          
                    (UTC_TIMESTAMP(), :network_id, :owner_id, :user_id, :root_id, :parent_id,
                    :anno_id, :anno_text, :anno_level, " . NC_OLD . ")";
+        $stmt = prepexec($this->_db, $sql, $params);
+
+        return 1;
+    }
+
+    /**
+     * Updates the annotext table with some new data.
+     * Updating means changing an existing row with anno_id to status=OLD,
+     * and inserting a new row with status = active. 
+     * 
+     * @param array $params
+     * 
+     * The function assumes the array contains seven elements.
+     * network_id, owner_id, user_id, root_id, parent_id, anno_text, anno_level
+     * 
+     * @return
+     * 
+     * integer 1 upon success
+     *      
+     */
+    public function updateAnnoText($params) {
+
+        $tat = "" . NC_TABLE_ANNOTEXT;
+
+        // prepare a statement setting all anno_status to disabled for a given anno_id
+        $sql = "UPDATE $tat SET anno_status=" . NC_OLD . "                           
+                WHERE network_id = ? AND anno_id = ? AND anno_status=" . NC_ACTIVE;
+        $stmt = prepexec($this->_db, $sql, [$params['network_id'], $params['anno_id']]);
+
+        // insert an extra copy for historical records
+        $sql = "INSERT INTO $tat 
+                   (datetime, network_id, owner_id, user_id, root_id, parent_id, 
+                   anno_id, anno_text, anno_level, anno_status) VALUES                          
+                   (UTC_TIMESTAMP(), :network_id, :owner_id, :user_id, :root_id, :parent_id,
+                   :anno_id, :anno_text, :anno_level, " . NC_ACTIVE . ")";
         $stmt = prepexec($this->_db, $sql, $params);
 
         return 1;
@@ -289,7 +361,7 @@ class NCLogger {
            WHERE BINARY network_id = ? AND anno_text = ? AND 
            anno_level = " . NC_NAME . "";
         $stmt = prepexec($this->_db, $sql, [$netid, $nameanno]);
-        $result = $stmt->fetch();        
+        $result = $stmt->fetch();
         if ($throw) {
             if (!$result) {
                 throw new Exception("Name does not match any annotations");
@@ -298,7 +370,6 @@ class NCLogger {
         return $result;
     }
 
-    
     /**
      * Helper function to create a set of annotations for 
      * name, title, abstract, content
@@ -313,7 +384,7 @@ class NCLogger {
      * @param type $annotitle
      */
     protected function insertNewAnnosSimple($netid, $uid, $rootid, $annoname, $annotitle) {
-          // create starting annotations for the title, abstract and content        
+        // create starting annotations for the title, abstract and content        
         $nameparams = array('network_id' => $netid, 'user_id' => $uid, 'owner_id' => $uid,
             'root_id' => $rootid, 'parent_id' => $rootid, 'anno_level' => NC_NAME,
             'anno_text' => $annoname);
@@ -333,7 +404,7 @@ class NCLogger {
         $contentparams['anno_level'] = NC_CONTENT;
         $this->insertAnnoText($contentparams);
     }
-    
+
 }
 
 ?>

@@ -134,7 +134,7 @@ nc.graph.addClassedNode = function(point, nodeclass, styleclass) {
 
 nc.graph.addLink = function() {
     var linkclass = d3.select('#nc-graph-toolbar button[val="link"]').attr("selection");
-    nc.graph.addClassedLink(linkclass, "nc-newlink");
+    return nc.graph.addClassedLink(linkclass, "nc-newlink");
 }
 
 nc.graph.addClassedLink = function(linkclass, styleclass) {   
@@ -156,6 +156,8 @@ nc.graph.addClassedLink = function(linkclass, styleclass) {
     nc.graph.simStop();
     nc.graph.links.push(newlink);
     nc.graph.initSimulation();
+    
+    return newlink;
 }
 
 
@@ -163,11 +165,7 @@ nc.graph.addClassedLink = function(linkclass, styleclass) {
  * Run when user clicks on a node or link in the graph
  */
 nc.graph.select = function(d) {
-    
-    if (nc.graph.mode!="select") {
-        return;
-    }
-    
+            
     // un-highlight existing, then highlight required id
     nc.graph.unselect();    
     if ("source" in d) {
@@ -445,7 +443,8 @@ nc.graph.dragended = function(d) {
             nc.graph.nodes[dindex].fy = null;    
             break;
         case "newlink":
-            nc.graph.addLink(); // this is here to make links respond to drag events
+            var newlink = nc.graph.addLink(); // this is here to make links respond to drag events            
+            nc.graph.select(newlink);
             break;
         case "default":
             break;
