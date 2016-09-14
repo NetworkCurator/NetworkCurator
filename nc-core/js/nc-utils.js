@@ -58,6 +58,11 @@ nc.utils.checkString = function(x, type) {
         ok = ok + "_-$-.+!*'(),";
     }
         
+    // ids cannot start with an underscore
+    if (type==1) {
+        if (x[0]=="_") return 0;
+    }
+        
     // perform length and composition checks    
     var xlen = x.length;
     if (type>=0) {

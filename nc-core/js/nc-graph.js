@@ -168,9 +168,8 @@ nc.graph.select = function(d) {
         return;
     }
     
-    // un-highlight existing
-    nc.graph.svg.selectAll('circle').classed('nc-node-highlight',false);
-    nc.graph.svg.selectAll('line').classed('nc-link-highlight',false);       
+    // un-highlight existing, then highlight required id
+    nc.graph.unselect();    
     if ("source" in d) {
         nc.graph.svg.select('line[id="'+d.id+'"]').classed('nc-link-highlight', true);
     } else {
@@ -182,10 +181,8 @@ nc.graph.select = function(d) {
         $('#nc-graph-details').hide();  
         nc.graph.resetForms();
         if ("source" in d) {            
-            var newlinkdiv = $('#nc-graph-newlink');
-            // selected link            
-            newlinkdiv.show();
-            $('#nc-graph-newnode').hide();                                                
+            // selected a link  
+            var newlinkdiv = $('#nc-graph-newlink');                                              
             // transfer the temporary link id into the create box 
             $('#nc-graph-newlink #fg-linkname input').val(nowid);
             $('#nc-graph-newlink #fg-linktitle input').val(nowid);
@@ -196,11 +193,10 @@ nc.graph.select = function(d) {
             // set the source and target text boxes
             $('#nc-graph-newlink #fg-linksource input').val(d.source.name);
             $('#nc-graph-newlink #fg-linktarget input').val(d.target.name);
+            newlinkdiv.show();
         } else {
-            // selected node
-            $('#nc-graph-newlink').hide();
-            var newnodediv = $('#nc-graph-newnode')
-            newnodediv.show(); 
+            // selected a node            
+            var newnodediv = $('#nc-graph-newnode')            
             // transfer the temporary node id into the create box
             $('#nc-graph-newnode #fg-nodename input').val(nowid);
             $('#nc-graph-newnode #fg-nodetitle input').val(nowid);
@@ -208,13 +204,23 @@ nc.graph.select = function(d) {
             // set the dropdown with the class
             newnodediv.find('button.dropdown-toggle span.nc-classname-span').html(d.class_name);
             newnodediv.find('button.dropdown-toggle').attr('selection', d.class_name);        
+            newnodediv.show(); 
         }    
     } else {        
-        $('#nc-graph-details').show();
-        $('#nc-graph-newlink,#nc-graph-newnode').hide();           
+        $('#nc-graph-details').show();        
     }
                     
 }
+
+/**
+ * Remove all highlight styling from components in the graph
+ */
+nc.graph.unselect = function(d) {
+    nc.graph.svg.selectAll('circle').classed('nc-node-highlight',false);
+    nc.graph.svg.selectAll('line').classed('nc-link-highlight',false);  
+    $('#nc-graph-newnode,#nc-graph-newlink,#nc-graph-details').hide();    
+}
+
 
 /* ==========================================================================
  * Handlers for graph editing
@@ -273,7 +279,7 @@ nc.graph.simStart = function() {
     nc.graph.svg.append("rect").classed("nc-svg-background", true)
     .attr("width", "100%").attr("height", "100%")
     .style("fill", "none").style("pointer-events", "all")    
-    .call(svgpan);    
+    .call(svgpan).on("click", nc.graph.unselect);    
             
     nc.graph.svg.append("g").classed("nc-svg-content", true)
     .attr("transform", "translate(0,0)scale(1)");            
