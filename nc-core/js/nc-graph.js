@@ -92,7 +92,7 @@ nc.graph.initToolbar = function() {
             nc.graph.svg.on("click", nc.graph.addLink)            
             nc.graph.mode = "newlink";
         } else {
-            jsvg.css("cursor", "move");   
+            jsvg.css("cursor", "grab");   
             nc.graph.svg.selectAll('g').attr('cursor', 'default');
             nc.graph.svg.on("click", null);
             nc.graph.svg.selectAll('g').on('click', nc.graph.displayDetails);

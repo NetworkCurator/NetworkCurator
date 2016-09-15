@@ -29,12 +29,13 @@ function sqlreport($db, $s) {
 }
 
 // Helper definitions for sql columns
-$vc24col = " VARCHAR(24) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT ''";
-$vc32col = " VARCHAR(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT ''";
-$vc64col = " VARCHAR(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT ''";
-$vc128col = " VARCHAR(128) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT ''";
-$vc256col = " VARCHAR(256) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT ''";
-$textcol = " TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
+$charset = "CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT ''";
+$vc24col = " VARCHAR(24) $charset";
+$vc32col = " VARCHAR(32) $charset";
+$vc64col = " VARCHAR(64) $charset";
+$vc128col = " VARCHAR(128) $charset";
+$vc256col = " VARCHAR(256) $charset";
+$textcol = " TEXT $charset";
 $statuscol = " TINYINT NOT NULL DEFAULT 1";
 $dblcol = " DOUBLE NOT NULL DEFAULT 0.0";
 $datecol = " DATETIME NOT NULL";
@@ -142,7 +143,7 @@ $sql = "CREATE TABLE $tabname (
   class_id $vc32col,    
   node_status $statuscol,
   PRIMARY KEY (node_id),
-  KEY class_id (class_id)
+  KEY network_id (network_id)
 ) COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
 
@@ -162,7 +163,7 @@ $sql = "CREATE TABLE $tabname (
   PRIMARY KEY (link_id),
   KEY source_id (source_id),
   KEY target_id (target_id),
-  KEY class_id (network_id, class_id)
+  KEY network_id (network_id)
 ) COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
 

@@ -222,7 +222,7 @@ class NCOntology extends NCLogger {
         $tc = "" . NC_TABLE_CLASSES;
         $tat = "" . NC_TABLE_ANNOTEXT;
         $sql = "SELECT class_id, $tc.parent_id AS parent_id, connector, 
-            directional, class_status, anno_text AS class_name, anno_id 
+            directional, class_status, anno_text AS class_name, anno_id, owner_id
             FROM $tc JOIN $tat ON $tc.class_id=$tat.root_id 
               WHERE $tc.class_id = ? AND $tat.anno_level= " . NC_NAME . "
                   AND $tat.anno_status=" . NC_ACTIVE;
@@ -242,7 +242,7 @@ class NCOntology extends NCLogger {
      * @throws Exception
      */
     public function updateClass() {
-
+        
         // check for required inputs
         if (!isset($this->_params['class_id'])) {
             throw new Exception("Unspecified class id");
@@ -315,14 +315,15 @@ class NCOntology extends NCLogger {
 
             // update the class name and log the activity
             $pp = ['network_id' => $this->_netid, 'user_id' => $this->_uid,
+                'owner_id' => $olddata['owner_id'],
                 'root_id' => $this->_params['class_id'],
                 'parent_id' => $this->_params['class_id'],
                 'anno_text' => $this->_params['class_name'],
                 'anno_id' => $olddata['anno_id'],
                 'anno_level' => NC_NAME];
-            $this->updateAnnoText($pp);
-            $this->logActivity($this->_uid, $this->_netid, "updated class name", $pp['anno_text'], $pp['parent_id']);
-        }
+            $this->updateAnnoText($pp);            
+            $this->logActivity($this->_uid, $this->_netid, "updated class name", $pp['anno_text'], $pp['parent_id']);            
+        }        
         if (!$Q1 || !$Q3) {
             // update the class structure and log the activity
             $sql = "UPDATE $tc SET
@@ -339,7 +340,6 @@ class NCOntology extends NCLogger {
             $value = $pp['parent_id'] . "," . $pp['directional'] . "," . $pp['class_status'];
             $this->logActivity($this->_uid, $this->_netid, "updated class properties for class", $this->_params['class_name'], $value);
         }
-
         return 1;
     }
 

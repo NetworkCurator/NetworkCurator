@@ -42,7 +42,13 @@ if (!isset($_SESSION['uid'])) {
     $upw = $_SESSION['upw'];
 }
 $NCapi = new NCApiCaller($uid, $upw);
-$userin = $NCapi->checkLogin();
+try {
+    $userin = $NCapi->checkLogin();
+} catch (Exception $ex) {
+    ncSignout();
+    header("Refresh: 0; ?page=front");
+    exit();
+}
 if (!$userin) {
     $uid = "guest";
 }
@@ -51,13 +57,12 @@ $userip = $_SERVER['REMOTE_ADDR'];
 // determine permission levels for this user
 try {
     $upermissions = $NCapi->querySelfPermissions($network);
-} catch (Exception $e) {
+} catch (Exception $ex) {
     $upermissions = 0;
 }
 $iscurator = 0 + ($upermissions >= NC_PERM_CURATE);
 $iscommentator = 0 + ($upermissions >= NC_PERM_COMMENT);
 $iseditor = 0 + ($upermissions >= NC_PERM_EDIT);
-
 
 /* --------------------------------------------------------------------------
  * Create user-viewable page 
@@ -78,7 +83,7 @@ if ($page == "login" || $page == "logout" || $page == "admin") {
 } else if ($page == "network" && $network) {
     // these are pages that require a network name
     include_once "nc-ui/nc-ui-$page.php";
-} else if ($page=="front" || $page=='') {
+} else if ($page == "front" || $page == '') {
     include_once "nc-ui/nc-ui-front.php";
 } else {
     include_once "nc-ui/nc-ui-custompage.php";
