@@ -55,7 +55,7 @@ if (!$userin) {
 $userip = $_SERVER['REMOTE_ADDR'];
 
 // determine permission levels for this user
-try {
+try {    
     $upermissions = $NCapi->querySelfPermissions($network);
 } catch (Exception $ex) {
     $upermissions = 0;

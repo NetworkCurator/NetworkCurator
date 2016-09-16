@@ -22,15 +22,6 @@ nc.graph = {
 };
 
 
-//nc.graph.links = [
-//{
-//    id: "hello",
-//    source: "Npw8g4p2z", 
-//    target: "Nrcszc0zk"
-//}];
- 
-
-
 /* ==========================================================================
  * Structure of graph box
  * ========================================================================== */
@@ -457,7 +448,7 @@ nc.graph.point = [0,0];
 /**
  * activates when user drags the background
  */
-nc.graph.panstarted = function() {
+nc.graph.panstarted = function() {   
     var p = d3.mouse(this);  
     // get original translation 
     var oldtrans = nc.graph.svg.select("g.nc-svg-content").attr("transform").split(/\(|,|\)/);
@@ -480,7 +471,7 @@ nc.graph.panned = function() {
 
 nc.graph.panended = function() {
    
-    }
+}
 
 
 nc.graph.zoom = function() {

@@ -40,3 +40,39 @@ echo ncScriptObject("nc.ontology.links", $linkclasses);
         </div>
     </div>
 </div>
+
+
+<div class="modal fade vertical-alignment-helper" id="nc-deprecateconfirm-modal" role="dialog">
+    <div class="modal-dialog vertical-align-center">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Please confirm</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Are you sure you want to <span id="nc-deprecateconfirm-action">deprecate</span> 
+                    class <b><span id="nc-deprecateconfirm-class" val=""></span></b>?                    
+                </p>
+                <p><b>Heads up!</b></p>
+                <p val="deprecate">
+                    If the class has already been applied to a graph element, 
+                    deprecating the class will also deprecate all those elements, but will not delete them. 
+                    The class will remain visible on this page and can be re-activated later.
+                </p>
+                <p val="deprecate">
+                    If the class has not been used yet, this action will remove it 
+                    completely.                    
+                </p>
+                <p val="activate">
+                    Activating the deprecated class will make it accessible again for use. 
+                    Any graph elements using the class will remain 
+                    deprecated until re-activated separately. 
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" data-dismiss="modal" val="confirm">OK</button>
+                <button class="btn btn-warning" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>

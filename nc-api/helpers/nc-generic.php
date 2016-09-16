@@ -11,10 +11,9 @@
  * Output: random string.
  * 
  */
-function makeRandomHexString($stringlength) {    
-    return makeRandomString($stringlength, $okchars="1234567890abcdef");
+function makeRandomHexString($stringlength) {
+    return makeRandomString($stringlength, $okchars = "1234567890abcdef");
 }
-
 
 /**
  * Generate a random string composed of characters
@@ -28,7 +27,7 @@ function makeRandomHexString($stringlength) {
  * 
  * @return string
  */
-function makeRandomString($stringlength, $okchars="1234567890bcdfghjklmnpqrstvwxz") {
+function makeRandomString($stringlength, $okchars = "1234567890bcdfghjklmnpqrstvwxz") {
 
     // helper object 
     $oklen = strlen($okchars);
@@ -44,8 +43,6 @@ function makeRandomString($stringlength, $okchars="1234567890bcdfghjklmnpqrstvwx
 
     return $ans;
 }
-
-
 
 /**
  * Get a string with the username's full name from an array
@@ -73,35 +70,21 @@ function ncFullname($a, $prefix = "user_") {
     }
 }
 
-
 /**
  * concatenames user names from an array
  * 
  * @param type $a
  * @return type
  */
-function ncListNames($a) {    
+function ncListNames($a) {
     $ans = "";
-    for ($x=0; $x<count($a); $x++) {
-        if ($x>0) {
-         $ans .=", ";   
+    for ($x = 0; $x < count($a); $x++) {
+        if ($x > 0) {
+            $ans .=", ";
         }
         $ans .= ncFullname($a[$x]);
     }
     return $ans;
-}
-
-
-/**
- * Get a small array using only a few elements from a larger (assoc) array
- * 
- * @param array $array
- * @param array $keys
- * @return array
- * 
- */
-function ncSubsetArray($array, $keys) {
-    return array_intersect_key($array, array_flip($keys));
 }
 
 
@@ -118,13 +101,13 @@ function ncSubsetArray($array, $keys) {
  * @return string The interpolated query
  */
 function ncInterpolateQuery($query, $params) {
-       
+
     $keys = array();
-    
+
     # build a regular expression for each parameter
     foreach ($params as $key => $value) {
         if (is_string($key)) {
-            $keys[] = '/:'.$key.'/';
+            $keys[] = '/:' . $key . '/';
         } else {
             $keys[] = '/[?]/';
         }
@@ -136,6 +119,5 @@ function ncInterpolateQuery($query, $params) {
 
     return $query;
 }
-
 
 ?>

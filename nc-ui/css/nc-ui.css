@@ -86,7 +86,7 @@ body {
  * -------------------------------------------------------------------------- */
 
 
-.nc-btn-permissions {
+.nc-mw-94 {
     min-width: 94px !important;
 }
 
@@ -190,11 +190,6 @@ ol {
 }
 .nc-classdisplay {    
     padding: 3px 0px;
-}
-.nc-classdisplay-span {
-    position: relative;
-    vertical-align: middle;
-    padding-top: 8px;
 }
 .nc-btn-edit {
     margin-left: 6px;

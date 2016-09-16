@@ -12,7 +12,6 @@ class NCNetworks extends NCLogger {
     // db connection and array of parameters are inherited from NCLogger    
     // some variables extracted from $_params, for convenience
     private $_network;
-    private $_uid;
 
     /**
      * Constructor 
@@ -65,19 +64,15 @@ class NCNetworks extends NCLogger {
      */
     public function createNewNetwork() {
 
-        // check that required parameters exist
-        $pp = (array) $this->_params;
-        $tocheck = array('network_name', 'network_title', 'network_desc');
-        if (count(array_intersect_key(array_flip($tocheck), $pp)) !== count($tocheck)) {
-            throw new Exception("Missing parameters");
-        }
+        // check that required parameters are defined
+        $params = $this->subsetArray($this->_params, ["user_id",
+            "network_name", "network_title", "network_desc"]);
 
-        // shorthand variables
-        $uid = $this->_uid;
+        // shorthand variables        
         $network = $this->_network;
 
         // perform tests on whether this user can create new network?
-        if ($uid !== "admin") {
+        if ($this->_uid !== "admin") {
             throw new Exception("Insufficient permissions to create a network");
         }
 
@@ -106,28 +101,11 @@ class NCNetworks extends NCLogger {
         }
 
         // 4/6, create a starting log entry for creation of the network        
-        $this->logActivity($uid, $netid, "created network", $this->_params['network_name'], $this->_params['network_title']);
+        $this->logActivity($this->_uid, $netid, "created network", $params['network_name'], $params['network_title']);
 
         // 5/6, create starting annotations for the title, abstract, contents
-        // insert annotation for network name       
-        $nameparams = array('network_id' => $netid, 'user_id' => $uid, 'owner_id' => $uid,
-            'root_id' => $netid, 'parent_id' => $netid, 'anno_level' => NC_NAME,
-            'anno_text' => $this->_params['network_name']);
-        $this->insertAnnoText($nameparams);
-        // insert annotation for network title
-        $titleparams = $nameparams;
-        $titleparams['anno_text'] = $this->_params['network_title'];
-        $titleparams['anno_level'] = NC_TITLE;
-        $this->insertAnnoText($titleparams);
-        // insert annotation for network abstract        
-        $descparams = $titleparams;
-        $descparams['anno_text'] = $this->_params['network_desc'];
-        $descparams['anno_level'] = NC_ABSTRACT;
-        $this->insertAnnoText($descparams);
-        // insert annotation for network content (more than an abstract)
-        $contentparams = $descparams;
-        $contentparams['anno_level'] = NC_CONTENT;
-        $this->insertAnnoText($contentparams);
+        // insert annotation for network name   
+        $this->insertNewAnnoSet($netid, $this->_uid, $netid, $params['network_name'], $params['network_title'], $params['network_desc']);
 
         // 6/6, create permissions for admin and guest
         $sql = "INSERT INTO " . NC_TABLE_PERMISSIONS . "
@@ -157,7 +135,7 @@ class NCNetworks extends NCLogger {
     public function isPublic() {
         $netid = $this->getNetworkId($this->_network);
         $guestperm = (int) $this->getUserPermissionsNetID($netid, "guest");
-        return $guestperm !== NC_PERM_NONE;
+        return $guestperm > NC_PERM_NONE;
     }
 
     /**
@@ -219,12 +197,11 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
 
         $tu = "" . NC_TABLE_USERS;
         $tp = "" . NC_TABLE_PERMISSIONS;
-        $uid = $this->_uid;
 
         $netid = $this->getNetworkId($this->_network);
         // check that requesting user can view this network       
-        $upermissions = $this->getUserPermissionsNetID($netid, $uid);
-        if ($upermissions < NC_PERM_VIEW) {
+        $uperm = $this->getUserPermissionsNetID($netid, $this->_uid);
+        if ($uperm < NC_PERM_VIEW) {
             throw new Exception("Insufficient permission to view network");
         }
 
@@ -252,17 +229,11 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
      */
     public function getNetworkMetadata() {
 
-        $uid = $this->_uid;
-        $network = $this->_network;
-
         // find the network id that corresponds to the name
-        $netid = $this->getNetworkId($network);
-        if ($netid == "") {
-            throw new Exception("Network does not exist");
-        }
-
+        $netid = $this->getNetworkId($this->_network, true);
+        
         // check if user has permission to view the table        
-        if ($this->getUserPermissionsNetID($netid, $uid) < NC_PERM_VIEW) {
+        if ($this->getUserPermissionsNetID($netid, $this->_uid) < NC_PERM_VIEW) {
             throw new Exception("Insufficient permission to view the network");
         }
 
@@ -340,10 +311,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
     public function getNetworkTitle() {
 
         // find the network id that corresponds to the name
-        $netid = $this->getNetworkId($this->_network);
-        if ($netid == "") {
-            throw new Exception("Network does not exist");
-        }
+        $netid = $this->getNetworkId($this->_network, true);        
 
         // check if user has permission to view the table        
         if ($this->getUserPermissionsNetID($netid, $this->_uid) < NC_PERM_VIEW) {
@@ -360,8 +328,6 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         if (!$result) {
             throw new Exception("Error fetching network title");
         }
-
-        // the output is just the title text
         return $result['anno_text'];
     }
 
@@ -374,7 +340,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
      */
     public function getNetworkActivity() {
 
-        $netid = $this->getNetworkId($this->_network);
+        $netid = $this->getNetworkId($this->_network, true);        
 
         // settings for limiting output
         $offset = 0;
@@ -433,7 +399,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
      * 
      */
     public function getActivityLogSize() {
-        $netid = $this->getNetworkId($this->_network);
+        $netid = $this->getNetworkId($this->_network, true);
 
         $sql = "SELECT COUNT(*) AS logsize FROM " .
                 NC_TABLE_ACTIVITY . " WHERE network_id = ? ";

@@ -150,7 +150,7 @@ nc.users.updatePermissions = function(targetid) {
             }                        
             if (nowval==0 && targetid!=="guest") {                
                 // if setting user to 0, remove the form element from the page
-                var ncfp = $('#ncf-permissions-'+targetid);
+                var ncfp = $('.nc-form-permissions[val="'+targetid+'"]');
                 ncfp.fadeOut('normal', function() {
                     ncfp.remove()
                 }); 

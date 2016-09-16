@@ -57,13 +57,13 @@ nc.ontology.createClass = function(parentid, classname, islink, isdirectional) {
  * Send a request to update a class name or parent structure
  */
 nc.ontology.updateClassProperties = function(classid, classname, parentid, 
-islink, isdirectional) {
+    islink, isdirectional) {
         
     if (nc.utils.checkString(classname, 1)<1) {
         nc.msg("Hey!", "Invalid class name");
         exit();
     }
-    
+        
     $.post(nc.api, {
         controller: "NCOntology", 
         action: "updateClass", 
@@ -94,34 +94,90 @@ islink, isdirectional) {
 }
 
 /**
- * Sends a request to remove/disactivate a class 
+ * Preps to send request to remove/disactivate/deprecate a class 
+ * As this is an important step, this function shows a modal to confirm
+ * The action is only performed upon confirmation
  */ 
-nc.ontology.removeClass = function(classid) {
-           
+nc.ontology.askConfirmation = function(classid, action) {               
+    var classname = $('li[val="'+classid+'"] span[val="class_name"]').html();
+    var modal = $('#nc-deprecateconfirm-modal');
+    modal.find('#nc-deprecateconfirm-action').html(action);
+    modal.find('#nc-deprecateconfirm-class').html(classname).attr("val", classid);        
+    if (action=="deprecate") {
+        $('#nc-deprecateconfirm-modal button[val="confirm"]')
+        .off("click").on("click", nc.ontology.confirmDeprecate);
+        modal.find('p[val="deprecate"]').show();
+        modal.find('p[val="activate"]').hide();
+    } else {
+        $('#nc-deprecateconfirm-modal button[val="confirm"]')
+        .off("click").on("click", nc.ontology.confirmActivate);
+        modal.find('p[val="deprecate"]').hide();
+        modal.find('p[val="activate"]').show();
+    }
+    modal.modal("show");    
+}
+
+
+
+nc.ontology.confirmActivate = function() {
+    
+    var classid = $('#nc-deprecateconfirm-modal #nc-deprecateconfirm-class').attr("val");    
+    alert(classid);
+    
+    return false;
     $.post(nc.api, {
         controller: "NCOntology", 
-        action: "removeClass", 
+        action: "activateClass", 
         network_name: nc.network,
-        class_id: classid        
+        class_id: classid
     }, function(data) {
         nc.utils.alert(data);      
         data = $.parseJSON(data);
         if (data['success']==false) {              
             nc.msg('Error', data['errormsg']);                
-        } else {   
+        } else {
+            var thisrow = $('li[val="'+classid+'"]');            
             if (data['success']==true) {
                 // the class has been truly removed
-                $('li[val="'+classid+'"]').fadeOut('normal', function() {
+                thisrow.fadeOut('normal', function() {
                     $(this).remove()
                 } ); 
             } else {
                 // the class has been deprecated
-                
+                nc.ui.toggleClassDisplay(thisrow);
             }
         }
     });  
 }
 
+nc.ontology.confirmDeprecate = function() {
+    
+    var classid = $('#nc-deprecateconfirm-modal #nc-deprecateconfirm-class').attr("val");        
+        
+    $.post(nc.api, {
+        controller: "NCOntology", 
+        action: "removeClass", 
+        network_name: nc.network,
+        class_id: classid
+    }, function(data) {
+        nc.utils.alert(data);      
+        data = $.parseJSON(data);
+        if (data['success']==false) {              
+            nc.msg('Error', data['errormsg']);                
+        } else {
+            var thisrow = $('li[val="'+classid+'"]');            
+            if (data['data']==true) {
+                // the class has been truly removed
+                thisrow.fadeOut('normal', function() {
+                    $(this).remove()
+                } ); 
+            } else {
+                // the class has been deprecated
+                nc.ui.toggleClassDisplay(thisrow);
+            }
+        }
+    });  
+}
 
 
 /**

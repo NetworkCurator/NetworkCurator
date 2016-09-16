@@ -13,6 +13,8 @@ class NCLogger {
     // general connection
     protected $_db;
     protected $_params;
+    protected $_uid; // user_id (or guest)
+    protected $_upw; // user_confirmation code (or guest(
 
     /**
      * Constructor with connection to database
@@ -20,9 +22,11 @@ class NCLogger {
      * @param PDO $db 
      * 
      */
+
     public function __construct($db, $_params) {
         $this->_db = $db;
-        $this->_params = $params;
+        $this->_params = $_params;
+        $this->_uid = $_paramas['user_id'];
     }
 
     /**
@@ -45,7 +49,7 @@ class NCLogger {
      * integer, number of hex digits in the random id (excluding prefix)
      * 
      */
-    function makeRandomID($dbtable, $idcolumn, $idprefix, $stringlength) {
+    protected function makeRandomID($dbtable, $idcolumn, $idprefix, $stringlength) {
         // this does not use prepared statements at the moment
         //echo "making random ID\n";
         $newid = "";
@@ -283,7 +287,7 @@ class NCLogger {
      * @param type $uid
      * @throws Exception
      */
-    public function getUserPermissions($network, $uid) {
+    protected function getUserPermissions($network, $uid) {
         $tn = "" . NC_TABLE_NETWORKS;
         $tp = "" . NC_TABLE_PERMISSIONS;
         $sql = "SELECT permissions            
@@ -292,7 +296,10 @@ class NCLogger {
         $stmt = $this->_db->prepare($sql);
         $stmt = $stmt->execute(array($uid, $network));
         $result = $stmt . fetch();
-        return $result[permissions];
+        if (!$result) {
+            return NC_PERM_NONE;
+        }
+        return (int) $result[permissions];
     }
 
     /**
@@ -306,12 +313,15 @@ class NCLogger {
      * @param type $uid
      * @throws Exception
      */
-    public function getUserPermissionsNetID($netid, $uid) {
+    protected function getUserPermissionsNetID($netid, $uid) {
         $sql = "SELECT permissions FROM " . NC_TABLE_PERMISSIONS .
                 " WHERE BINARY user_id = ? AND network_id = ?";
         $stmt = prepexec($this->_db, $sql, [$uid, $netid]);
         $result = $stmt->fetch();
-        return $result['permissions'];
+        if (!$result) {
+            return NC_PERM_NONE;
+        }
+        return (int) $result['permissions'];
     }
 
     /**
@@ -323,13 +333,17 @@ class NCLogger {
      * 
      * A network name like "my-network"
      * 
+     * @param logical $throw
+     * 
+     * set true to automatically throw an exception if the network does not exist
+     * 
      * @return string
      * 
      * A code used in the db, e.g. "W0123456789".
      * If a network does nto exists, return the empty string.
      *  
      */
-    public function getNetworkId($netname) {
+    protected function getNetworkId($netname, $throw=false) {
         //echo "getNetworkID\n";
         $sql = "SELECT network_id FROM " . NC_TABLE_ANNOTEXT . "
             WHERE BINARY anno_text = ? AND anno_level = " . NC_NAME . " 
@@ -338,6 +352,9 @@ class NCLogger {
         $stmt->execute([$netname]);
         $result = $stmt->fetch();
         if (!$result) {
+            if ($throw) {
+                throw new Exception("Network does not exist");
+            } 
             return "";
         } else {
             return $result['network_id'];
@@ -359,7 +376,7 @@ class NCLogger {
     protected function getNameAnnoRootId($netid, $nameanno, $throw = true) {
         $sql = "SELECT root_id, anno_status FROM " . NC_TABLE_ANNOTEXT . "
            WHERE BINARY network_id = ? AND anno_text = ? AND 
-           anno_level = " . NC_NAME . "";
+           anno_level = " . NC_NAME . " AND anno_status != ".NC_OLD;
         $stmt = prepexec($this->_db, $sql, [$netid, $nameanno]);
         $result = $stmt->fetch();
         if ($throw) {
@@ -377,13 +394,13 @@ class NCLogger {
      * Only the annotation name and title are set. The others are created, but
      * set empty. 
      * 
-     * @param type $netid
-     * @param type $uid
-     * @param type $rootid
-     * @param type $annoname
-     * @param type $annotitle
+     * @param string $netid
+     * @param string $uid
+     * @param string $rootid
+     * @param string $annoname
+     * @param string $annotitle
      */
-    protected function insertNewAnnosSimple($netid, $uid, $rootid, $annoname, $annotitle) {
+    protected function insertNewAnnoSet($netid, $uid, $rootid, $annoname, $annotitle, $annoabstract) {
         // create starting annotations for the title, abstract and content        
         $nameparams = array('network_id' => $netid, 'user_id' => $uid, 'owner_id' => $uid,
             'root_id' => $rootid, 'parent_id' => $rootid, 'anno_level' => NC_NAME,
@@ -396,13 +413,41 @@ class NCLogger {
         $this->insertAnnoText($titleparams);
         // insert annotation for network abstract        
         $descparams = $titleparams;
-        $descparams['anno_text'] = '';
+        $descparams['anno_text'] = $annoabstract;
         $descparams['anno_level'] = NC_ABSTRACT;
         $this->insertAnnoText($descparams);
         // insert annotation for network content (more than an abstract)
         $contentparams = $descparams;
         $contentparams['anno_level'] = NC_CONTENT;
         $this->insertAnnoText($contentparams);
+    }
+
+    /**
+     * Get a small array using only a few elements from a larger (assoc) array
+     * 
+     * @param array $array
+     * @param array $keys
+     * @return array
+     * 
+     */
+    protected function subsetArray($array, $keys) {
+
+        // perform the subset
+        $result = array_intersect_key($array, array_flip($keys));
+
+        // check if all the keys were found
+        if (count($result) !== count($keys)) {
+            // some of the keys are missing, make a string with a summary
+            $missing = "";
+            for ($i = 0; $i < count($keys); $i++) {
+                if (!in_array($keys[$i], $array)) {
+                    $missing .= " " . $keys[$i];
+                }
+            }
+            throw new Exception("Missing keys: $missing");
+        }
+
+        return $result;
     }
 
 }

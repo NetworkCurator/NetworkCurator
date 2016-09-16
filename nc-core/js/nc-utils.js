@@ -17,7 +17,7 @@ nc.utils = {};
 /**
  * for debugging, turn on/off
  */
-nc.utils.debug = false;
+nc.utils.debug = true;
 
 
 /**

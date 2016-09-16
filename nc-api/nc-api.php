@@ -26,7 +26,7 @@ include_once $nowdir . "/helpers/NCLogger.php";
 $ans = array();
 
 try {
-    //echo "here";
+    
     // connect to the database    
     $db = connectDB(NC_DB_SERVER, NC_DB_NAME, NC_DB_ADMIN, NC_DB_ADMIN_PASSWD);
 
@@ -41,7 +41,7 @@ try {
                     mcrypt_decrypt(MCRYPT_RIJNDAEL_256, NC_APP_KEY, $request, MCRYPT_MODE_ECB)));
     if ($params == false) {
         throw new Exception('Invalid request - decryption failed');
-    }
+    }   
     if (isset($params->controller) == false || isset($params->action) == false) {
         throw new Exception('Invalid request - missing controller or action');
     }
@@ -49,47 +49,48 @@ try {
         throw new Exception('Invalid request - missing userid');
     }
     $params = (array) $params;
-
-    //print_r($params);
+    
     // record the ip address of the source server
-    if (!isset($request['source_ip'])) {
-        $request['source_ip'] = $_SERVER['REMOTE_ADDR'];
+    $sourceaddr = $_SERVER['REMOTE_ADDR'];
+    if (isset($request['source_ip'])) {
+        $sourceaddr = $request['source_ip'];        
     }
 
     // get the controller and requested action
     $controller = $params['controller'];
     $action = $params['action'];
-
+    unset($params['controller']);
+    unset($params['action']);        
+    
     // create instance of the controller
-    include_once "controllers/NCUsers.php";
+    include_once "controllers/NCUsers.php";    
     $controllerfile = "controllers/{$controller}.php";
     if (file_exists($controllerfile)) {
         include_once $controllerfile;
     } else {
         throw new Exception("Invalid controller $controller");
     }
-    $controllerI = new $controller($db, $params);
-
+    $nowcontroller = new $controller($db, $params);
+    
     // check that action is not one of the `private functions`    
     if (in_array($action, get_class_methods('NCLogger'))) {
         throw new Exception("Invalid action $action");
     }
     // check if action is defined in the controller
-    if (method_exists($controllerI, $action) === false) {
+    if (method_exists($nowcontroller, $action) === false) {
         throw new Exception("Invalid action $action");
     }
     // execute the requested action in the controller    
-    $ans['data'] = $controllerI->$action();
+    $ans['data'] = $nowcontroller->$action();
 
     // log most actions, except user confirmation    
     if ($action == "verify") {
         if (isset($params['target_password'])) {
             $params['target_password'] = 'password';
         }
-        unset($params['controller']);
-        unset($params['action']);
+
         $logger = new NCLogger($db);
-        $logger->logAction($params['user_id'], $_SERVER['REMOTE_ADDR'], $controller, $action, json_encode($params));
+        $logger->logAction($params['user_id'], $sourceaddr, $controller, $action, json_encode($params));
     }
 
     // if reached here, presumably the controlled finished correctly

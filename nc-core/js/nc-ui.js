@@ -52,7 +52,7 @@ nc.ui.PermissionsWidget = function(udata) {
         if (uid=="guest" && val>1) perm = " disabled";            
                 
         // create a <label> html 
-        var html = '<label class="btn btn-default nc-btn-permissions'+perm+'">';
+        var html = '<label class="btn btn-default nc-mw-90'+perm+'">';
         html += '<input type="radio" autocomplete="off" value="'+val+'" '+perm+'>';
         html += lab+'</label>';        
         return html;
@@ -122,9 +122,7 @@ nc.ui.ClassTreeWidget = function(classdata, islink) {
         directional:0
     };
     //var parentsofroot = ncuiClassDisplay(rootrow, 0);
-    var parentsofroot = '<ol class="nc-classtree-children" val="">'; 
-    //rootrow['class_name']='';    
-    parentsofroot += '</ol>';        
+    var parentsofroot = '<ol class="nc-classtree-children" val=""></ol>';     
     parentsofroot += nc.ui.ClassForm(rootrow);    
     root.append(parentsofroot);
         
@@ -180,10 +178,15 @@ nc.ui.ClassTreeWidget = function(classdata, islink) {
         thisform.toggle();        
         root.find("div.nc-classdisplay[val='"+classid+"']").toggle();        
     });    
-    // clicking to remove a class
+    // clicking to remove/deprecate a class
     root.delegate("div.nc-classdisplay button[val='remove']", "click", function() {                                
         var classid = $(this).parent().attr('val');                      
-        nc.ontology.removeClass(classid);
+        nc.ontology.askConfirmation(classid, 'deprecate');
+    });
+    // clicking to remove/deprecate a class
+    root.delegate("div.nc-classdisplay button[val='activate']", "click", function() {                                
+        var classid = $(this).parent().attr('val');                      
+        nc.ontology.askConfirmation(classid, 'activate');
     });
     // clicking to cancel updating an existing class
     root.delegate("form.nc-classupdate .nc-btn-class-cancel", "click", function() {                                
@@ -225,9 +228,30 @@ nc.ui.ClassTreeRowWidget = function(classrow) {
     var achildren = '<ol class="nc-classtree-children" val="'+classrow['class_id']+'"></ol>';       
     
     // create the widget from the components
-    return '<li val="'+classrow['class_id']+'">'+adisplay + aform + achildren+'</li>';                
+    var obj= $('<li val="'+classrow['class_id']+'">'+adisplay + aform + achildren+'</li>');                
+
+    // modify the object if class is inactive
+    if (classrow['class_status']!=1) {
+        obj = nc.ui.toggleClassDisplay(obj);
+    }
+    
+    return obj;
 }
 
+
+/**
+ * Toggle between deprecated and active ontology class (visual)
+ * 
+ * The implementation looks like it can be done with ".toggle()" but the first time 
+ * 
+ * obj - a jquery object holding the <li> for the class
+ */
+nc.ui.toggleClassDisplay = function(obj) {        
+    obj.find('div.nc-classdisplay').toggleClass("nc-deprecated");
+    obj.find('button').toggle();
+    obj.find('span.nc-comment[val="deprecated"]').toggle();            
+    return obj;
+}
 
 /**
  * Creates html displays one row in the classtree (when viewing only)
@@ -236,19 +260,21 @@ nc.ui.ClassTreeRowWidget = function(classrow) {
  * 
  */
 nc.ui.ClassDisplay = function(classrow) {
-        
+    
     // create a div with one label (possible a directional comment) and one button
-    var fg = '<div val="'+classrow['class_id']+'" class="nc-classdisplay"><span class="nc-classdisplay-span">'+classrow['class_name']+'</span>';
+    var fg = '<div val="'+classrow['class_id']+'" class="nc-classdisplay">'; 
+    fg+='<span class="nc-comment" val="class_name">'+classrow['class_name']+'</span>';
     // forms for links include a checkbox for directional links    
-    fg += '<span class="nc-classdisplay-span nc-directional">';
+    fg += '<span class="nc-comment" val="directional">';
     if (+classrow['directional']) {
         fg+= ' (directional)';
     }
-    fg+='</span>';     
-    if (nc.curator) {
-        fg += '<button val="remove" class="pull-right btn btn-primary btn-sm nc-btn-remove">Remove</button>';           
-        fg += '<button val="edit" class="pull-right btn btn-primary btn-sm nc-btn-edit">Edit</button>';   
-        fg += '<button val="move" class="pull-right btn btn-primary btn-sm nc-btn-move">Move</button>';       
+    fg += '</span><span class="nc-comment" val="deprecated" style="display: none">[deprecated]</span>';    
+    if (nc.curator) {        
+        fg += '<button val="remove" class="pull-right btn btn-primary btn-sm nc-mw-68 nc-hm-3">Remove</button>';
+        fg += '<button val="activate" class="pull-right btn btn-primary btn-sm nc-mw-68 nc-hm-3" style="display: none">Activate</button>';                       
+        fg += '<button val="edit" class="pull-right btn btn-primary btn-sm nc-mw-68 nc-hm-3">Edit</button>';   
+        fg += '<button val="move" class="pull-right btn btn-primary btn-sm nc-mw-66 nc-hm-3">Move</button>';               
     }
     fg += '</div>'; 
                 
