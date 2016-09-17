@@ -104,10 +104,10 @@ nc.graph.addNode = function() {
     var whichnode = d3.select('#nc-graph-toolbar button[val="node"]');
     var classid = whichnode.attr('class_id');
     var classname = whichnode.attr('class_name');
-    nc.graph.addClassedNode(d3.mouse(this), classid, classname, "nc-newnode");            
+    nc.graph.addClassedNode(nc.graph.getCoord(d3.mouse(this)), classid, classname, "nc-newnode");            
 }
 
-nc.graph.addClassedNode = function(point, classid, classname, styleclass) {             
+nc.graph.addClassedNode = function(point, classid, classname, styleclass) { 
     var newid = "+"+classname+"_"+Date.now(),
     newnode = {
         "id": newid,
@@ -287,7 +287,6 @@ nc.graph.filterLinks = function() {
         }
     }
 
-//alert("started with "+llen+" filtered to "+nc.graph.links.length);
 }
 
 
@@ -295,6 +294,17 @@ nc.graph.filterLinks = function() {
  * Graph display
  * ========================================================================== */
 
+
+nc.graph.getTransformation = function() {    
+    //alert("getting transformation");
+    var content = nc.graph.svg.select("g.nc-svg-content");     
+    if (content.empty()) {        
+        return [0,0,1];
+    }
+    var trans = content.attr("transform").split(/\(|,|\)/);        
+    //alert("return actual transofrm");
+    return [parseFloat(trans[1]), parseFloat(trans[2]), parseFloat(trans[4])];          
+}
 
 /**
  * This function initializes the behavior of the graph svg simulation (force layout)
@@ -307,6 +317,9 @@ nc.graph.initSimulation = function() {
                     
     // get the graph svg component
     nc.graph.svg = d3.select('#nc-graph-svg'); 
+    // fetch the existing transform and scale, if any
+    var initT = nc.graph.getTransformation();
+    // reset the svg    
     nc.graph.svg.selectAll('g,rect').remove();
    
     var width = nc.graph.svg.style("width").replace("px","");    
@@ -321,18 +334,26 @@ nc.graph.initSimulation = function() {
     .force("center", d3.forceCenter(width / 2, height / 2))
     .velocityDecay(0.6);    
             
-    // create a rect in the svg that will help with panning                       
+    // Set up panning and zoom (uses a rect to catch click-drag events)                        
     var svgpan = d3.drag().on("start", nc.graph.panstarted).
     on("drag", nc.graph.panned).on("end", nc.graph.panended);       
+    var svgzoom = d3.zoom().scaleExtent([0.125, 4])   
+    .on("zoom", nc.graph.zoom);  
     
     nc.graph.svg.append("rect").classed("nc-svg-background", true)
     .attr("width", "100%").attr("height", "100%")
     .style("fill", "none").style("pointer-events", "all")    
-    .call(svgpan).on("click", nc.graph.unselect);    
-      
+    .call(svgpan).call(svgzoom)
+    .on("wheel", function() {
+        d3.event.preventDefault();
+    })
+    .on("click", nc.graph.unselect);
+    //.on("dblClick", nc.graph.simUnpause);    
+    
+
     // create a single group g for holding all nodes and links
     nc.graph.svg.append("g").classed("nc-svg-content", true)
-    .attr("transform", "translate(0,0)scale(1)");            
+    .attr("transform", "translate("+initT[0]+","+initT[1]+")scale("+initT[2]+")");            
             
     if (nc.graph.rawnodes.length>0) {
         nc.graph.simStart();
@@ -353,15 +374,7 @@ nc.graph.simStart = function() {
     // filter the raw node and raw links
     nc.graph.filterNodes();
     nc.graph.filterLinks();
-    
-    //nc.graph.nodes = nc.graph.rawnodes;
-    //nc.graph.links = nc.graph.rawlinks;
-    
-    //alert(JSON.stringify(nc.graph.nodes));
-    
-    //alert("sisisi");
-    //alert(" ss "+nc.graph.nodes.length+" "+nc.graph.links.length+" aa");
-    
+           
     // set up node dragging
     var nodedrag = d3.drag().on("start", nc.graph.dragstarted)
     .on("drag", nc.graph.dragged).on("end", nc.graph.dragended);
@@ -544,9 +557,9 @@ nc.graph.point = [0,0];
 nc.graph.panstarted = function() {   
     var p = d3.mouse(this);  
     // get original translation 
-    var oldtrans = nc.graph.svg.select("g.nc-svg-content").attr("transform").split(/\(|,|\)/);
+    var oldtrans = nc.graph.svg.select("g.nc-svg-content").attr("transform").split(/\(|,|\)/);    
     // record the drag start location
-    nc.graph.point = [p[0]-oldtrans[1], p[1]-oldtrans[2]];   
+    nc.graph.point = [p[0]-oldtrans[1], p[1]-oldtrans[2], oldtrans[4]];   
 }
 
 /**
@@ -558,8 +571,9 @@ nc.graph.panned = function() {
     var thispoint = d3.mouse(this);
     var diffx = thispoint[0]-nc.graph.point[0];
     var diffy = thispoint[1]-nc.graph.point[1];
-    nc.graph.svg.select("g.nc-svg-content").
-    attr("transform", "translate(" + diffx +","+ diffy +")");    
+    nc.graph.svg.select("g.nc-svg-content")
+    .attr("transform", "translate(" + diffx +","+ diffy +")scale("+nc.graph.point[2]+")");    
+//.attr("transform", d3.event.transform);
 }
 
 nc.graph.panended = function() {
@@ -567,15 +581,39 @@ nc.graph.panended = function() {
     }
 
 
-nc.graph.zoom = function() {
-    nc.graph.svg.attr("transform", 
-        "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+/**
+ * Perform rescaling on the content svg upon zoomin
+ */
+nc.graph.zoom = function() {        
+    // get existing transformation
+    var oldtrans = nc.graph.svg.select("g.nc-svg-content").attr("transform").split(/\(|,|\)/);    
+    oldtrans = [parseFloat(oldtrans[1]), parseFloat(oldtrans[2]), parseFloat(oldtrans[4])];        
+    var oldscale = oldtrans[2];
+    // apply a scaling transformation manually
+    var newscale = d3.event.transform.k;            
+    var sw2 = parseInt(nc.graph.svg.style("width").replace("px",""))/2;
+    var sh2 = parseInt(nc.graph.svg.style("height").replace("px",""))/2; 
+    var newtrans = [sw2 + (oldtrans[0]-sw2)*(newscale/oldscale), 
+    sh2+(oldtrans[1]-sh2)*(newscale/oldscale), newscale];    
+    // set the new transformation into the content
+    nc.graph.svg.select("g.nc-svg-content")
+    .attr("transform", "translate(" + newtrans[0] +","+ newtrans[1] +")scale("+newtrans[2]+")")        
 }
 
 
 /* ==========================================================================
  * Helper functions
  * ========================================================================== */
+
+
+/**
+ * Converts between a mouse coordinate p to an avg coordinate 
+ * (The differences comes from transformations and scaling)
+ */
+nc.graph.getCoord = function(p) {        
+    var trans = nc.graph.getTransformation();
+    return [(p[0]-trans[0])/trans[2], (p[1]-trans[1])/trans[2]];
+}
 
 /**
  * Make the new link/new node forms look normal
