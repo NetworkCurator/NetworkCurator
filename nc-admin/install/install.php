@@ -35,7 +35,8 @@ $vc32col = " VARCHAR(32) $charset";
 $vc64col = " VARCHAR(64) $charset";
 $vc128col = " VARCHAR(128) $charset";
 $vc256col = " VARCHAR(256) $charset";
-$textcol = " TEXT $charset";
+// the textcol cannot have a default value on some mysql installations?
+$textcol = " TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
 $statuscol = " TINYINT NOT NULL DEFAULT 1";
 $dblcol = " DOUBLE NOT NULL DEFAULT 0.0";
 $datecol = " DATETIME NOT NULL";
