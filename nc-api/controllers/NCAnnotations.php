@@ -164,7 +164,7 @@ class NCAnnotations extends NCLogger {
         $netid = $this->getNetworkId($this->_network, true);
 
         // fetch all the comments
-        $sql = "SELECT datetime, owner_id, user_id, anno_id, 
+        $sql = "SELECT datetime, modified, owner_id, user_id, anno_id, 
                        parent_id, anno_text 
                   FROM " . NC_TABLE_ANNOTEXT . "
                   WHERE network_id = ? and root_id = ? AND anno_status = " . NC_ACTIVE

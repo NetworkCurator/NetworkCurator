@@ -36,7 +36,7 @@ nc.ontology.createClass = function(parentid, classname, islink, isdirectional) {
         directional: +isdirectional        
     }, function(data) {
         nc.utils.alert(data);      
-        data = $.parseJSON(data);
+        data = JSON.parse(data);
         if (data['success']==false) {              
             nc.msg('Error', data['errormsg']);                
         } else {                
@@ -46,7 +46,8 @@ nc.ontology.createClass = function(parentid, classname, islink, isdirectional) {
                 parent_id:parentid, 
                 connector:+islink,
                 directional:+isdirectional, 
-                class_name:classname
+                class_name:classname,
+                class_status: 1
             };
             nc.ui.addClassTreeRow(newrow, 1);                
         }
@@ -76,19 +77,18 @@ nc.ontology.updateClassProperties = function(classid, classname, parentid,
         directional: +isdirectional        
     }, function(data) {
         nc.utils.alert(data);      
-        data = $.parseJSON(data);
+        data = JSON.parse(data);
         if (data['success']==false) {              
             nc.msg('Error', data['errormsg']);                
         } else {   
-            // update the tree display            
-            var targetdisplay = $('div.nc-classdisplay[val="'+classid+'"]');
-            // update the look of the form
-            targetdisplay.find('.nc-classdisplay-span').html(classname);
+            // update the tree display
+            var targetdisplay = $('div.nc-classdisplay[val="'+classid+'"]');            
+            targetdisplay.find('span.nc-comment[val="class_name"]').html(classname);
+            var dirtext = '';
             if (isdirectional) {
-                targetdisplay.find('.nc-directional').html(' (directional)');
-            } else {
-                targetdisplay.find('.nc-directional').html('');
-            }
+                dirtext = ' (directional)';
+            } 
+            targetdisplay.find('span.nc-comment[val="directional"]').html(dirtext);
         }
     });  
 }
@@ -104,12 +104,12 @@ nc.ontology.askConfirmation = function(classid, action) {
     modal.find('#nc-deprecateconfirm-action').html(action);
     modal.find('#nc-deprecateconfirm-class').html(classname).attr("val", classid);        
     if (action=="deprecate") {
-        $('#nc-deprecateconfirm-modal button[val="confirm"]')
+        $('#nc-deprecateconfirm-modal button[val="nc-confirm"]')
         .off("click").on("click", nc.ontology.confirmDeprecate);
         modal.find('p[val="deprecate"]').show();
         modal.find('p[val="activate"]').hide();
     } else {
-        $('#nc-deprecateconfirm-modal button[val="confirm"]')
+        $('#nc-deprecateconfirm-modal button[val="nc-confirm"]')
         .off("click").on("click", nc.ontology.confirmActivate);
         modal.find('p[val="deprecate"]').hide();
         modal.find('p[val="activate"]').show();
@@ -118,40 +118,37 @@ nc.ontology.askConfirmation = function(classid, action) {
 }
 
 
-
+/*
+ * Sends a request to activate a class
+ */
 nc.ontology.confirmActivate = function() {
-    
-    var classid = $('#nc-deprecateconfirm-modal #nc-deprecateconfirm-class').attr("val");    
-    alert(classid);
-    
-    return false;
+    // get the classid from the modal that called this function
+    var classid = $('#nc-deprecateconfirm-modal #nc-deprecateconfirm-class').attr("val");            
     $.post(nc.api, {
         controller: "NCOntology", 
         action: "activateClass", 
         network_name: nc.network,
         class_id: classid
     }, function(data) {
-        nc.utils.alert(data);      
-        data = $.parseJSON(data);
+        nc.utils.alert(data);              
+        data = JSON.parse(data);
         if (data['success']==false) {              
             nc.msg('Error', data['errormsg']);                
-        } else {
-            var thisrow = $('li[val="'+classid+'"]');            
-            if (data['success']==true) {
-                // the class has been truly removed
-                thisrow.fadeOut('normal', function() {
-                    $(this).remove()
-                } ); 
+        } else {            
+            if (data['data']==true) {
+                nc.ui.toggleClassDisplay($('li[val="'+classid+'"]'));
             } else {
-                // the class has been deprecated
-                nc.ui.toggleClassDisplay(thisrow);
+                nc.msg("That's strange", data['data']);                
             }
         }
     });  
 }
 
+/**
+ * Sends a request to deprecate/remova a class
+ */
 nc.ontology.confirmDeprecate = function() {
-    
+    // fetch the confirmed class id from the modal that callled this function
     var classid = $('#nc-deprecateconfirm-modal #nc-deprecateconfirm-class').attr("val");        
         
     $.post(nc.api, {
@@ -160,8 +157,8 @@ nc.ontology.confirmDeprecate = function() {
         network_name: nc.network,
         class_id: classid
     }, function(data) {
-        nc.utils.alert(data);      
-        data = $.parseJSON(data);
+        nc.utils.alert(data);              
+        data = JSON.parse(data);
         if (data['success']==false) {              
             nc.msg('Error', data['errormsg']);                
         } else {

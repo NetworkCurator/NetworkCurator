@@ -44,7 +44,7 @@ nc.admin.createNetwork = function(fgname, fgtitle, fgdesc) {
         network_desc: networkdesc
     }, function(data) {          
         nc.utils.alert(data);        
-        data = $.parseJSON(data);
+        data = JSON.parse(data);
         if (nc.utils.checkAPIresult(data)) {
             if (data['success']==false || data['data']==false) {
                 $('#'+fgname).addClass('has-error has-feedback');                
@@ -109,7 +109,7 @@ nc.admin.createUser = function(fgfirst, fgmiddle, fglast, fgid, fgemail, fgpwd, 
         target_password: $('#'+fgpwd+' input').val()
     }, function(data) {          
         nc.utils.alert(data);        
-        data = $.parseJSON(data);
+        data = JSON.parse(data);
         if (nc.utils.checkAPIresult(data)) {
             if (data['success']==false || data['data']==false) {
                 $('#'+fgid).addClass('has-error has-feedback');                

@@ -208,16 +208,15 @@ class NCGraphs extends NCLogger {
         $tn = "" . NC_TABLE_NODES;
         $tat = "" . NC_TABLE_ANNOTEXT;
 
-        $sql = "SELECT node_id AS id,
-                       nodenameT.anno_text AS name, classnameT.anno_text AS class 
+        $sql = "SELECT node_id AS id, $tn.class_id AS class_id, 
+                       nodenameT.anno_text AS name, classnameT.anno_text AS class_name 
             FROM $tn JOIN $tat AS nodenameT
                         ON $tn.network_id = nodenameT.network_id AND
                         $tn.node_id = nodenameT.root_id
                      JOIN $tat AS classnameT
                         ON $tn.network_id = classnameT.network_id AND
                          $tn.class_id = classnameT.root_id
-                  WHERE $tn.network_id = ? 
-                      AND $tn.node_status = " . NC_ACTIVE . " 
+                  WHERE $tn.network_id = ?                       
                       AND nodenameT.anno_level = " . NC_NAME . "                      
                       AND nodenameT.anno_status = " . NC_ACTIVE . " 
                       AND classnameT.anno_level = " . NC_NAME . "                      
@@ -246,8 +245,9 @@ class NCGraphs extends NCLogger {
         $tl = "" . NC_TABLE_LINKS;
         $tat = "" . NC_TABLE_ANNOTEXT;
 
-        $sql = "SELECT link_id AS id, source_id AS source, target_id AS target,
-                       linknameT.anno_text as name, classnameT.anno_text AS class 
+        $sql = "SELECT link_id AS id, $tl.class_id AS class_id, 
+                       source_id AS source, target_id AS target,
+                       linknameT.anno_text as name, classnameT.anno_text AS class_name 
             FROM $tl JOIN $tat AS linknameT
                         ON $tl.network_id = linknameT.network_id AND
                         $tl.link_id = linknameT.root_id

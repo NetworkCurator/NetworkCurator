@@ -35,7 +35,7 @@ $guestusers = array('guest' => $guestuser);
 <!-- <h1 class="nc-mt-5">Configuration for network <?php echo $network; ?></h1> -->
 
 <div class="row">
-    <div class="col-sm-12">
+    <div class="col-sm-8">
         <h3 class="nc-mt-15">Public access</h3>    
         <div id="nc-permissions-guest">
         </div>
@@ -55,6 +55,20 @@ $guestusers = array('guest' => $guestuser);
         // show a button to add users to the network
         include "ui-permissions-adduser.php";
         ?>
+    </div>
+    
+    <div class="col-sm-4 nc-mt-10">
+        <div class="nc-tips nc-curator">
+            <h4>Tips</h4>        
+            <p>Use the <b>Lookup</b> form to grant users access to the network.</p>
+            <p>Click the <b>permission levels</b> buttons to adjust the privileges of each user. 
+                Then use the <b>Update</b> button to register the changes in the database.</p>
+            <p>Permissions for the <b>guest</b> user determine whether the network is viewable by 
+            non-registered users.</p>        
+            <p><b>Watch out!</b> You now have curation privileges for this network. 
+                If you update your own privileges below the curation level,
+                you will loose the right to make adjustments.</p>
+        </div>
     </div>
 </div>
 

@@ -195,6 +195,7 @@ $tabname = $tp . "anno_text";
 echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (  
   datetime DATETIME NOT NULL,
+  modified DATETIME,
   anno_id $vc32col,
   anno_level INT NOT NULL DEFAULT 0,
   owner_id $vc32col,
@@ -215,6 +216,7 @@ $tabname = $tp . "anno_numeric";
 echo "Creating table $tabname:";
 $sql = "CREATE TABLE $tabname (  
   datetime DATETIME NOT NULL,
+  modified DATETIME,
   anno_id $vc32col,
   anno_level INT NOT NULL DEFAULT 0,
   owner_id $vc32col,

@@ -11,15 +11,10 @@ $linkclasses = $NCapi->getLinkClasses($network);
 $graphnodes = $NCapi->getAllNodes($network);
 $graphlinks = $NCapi->getAllLinks($network);
 
-//echo "<br/><br/>AA<br/>";
-//print_r($graphnodes);
-//echo "<br/><br/>AA<br/>";
-//print_r($graphlinks);
-
 echo ncScriptObject("nc.ontology.nodes", $nodeclasses);
 echo ncScriptObject("nc.ontology.links", $linkclasses);
-echo ncScriptObject("nc.graph.nodes", $graphnodes);
-echo ncScriptObject("nc.graph.links", $graphlinks);
+echo ncScriptObject("nc.graph.rawnodes", $graphnodes);
+echo ncScriptObject("nc.graph.rawlinks", $graphlinks);
 
 ?>
 
@@ -40,19 +35,23 @@ echo ncScriptObject("nc.graph.links", $graphlinks);
 
 <script>
     debugNodes = function() {
-        $('#nc-debugging').html(JSON.stringify(nc.graph.nodes));
+        $('#nc-debugging').html(JSON.stringify(nc.graph.rawnodes)+"<br/><br/>"+JSON.stringify(nc.graph.nodes));
     }
     debugLinks = function() {
-        $('#nc-debugging').html(JSON.stringify(nc.graph.links));
+        $('#nc-debugging').html(JSON.stringify(nc.graph.rawlinks)+"<br/><br/>"+JSON.stringify(nc.graph.links));
     }
     debugUser = function() {
         alert("curate: "+nc.curator+" edit: "+nc.editor+" comment: "+nc.commentator);
     }
+    debugOntologies = function() {
+        $('#nc-debugging').html(JSON.stringify(nc.ontology.nodes)+"<br/><br/>"+JSON.stringify(nc.ontology.links));
+    }
     </script>
     <div class="nc-mt-10">Debugging</div>    
-<a onclick="javascript:debugNodes(); return false;">Show nodes</a>
-<a onclick="javascript:debugLinks(); return false;">Show links</a>
-<a onclick="javascript:debugUser(); return false">Show user data</a>
+<a onclick="javascript:debugNodes(); return false;">Show nodes </a>
+<a onclick="javascript:debugLinks(); return false;">Show links </a>
+<a onclick="javascript:debugUser(); return false">Show user data </a>
+<a onclick="javascript:debugOntologies(); return false">Show ontologies </a>
 <div id="nc-debugging">
     
 </div>

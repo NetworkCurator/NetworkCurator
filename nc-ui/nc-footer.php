@@ -29,7 +29,7 @@
 </div>
 
 
-<footer class="footer">
+<footer class="footer nc-footer">
     <div class="container">
         <p class="navbar-text">This is the footer</p>
         <ul class="nav navbar-nav">        

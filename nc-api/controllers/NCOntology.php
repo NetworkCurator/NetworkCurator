@@ -91,7 +91,7 @@ class NCOntology extends NCLogger {
             anno_text AS class_name
             FROM $tc 
               JOIN $tat 
-                  ON $tc.class_id=$tat.parent_id AND $tc.network_id=$tat.network_id              
+                  ON $tc.class_id=$tat.root_id AND $tc.network_id=$tat.network_id              
                 WHERE $tc.network_id = ? 
                   AND $tat.anno_status = " . NC_ACTIVE . "
                   AND $tat.anno_level = " . NC_NAME;
@@ -205,13 +205,15 @@ class NCOntology extends NCLogger {
         $tat = "" . NC_TABLE_ANNOTEXT;
         $sql = "SELECT class_id, $tc.parent_id AS parent_id, connector, 
             directional, class_status, anno_text AS class_name, anno_id, owner_id
-            FROM $tc JOIN $tat ON $tc.class_id=$tat.root_id 
-              WHERE $tc.class_id = ? AND $tat.anno_level= " . NC_NAME . "
+            FROM $tc JOIN $tat 
+                ON $tc.class_id=$tat.root_id AND $tc.network_id=$tat.network_id
+              WHERE $tc.network_id = ? AND $tc.class_id = ? 
+                  AND $tat.anno_level= " . NC_NAME . "
                   AND $tat.anno_status=" . NC_ACTIVE;
-        $stmt = prepexec($this->_db, $sql, [$classid]);
+        $stmt = prepexec($this->_db, $sql, [$this->_netid, $classid]);
         $classinfo = $stmt->fetch();
         if (!$classinfo) {
-            throw new Exception("Class does not exist");
+            throw new Exception("Class $classid does not exist");
         }
         return $classinfo;
     }
@@ -312,10 +314,10 @@ class NCOntology extends NCLogger {
                 'class_status' => $params['class_status'],
                 'network_id' => $this->_netid,
                 'class_id' => $params['class_id']];
-            $stmt = prepexec($this->_db, $sql, $pp);
+            prepexec($this->_db, $sql, $pp);
 
             $value = $pp['parent_id'] . "," . $pp['directional'] . "," . $pp['class_status'];
-            $this->logActivity($this->_uid, $this->_netid, "updated class properties for class", $this->_params['class_name'], $value);
+            $this->logActivity($this->_uid, $this->_netid, "updated class properties for class", $params['class_name'], $value);
         }
         return 1;
     }
@@ -326,10 +328,9 @@ class NCOntology extends NCLogger {
     public function removeClass() {
 
         // check that required inputs are defined
-        $params = $this->subsetArray($this->_params, ["network_name", "class_id"]);
+        $classid = $this->subsetArray($this->_params, ["class_id"])['class_id'];
 
         // fetch information about the class
-        $classid = $params['class_id'];
         $olddata = $this->getClassInfo($classid);
 
         // class exists in db. Check if it has been used already in a nontrivial way
@@ -337,10 +338,10 @@ class NCOntology extends NCLogger {
         $tat = "" . NC_TABLE_ANNOTEXT;
         $tan = "" . NC_TABLE_ANNONUM;
 
-        // does the class have descendants?
-        $sql = "SELECT class_id FROM $tc WHERE parent_id = ? 
-            AND class_status = " . NC_ACTIVE;
-        $stmt = prepexec($this->_db, $sql, [$classid]);
+        // does the class have active descendants?
+        $sql = "SELECT class_id FROM $tc WHERE network_id = ? 
+                    AND parent_id = ? AND class_status = " . NC_ACTIVE;
+        $stmt = prepexec($this->_db, $sql, [$this->_netid, $classid]);
         if ($stmt->fetch()) {
             throw new Exception("Cannot remove: class has active descendants");
         }
@@ -359,14 +360,13 @@ class NCOntology extends NCLogger {
             throw new Exception("Error fetching class usage");
         }
         if ($result['count'] == 0) {
-            // class is not used - remove it permanently from the class table            
+            // class is not used - remove it permanently from all tables            
             $sql = "DELETE FROM $tc WHERE network_id = ? AND class_id = ?";
-            $stmt = prepexec($this->_db, $sql, [$this->_netid, $classid]);
-            // delete all annotations
+            prepexec($this->_db, $sql, [$this->_netid, $classid]);
             $sql = "DELETE FROM $tat WHERE network_id = ? AND root_id = ?";
-            $stmt = prepexec($this->_db, $sql, [$this->_netid, $classid]);
+            prepexec($this->_db, $sql, [$this->_netid, $classid]);
             $sql = "DELETE FROM $tan WHERE network_id = ? AND root_id = ?";
-            $stmt = prepexec($this->_db, $sql, [$this->_netid, $classid]);
+            prepexec($this->_db, $sql, [$this->_netid, $classid]);
             // log the event
             $this->logActivity($this->_uid, $this->_netid, "deleted class", $olddata['class_name'], $classid);
 
@@ -375,12 +375,71 @@ class NCOntology extends NCLogger {
             // class is used - set as inactive
             $sql = "UPDATE $tc SET class_status = " . NC_DEPRECATED . " WHERE 
                      network_id = ? AND class_id = ? ";
-            $stmt = prepexec($this->_db, $sql, [$this->_netid, $classid]);
+            prepexec($this->_db, $sql, [$this->_netid, $classid]);
+
+            // deprecate all nodes and links that use this class?
+            //if ($olddata['connector']) {
+            //    $sql = "UPDATE " . NC_TABLE_LINKS . " SET link_status = " . NC_DEPRECATED;
+            //} else {
+            //    $sql = "UPDATE " . NC_TABLE_NODES . " SET node_status = " . NC_DEPRECATED;
+            // }
+            //$sql .= " WHERE network_id = ? and class_id = ?";
+            //prepexec($this->_db, $sql, [$this->_netid, $classid]);
+            // when deprecating a node class, also deprecate 
+            // TODO
+            
             // log the event
             $this->logActivity($this->_uid, $this->_netid, "deprecated class", $olddata['class_name'], $classid);
 
             return false; //"Class id has already been used";
         }
+    }
+
+    /**
+     * Used to turn a deprecated class status into an active class status
+     * 
+     * This is a rather simple function as it does not affect any of the nodes/links.
+     * 
+     * @return boolean
+     * 
+     * Usually returns true upon successful completion. Otherwise throws exceptions.
+     * 
+     * @throws Exception
+     * 
+     */
+    public function activateClass() {
+
+        // check that required inputs are defined
+        $params = $this->subsetArray($this->_params, ["class_id"]);
+
+        // make sure the asking user is allowed to curate
+        if ($this->_uperm < NC_PERM_CURATE) {
+            throw new Exception("Insufficient permissions");
+        }
+
+        // check class actually needs activating
+        $classinfo = $this->getClassInfo($params['class_id']);
+        if ($classinfo['class_status'] != NC_DEPRECATED) {
+            throw new Exception("Class is not deprecated");
+        }
+
+        // parent class must be active
+        if ($classinfo['parent_id'] != '') {
+            $parentinfo = $this->getClassInfo($classinfo['parent_id']);
+            if ($parentinfo['class_status'] != NC_ACTIVE) {
+                throw new Exception("Class cannot be activated because parent is deprecated");
+            }
+        }
+
+        // finally just set new status 
+        $sql = "UPDATE " . NC_TABLE_CLASSES . " SET class_status = " . NC_ACTIVE . "
+            WHERE network_id = ? AND class_id = ? ";
+        prepexec($this->_db, $sql, [$this->_netid, $params['class_id']]);
+
+        // log the activity
+        $this->logActivity($this->_uid, $this->_netid, "re-activated class", $classinfo['class_name'], $params['class_id']);
+
+        return true;
     }
 
 }

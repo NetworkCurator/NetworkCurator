@@ -14,8 +14,10 @@ if (typeof nc == "undefined") {
     throw new Error("nc is undefined");
 }
 nc.graph = {
-    nodes: [], // store for raw data on nodes
-    links: [], // store for raw data on linke
+    rawnodes: [], // store for raw data on nodes
+    rawlinks: [], // store for raw data on links
+    nodes: [], // store active nodes in the viz
+    links: [], // store active links in the viz
     sim: {}, // force simulation 
     svg: {}, // the svg div on the page   
     mode: "select"
@@ -35,33 +37,31 @@ nc.graph.initToolbar = function() {
     var toolbar = $('#nc-graph-toolbar');
     nc.graph.svg = d3.select('#nc-graph-svg');   
         
-    // get descriptions of the node and link ontology
-    var nodes = [], links = [];    
-    $.each(nc.ontology.nodes, function(key, val) {       
-        nodes.push({
-            label: val['class_longname'], 
-            val: val['class_name']
-        });
-    });
-    $.each(nc.ontology.links, function(key, val) {        
-        links.push({
-            label: val['class_longname'], 
-            val: val['class_name']
-        });
-    });
-    nodes = nc.utils.sortByKey(nodes, 'label');
-    links = nc.utils.sortByKey(links, 'label');
-      
+    // get descriptions of the node and link ontology    
+    var pushonto = function(x) {
+        var result = [];
+        $.each(x, function(key, val) {            
+            result.push({
+                id: val['class_id'],
+                label: val['class_longname'], 
+                val: val['class_name'],
+                status: val['class_status']
+            });
+        });        
+        return nc.utils.sortByKey(result, 'label');
+    }    
+    var nodes=pushonto(nc.ontology.nodes), links=pushonto(nc.ontology.links);
+     
     // add ontology options to the new node/new link forms   
     $('#nc-graph-newnode #fg-nodeclass .input-group-btn')
-    .append(nc.ui.DropdownButton("", nodes, "node").find('.btn-group'))
+    .append(nc.ui.DropdownButton("", nodes, "node", false).find('.btn-group'))
     $('#nc-graph-newlink #fg-linkclass .input-group-btn')
-    .append(nc.ui.DropdownButton("", links, "link").find('.btn-group'))
+    .append(nc.ui.DropdownButton("", links, "link", false).find('.btn-group'))
     
     // add buttons to the toolbar, finally!
     toolbar.append(nc.ui.ButtonGroup(['Select']));
-    toolbar.append(nc.ui.DropdownButton("New node:", nodes, "node"));
-    toolbar.append(nc.ui.DropdownButton("New link:", links, "link"));     
+    toolbar.append(nc.ui.DropdownButton("New node:", nodes, "node", false));
+    toolbar.append(nc.ui.DropdownButton("New link:", links, "link", false));     
     
     toolbar.find("button").click(function() {
         toolbar.find("button").removeClass("active");         
@@ -100,44 +100,58 @@ nc.graph.initToolbar = function() {
  * ========================================================================== */
 
 nc.graph.addNode = function() {
-    // find the current node type, then add a classed node    
-    var nodeclass = d3.select('#nc-graph-toolbar button[val="node"]').attr("selection");
-    nc.graph.addClassedNode(d3.mouse(this), nodeclass, "nc-newnode");            
+    // find the current node type, then add a classed node 
+    var whichnode = d3.select('#nc-graph-toolbar button[val="node"]');
+    var classid = whichnode.attr('class_id');
+    var classname = whichnode.attr('class_name');
+    nc.graph.addClassedNode(d3.mouse(this), classid, classname, "nc-newnode");            
 }
 
-nc.graph.addClassedNode = function(point, nodeclass, styleclass) {      
-    var newid = "+"+nodeclass+"_"+Date.now(),    
+nc.graph.addClassedNode = function(point, classid, classname, styleclass) {             
+    var newid = "+"+classname+"_"+Date.now(),
     newnode = {
         "id": newid,
         "name": newid,
-        "class_name": nodeclass,
+        "class_id": classid,
+        "class_name": classname,
         "class": styleclass,
+        "class_status": 1,
         x: point[0], 
         y: point[1],
         fx: point[0], 
         fy: point[1]
-    };           
+    };    
+    //alert(JSON.stringify(newnode));
     nc.graph.simStop();
-    nc.graph.nodes.push(newnode);          
+    nc.graph.rawnodes.push(newnode);          
     nc.graph.initSimulation();    
 }
 
 
 nc.graph.addLink = function() {
-    var linkclass = d3.select('#nc-graph-toolbar button[val="link"]').attr("selection");
-    return nc.graph.addClassedLink(linkclass, "nc-newlink");
+    var whichlink = d3.select('#nc-graph-toolbar button[val="link"]');    
+    var classid = whichlink.attr("class_id");
+    var classname =  whichlink.attr("class_name");
+    return nc.graph.addClassedLink(classid, classname, "nc-newlink");
 }
 
-nc.graph.addClassedLink = function(linkclass, styleclass) {   
+nc.graph.addClassedLink = function(classid, classname, styleclass) {   
    
     // identify the temporary link
     var draggedlink = nc.graph.svg.select('line[class="nc-draggedlink"]');       
     
+    // check that the link is proper
+    if (draggedlink.attr("source")===null || draggedlink.attr("target")===null) {
+        return null;
+    }
+    
     // create a new entity for the links array
-    var newid = "+"+linkclass+"_"+Date.now();
+    var newid = "+"+classname+"_"+Date.now();
     var newlink = {
         "id": newid,
-        "class_name": linkclass,
+        "class_id": classid,
+        "class_name": classname,
+        "class_status": 1,
         "class": styleclass,
         "source": draggedlink.attr("source"),
         "target": draggedlink.attr("target")       
@@ -145,7 +159,7 @@ nc.graph.addClassedLink = function(linkclass, styleclass) {
     
     // update the simulation
     nc.graph.simStop();
-    nc.graph.links.push(newlink);
+    nc.graph.rawlinks.push(newlink);
     nc.graph.initSimulation();
     
     return newlink;
@@ -156,7 +170,11 @@ nc.graph.addClassedLink = function(linkclass, styleclass) {
  * Run when user clicks on a node or link in the graph
  */
 nc.graph.select = function(d) {
-            
+          
+    if (d==null) {
+        return;
+    }
+
     // un-highlight existing, then highlight required id
     nc.graph.unselect();    
     if ("source" in d) {
@@ -212,22 +230,84 @@ nc.graph.unselect = function(d) {
 
 
 /* ==========================================================================
- * Handlers for graph editing
+ * Node/Link filtering
+ * ========================================================================== */
+
+
+nc.graph.filterNodes = function() {         
+        
+    // convenience shallow copies of nc.graph objects
+    var rawnodes = nc.graph.rawnodes;
+    var nonto = nc.ontology.nodes;    
+    var nlen = rawnodes.length;
+    
+    // loop and deep copy certain nodes from raw to new
+    var counter = 0;
+    nc.graph.nodes = [];
+    for (var i=0; i<nlen; i++) {
+        // get input class id
+        var iclassid = rawnodes[i].class_id;    
+        if (nonto[iclassid].class_status>0) {
+            nc.graph.nodes[counter] = rawnodes[i];
+            counter++;
+        }        
+    }
+    
+}
+
+nc.graph.filterLinks = function() {
+    //alert("filtering links "+nc.graph.rawlinks.length);
+    
+    // some shorthand objects
+    var rawlinks = nc.graph.rawlinks;
+    var llen = rawlinks.length;
+    var lonto = nc.ontology.links;
+
+    // get an array of all available nodes
+    var goodnodes = {};
+    for (var j=0; j<nc.graph.nodes.length; j++) {
+        goodnodes[nc.graph.nodes[j].id]= 1;
+    }
+    //alert(JSON.stringify(goodnodes));
+
+    var counter = 0;
+    nc.graph.links = [];    
+    //alert(nc.graph.links.length+" "+nc.graph.rawlinks.length);
+    for (var i=0; i<llen; i++) {
+        var iclassid = rawlinks[i].class_id;        
+        if (lonto[iclassid].class_status>0) {
+            // must also check if source and end nodes should be displayed            
+            var isource = rawlinks[i].source;
+            var itarget = rawlinks[i].target;
+            if ((isource in goodnodes || isource.id in goodnodes) && 
+                (itarget in goodnodes || itarget.id in goodnodes)) {                                
+                nc.graph.links[counter] = nc.graph.rawlinks[i];
+                counter++;
+            }                                    
+        }
+    }
+
+//alert("started with "+llen+" filtered to "+nc.graph.links.length);
+}
+
+
+/* ==========================================================================
+ * Graph display
  * ========================================================================== */
 
 
 /**
- * This function initializes the behavior of the graph svg simulation.
+ * This function initializes the behavior of the graph svg simulation (force layout)
+ * and some core svg components like zoom and pan.
  * 
  * Uses D3.
  *
  */
 nc.graph.initSimulation = function() {
-        
-    // set up zooming
-         
+                    
     // get the graph svg component
-    nc.graph.svg = d3.select('#nc-graph-svg'); //.call("zoom");
+    nc.graph.svg = d3.select('#nc-graph-svg'); 
+    nc.graph.svg.selectAll('g,rect').remove();
    
     var width = nc.graph.svg.style("width").replace("px","");    
     var height = nc.graph.svg.style("height").replace("px", "");    
@@ -240,8 +320,21 @@ nc.graph.initSimulation = function() {
     .force("charge", d3.forceManyBody())
     .force("center", d3.forceCenter(width / 2, height / 2))
     .velocityDecay(0.6);    
-           
-    if (nc.graph.nodes.length>0) {
+            
+    // create a rect in the svg that will help with panning                       
+    var svgpan = d3.drag().on("start", nc.graph.panstarted).
+    on("drag", nc.graph.panned).on("end", nc.graph.panended);       
+    
+    nc.graph.svg.append("rect").classed("nc-svg-background", true)
+    .attr("width", "100%").attr("height", "100%")
+    .style("fill", "none").style("pointer-events", "all")    
+    .call(svgpan).on("click", nc.graph.unselect);    
+      
+    // create a single group g for holding all nodes and links
+    nc.graph.svg.append("g").classed("nc-svg-content", true)
+    .attr("transform", "translate(0,0)scale(1)");            
+            
+    if (nc.graph.rawnodes.length>0) {
         nc.graph.simStart();
     }
 }
@@ -254,25 +347,25 @@ nc.graph.initSimulation = function() {
 nc.graph.simStart = function() {
     
     // first clear the existing svg if it already contains elements
-    nc.graph.svg.selectAll("g").remove();
+    nc.graph.svg.selectAll("g.links,g.nodes").remove();
     nc.graph.sim.alpha(0);
+    
+    // filter the raw node and raw links
+    nc.graph.filterNodes();
+    nc.graph.filterLinks();
+    
+    //nc.graph.nodes = nc.graph.rawnodes;
+    //nc.graph.links = nc.graph.rawlinks;
+    
+    //alert(JSON.stringify(nc.graph.nodes));
+    
+    //alert("sisisi");
+    //alert(" ss "+nc.graph.nodes.length+" "+nc.graph.links.length+" aa");
     
     // set up node dragging
     var nodedrag = d3.drag().on("start", nc.graph.dragstarted)
     .on("drag", nc.graph.dragged).on("end", nc.graph.dragended);
-    // set up svg dragging (panning)
-    var svgpan = d3.drag().on("start", nc.graph.panstarted).
-    on("drag", nc.graph.panned).on("end", nc.graph.panended);
-    
-    // create a rect in the svg that will help with panning                   
-    nc.graph.svg.append("rect").classed("nc-svg-background", true)
-    .attr("width", "100%").attr("height", "100%")
-    .style("fill", "none").style("pointer-events", "all")    
-    .call(svgpan).on("click", nc.graph.unselect);    
-            
-    nc.graph.svg.append("g").classed("nc-svg-content", true)
-    .attr("transform", "translate(0,0)scale(1)");            
-    
+                     
     // create var with set of links (used in the tick function)
     var link = nc.graph.svg.select("g.nc-svg-content").append("g")
     .attr("class", "links")
@@ -281,9 +374,9 @@ nc.graph.simStart = function() {
     .enter().append("line")
     .attr("class", function(d) {
         if ("class" in d) {
-            return "nc-default-link "+d["class"];
+            return "nc-default-link "+d["class_name"]+" "+d["class"];
         } else {
-            return "nc-default-link";
+            return "nc-default-link "+d["class_name"];
         }
     }) 
     .attr("id", function(d) {
@@ -302,9 +395,9 @@ nc.graph.simStart = function() {
     })
     .attr("class",function(d) {
         if ("class" in d) {
-            return "nc-default-node "+d["class"];
+            return "nc-default-node "+d["class_name"]+" "+d["class"];
         } else {
-            return "nc-default-node";
+            return "nc-default-node "+d["class_name"];
         }
     })
     .call(nodedrag).on("click", nc.graph.select).on("dblclick", nc.graph.unpin);        
@@ -471,7 +564,7 @@ nc.graph.panned = function() {
 
 nc.graph.panended = function() {
    
-}
+    }
 
 
 nc.graph.zoom = function() {
@@ -606,7 +699,7 @@ nc.graph.createNode = function() {
     }, function(data) {          
         nc.utils.alert(data);        
         //alert(data);
-        data = $.parseJSON(data);
+        data = JSON.parse(data);
         if (nc.utils.checkAPIresult(data)) {            
             if (data['success']==false || data['data']==false) {
                 $('#fg-nodename').addClass('has-error has-feedback');                
@@ -679,9 +772,8 @@ nc.graph.createLink = function() {
         source_name: $('#fg-linksource input').val(),
         target_name: $('#fg-linktarget input').val()
     }, function(data) {          
-        nc.utils.alert(data);        
-        //alert(data);
-        data = $.parseJSON(data);
+        nc.utils.alert(data);                
+        data = JSON.parse(data);
         if (nc.utils.checkAPIresult(data)) {            
             if (data['success']==false || data['data']==false) {
                 $('#fg-linkname').addClass('has-error has-feedback');                

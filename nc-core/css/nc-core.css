@@ -6,6 +6,27 @@
 */
 
 
+/* --------------------------------------------------------------------------
+ * Main page elements
+ * -------------------------------------------------------------------------- */
+
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+
+body {           
+    padding-top: 32px;
+    margin-bottom: 80px;
+}
+
+
+/* --------------------------------------------------------------------------
+ * Generic helper classes
+ * -------------------------------------------------------------------------- */
+
 /**
  * some classes that add some margin at the top of an element
 */
@@ -21,11 +42,8 @@
 /**
  * classes that set minimum width on objects
 */
-.nc-mw-90 { min-width: 90px !important; }
-.nc-mw-80 { min-width: 80px !important; }
-.nc-mw-70 { min-width: 70px !important; }
-.nc-mw-66 { min-width: 66px !important; }
-.nc-mw-68 { min-width: 68px !important; }
+.nc-mw-sm { min-width: 66px !important; }
+.nc-mw-md { min-width: 88px !important; }
 
 /**
  * class set margins
@@ -36,10 +54,10 @@
 }
 
 
-.dropdown-toggle .caret {
-    margin-top: 8px;    
-}
 
+/* --------------------------------------------------------------------------
+ * Generic helper classes
+ * -------------------------------------------------------------------------- */
 
 /*
  * The curator style hides objects until they are turned visible via js
@@ -54,6 +72,29 @@
 .nc-curator > a {
     color: #d43f3a !important;
 }
+
+
+/* --------------------------------------------------------------------------
+ * Tuning on particular ui elements
+ * -------------------------------------------------------------------------- */
+
+/** The caret is used in dropdown lists and should be vertically centered */
+.nc-dropdown-caret {
+    margin-top: 8px;    
+}
+
+/** The footer at the bottom of each page */
+.nc-footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;    
+    height: 50px;    
+}
+.nc-footer .container {
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+}
+
 
 /*
  * definitions defining editable elements
@@ -74,11 +115,49 @@ textarea.nc-curation-content {
 }
 
 
+
+/* --------------------------------------------------------------------------
+ * Navbars
+ * -------------------------------------------------------------------------- */
+
+.nc-navbar { 
+    min-height:32px; 
+}
+.nc-navbar .navbar-brand { 
+    padding: 0px 15px; 
+    font-size: inherit;
+    height: 32px;
+    line-height: 32px; }
+.nc-navbar .navbar-nav > li > a {  
+    padding: 0px 15px;
+    line-height: 32px; 
+}
+.nc-navbar .navbar-text { 
+    padding: 0px 15px 0px 0px;
+    margin: 0px 15px;
+    line-height: 32px; 
+}
+.nc-navbar2 .container {
+    padding-left: 0px !important;
+}
+.nc-navbar2 .active {
+    background-color: #c0c0c0;
+}
+.nc-navbar2 {
+    position: absolute;    
+    top: 32px;
+    left: 0;
+    right: 0;
+}
+.nc-body2 {
+    padding-top: 80px;
+}
+
+
+
 /* --------------------------------------------------------------------------
  * Ontology
  * -------------------------------------------------------------------------- */
-
-
 
 
 span.nc-comment {
@@ -159,6 +238,40 @@ textarea {
 
 
 /* --------------------------------------------------------------------------
+ * Permissions
+ * -------------------------------------------------------------------------- */
+
+.nc-fg-name {
+    min-width: 330px !important;    
+    width: 330px !important;    
+    white-space: nowrap;   
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: inherit;
+    margin-bottom: 0px;
+}
+
+.nc-form-permissions {
+    margin-top: 6px;
+    margin-bottom: 6px;
+}
+
+
+form {
+    margin-top: 14px;
+    margin-bottom: 30px;
+}
+.form-group {
+    margin-bottom: 1em;
+}
+
+
+.form-inline button {
+    margin-left: 12px;
+}
+
+
+/* --------------------------------------------------------------------------
  * New nodes 
  * -------------------------------------------------------------------------- */
 
@@ -203,6 +316,63 @@ textarea {
 
 
 /* --------------------------------------------------------------------------
+ * Ontology tree structures
+ * -------------------------------------------------------------------------- */
+
+body.dragging, body.dragging * {
+    cursor: move !important;
+}
+.dragged {
+    position: absolute;
+    opacity: 0.4;
+    z-index: 1000;
+}
+ol.droptarget {
+    background-color: #dddddd;
+}
+li span {
+    padding: 2px 8px;
+}
+span.nc-directional {
+    padding-left: 0px;
+}
+li.aftermove > div:first-child span {
+    background-color: #dddddd;
+    color: #000;
+    font-weight: 600;
+}
+
+.nc-ontology-tree {
+    margin-bottom: 4em;
+}
+.nc-classtree-children {
+    list-style: none;
+    min-height: 5px; 
+    padding: 5px 0px 0px 25px;    
+}
+ol {
+    list-style: none;
+}
+.nc-classdisplay {    
+    padding: 3px 0px;
+}
+.nc-btn-edit {
+    margin-left: 6px;
+    margin-right: 6px;
+}
+.nc-class-form {
+    margin-bottom: 2px;
+}
+.nc-class-form .form-check-inline {    
+    font-weight: 300;    
+}
+.nc-class-form .form-check-input {
+    margin-left: 8px; 
+    margin-right: 4px;     
+}
+
+
+/* --------------------------------------------------------------------------
  * Graph editor
  * -------------------------------------------------------------------------- */
 
@@ -238,3 +408,4 @@ textarea {
 .nc-graph-details .btn-group {
     width: 100%;
 }
+

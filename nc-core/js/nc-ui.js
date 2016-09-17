@@ -52,7 +52,7 @@ nc.ui.PermissionsWidget = function(udata) {
         if (uid=="guest" && val>1) perm = " disabled";            
                 
         // create a <label> html 
-        var html = '<label class="btn btn-default nc-mw-90'+perm+'">';
+        var html = '<label class="btn btn-default btn-sm nc-mw-sm'+perm+'">';
         html += '<input type="radio" autocomplete="off" value="'+val+'" '+perm+'>';
         html += lab+'</label>';        
         return html;
@@ -72,11 +72,11 @@ nc.ui.PermissionsWidget = function(udata) {
         var html = '<form class="form-inline nc-form-permissions" val="'+uid+'" onsubmit="return false;">';        
         html += '<div class="form-group" style="width:100%">';
         html += '<label class="col-form-label nc-fg-name">'+nowlab+'</label>';
-        html += '<div class="btn-group" data-toggle="buttons">';                
+        html += '<span><div class="btn-group" data-toggle="buttons">';                
         for (var pp=0; pp<5; pp++) 
             html += ncuiPB(pp, uid, up);   
         html += '</div>'; // closes the btn-group
-        html += '<button class="btn btn-success" val="'+uid+'">Update</button>';        
+        html += '<button class="btn btn-success btn-sm" val="'+uid+'">Update</button></span>';        
         html += '</div></form>';                
         
         html = $(html);
@@ -129,7 +129,7 @@ nc.ui.ClassTreeWidget = function(classdata, islink) {
     // set up drag-drop of classes     
     var oldContainer;
     root.find(".nc-classtree-children").sortable({
-        handle: 'button.nc-btn-move',
+        handle: 'button[val="move"]',
         afterMove: function (placeholder, container) {
             if(oldContainer != container){
                 if(oldContainer)
@@ -171,10 +171,10 @@ nc.ui.ClassTreeWidget = function(classdata, islink) {
     root.delegate("div.nc-classdisplay button[val='edit']", "click", function() {                        
         var classid = $(this).parent().attr('val');
         // make sure input box shows current classname
-        var classname = $(this).parent().find('.nc-classdisplay-span').html();        
+        var classname = $(this).parent().find('span.nc-comment[val="class_name"]').html();        
         var thisform = root.find("form.nc-classupdate[val='"+classid+"']");
         thisform.find('input').val(classname);
-        // toggle visibility
+        // toggle visibility of display/form
         thisform.toggle();        
         root.find("div.nc-classdisplay[val='"+classid+"']").toggle();        
     });    
@@ -201,7 +201,7 @@ nc.ui.ClassTreeWidget = function(classdata, islink) {
         var parentid = thisform.parent().parent().attr('val');        
         var newclassname = thisform.find("input").val();            
         var islink = thisform.find("input.form-check-input").length>0;
-        var isdirectional = 0+thisform.find("input.form-check-input").is(":checked");        
+        var isdirectional = 0+thisform.find("input.form-check-input").is(":checked");              
         nc.ontology.updateClassProperties(classid, newclassname, parentid, islink, isdirectional);        
         root.find("div.nc-classdisplay[val='"+classid+"']").toggle();
         root.find("form.nc-classupdate[val='"+classid+"']").toggle();                
@@ -246,10 +246,10 @@ nc.ui.ClassTreeRowWidget = function(classrow) {
  * 
  * obj - a jquery object holding the <li> for the class
  */
-nc.ui.toggleClassDisplay = function(obj) {        
-    obj.find('div.nc-classdisplay').toggleClass("nc-deprecated");
-    obj.find('button').toggle();
-    obj.find('span.nc-comment[val="deprecated"]').toggle();            
+nc.ui.toggleClassDisplay = function(obj) {     
+    obj.find('> div.nc-classdisplay')
+    .toggleClass("nc-deprecated")
+    .find('button,span.nc-comment[val="deprecated"]').toggle();            
     return obj;
 }
 
@@ -271,10 +271,10 @@ nc.ui.ClassDisplay = function(classrow) {
     }
     fg += '</span><span class="nc-comment" val="deprecated" style="display: none">[deprecated]</span>';    
     if (nc.curator) {        
-        fg += '<button val="remove" class="pull-right btn btn-primary btn-sm nc-mw-68 nc-hm-3">Remove</button>';
-        fg += '<button val="activate" class="pull-right btn btn-primary btn-sm nc-mw-68 nc-hm-3" style="display: none">Activate</button>';                       
-        fg += '<button val="edit" class="pull-right btn btn-primary btn-sm nc-mw-68 nc-hm-3">Edit</button>';   
-        fg += '<button val="move" class="pull-right btn btn-primary btn-sm nc-mw-66 nc-hm-3">Move</button>';               
+        fg += '<button val="remove" class="pull-right btn btn-primary btn-sm nc-mw-sm nc-hm-3">Remove</button>';
+        fg += '<button val="activate" class="pull-right btn btn-primary btn-sm nc-mw-sm nc-hm-3" style="display: none">Activate</button>';                       
+        fg += '<button val="edit" class="pull-right btn btn-primary btn-sm nc-mw-sm nc-hm-3">Edit</button>';   
+        fg += '<button val="move" class="pull-right btn btn-primary btn-sm nc-mw-sm nc-hm-3">Move</button>';               
     }
     fg += '</div>'; 
                 
@@ -458,18 +458,29 @@ nc.ui.ButtonGroup = function(aa) {
  * @param aa array, each element is assumed to contain a label and val
  * @param aval string placed in button val field 
  * (use this to distinguish one dropdown from another) 
+ * @param withdeprecated, boolean, whether to include items with status!=1
  * 
  */
-nc.ui.DropdownButton=function(atype, aa, aval) {
+nc.ui.DropdownButton=function(atype, aa, aval, withdeprecated) {
         
-    var caret = '<span class="pull-right caret"></span>';
+    var caret = '<span class="pull-right caret nc-dropdown-caret"></span>';
     
     var html = '<div class="btn-group nc-toolbar-group nc-toolbar-group-new" role="group">';    
     html += '<div class="btn-group" role="group">';        
-    html += '<button class="btn btn-primary dropdown-toggle" val="'+aval+'" selection="'+aa[0].val+'" data-toggle="dropdown"><span class="pull-left nc-classname-span">'+atype+' '+aa[0].label+'</span>'+caret+'</button>';  
+    html += '<button class="btn btn-primary dropdown-toggle" val="'+aval+'" class_name="" data-toggle="dropdown"><span class="pull-left nc-classname-span">'+atype+' '+'</span>'+caret+'</button>';  
     html += '<ul class="dropdown-menu">';
-    for (var i in aa) {
-        html += '<li><a val="'+aa[i].val+'" href="#">' + aa[i].label + '</a></li>'
+    for (var i in aa) {        
+        var iinclude = true, iclass= "";
+        if (aa[i].status!=1) { 
+            if (!withdeprecated) {
+                iinclude = false;
+            } else {
+                iclass = ' class="nc-deprecated"';
+            }            
+        }        
+        if (iinclude) {
+            html += '<li'+iclass+'><a class_id="'+aa[i].id+'" class_name="'+aa[i].val+'" href="#">' + aa[i].label + '</a></li>'
+        }
     }
     html += '</ul>';
     html += '</div></div>'; // this closes dropdown and btn-group
@@ -480,11 +491,13 @@ nc.ui.DropdownButton=function(atype, aa, aval) {
     // attach handlers for the dropdown links
     dropb.find("a").click(function() {
         // find the text and add it        
-        var nowval = $(this).attr("val");
+        var nowid = $(this).attr("class_id");
+        var nowname = $(this).attr("class_name");
+        //alert(nowid+" "+nowname);
         var p4 = $(this).parent().parent().parent().parent();
-        p4.find('button.dropdown-toggle').html('<span class="pull-left nc-classname-span">'+atype+' '+nowval +'</span>'+ caret)
-        .addClass('active').attr("selection", nowval); 
-        $(this).dropdown("toggle");
+        p4.find('button.dropdown-toggle').html('<span class="pull-left nc-classname-span">'+atype+' '+nowname +'</span>'+ caret)
+        .addClass('active').attr("class_name", nowname).attr("class_id", nowid); 
+        $(this).dropdown("toggle");        
         return false;
     });       
     
@@ -509,13 +522,13 @@ nc.ui.AnnoEditBox = function() {
     // write static html to define components of the toolbox
     var html = '<div class="nc-curation-box">';
     html += '<div class="nc-curation-toolbox" style="display: none">';
-    html += '<a role="button" class="nc-curation-toolbox-md btn btn-sm btn-default" >Edit</a>';
-    html += '<a role="button" class="nc-curation-toolbox-preview btn btn-sm btn-default">Preview</a>';    
+    html += '<a role="button" class="nc-curation-toolbox-md btn btn-sm btn-default nc-mw-sm" style="display: none">Edit</a>';
+    html += '<a role="button" class="nc-curation-toolbox-preview btn btn-sm btn-default nc-mw-sm">Preview</a>';    
     html += '<a role="button" class="nc-curation-toolbox-close pull-right">close</a>';
     html += '</div><div class="nc-curation-content"></div>';
     html += '<textarea class="nc-curation-content" style="display: none"></textarea>';
-    html += '<a role="button" class="btn btn-sm btn-success nc-save" style="display: none">Save</a>';
-    html += '<a role="button" class="btn btn-sm btn-danger nc-remove" style="display: none">Remove</a></div>';    
+    html += '<a role="button" class="btn btn-sm btn-success nc-submit nc-mw-sm" style="display: none">Submit</a>';
+    html += '<a role="button" class="btn btn-sm btn-danger nc-remove nc-mw-sm" style="display: none">Remove</a></div>';    
         
     // create DOM objects, then add actions to the toolbox buttons
     var curabox = $(html);        
@@ -524,35 +537,39 @@ nc.ui.AnnoEditBox = function() {
     curabox.find('a.nc-curation-toolbox-md').click(function() { 
         var thiscurabox = $(this).parent().parent();
         thiscurabox.find('div.nc-curation-content').hide();
-        thiscurabox.find('textarea,a.btn-success').show();                                
+        thiscurabox.find('textarea,a.nc-submit').show();                                
+        thiscurabox.find('a.nc-curation-toolbox-preview,a.nc-curation-toolbox-md').toggle();
     });    
     // clicking preview converts textarea md to html, updates the md object in the background
     curabox.find('a.nc-curation-toolbox-preview').click(function() {  
         var thiscurabox = $(this).parent().parent();
-        var annomd = thiscurabox.find('textarea').hide().val();                              
-        thiscurabox.find('div.nc-curation-content').html(nc.mdconverter.makeHtml(annomd)).show();
+        var annoareah = 6+ parseInt(thiscurabox.find('textarea').css("height").replace("px",""));                
+        var annomd = thiscurabox.find('textarea').hide().val();   
+        thiscurabox.find('div.nc-curation-content').css("min-height", annoareah)
+        .html(nc.mdconverter.makeHtml(annomd)).show();
+        thiscurabox.find('a.nc-curation-toolbox-preview,a.nc-curation-toolbox-md').toggle();
     });    
     // clicking save sends the md to the server    
-    curabox.find('a.nc-save').click(function() {  
+    curabox.find('a.nc-submit').click(function() {  
         var thiscurabox = $(this).parent();
         var annomd = thiscurabox.find('textarea').val(); 
         var annoid = thiscurabox.parent().attr("val");
         nc.updateAnnotationText(annoid, annomd);
+        thiscurabox.find('a.nc-curation-toolbox-close').click();
     });    
     // clicking close triggers preview and makes the toolbox disappear
     curabox.find('a.nc-curation-toolbox-close').click(function() { 
         var thiscurabox = $(this).parent().parent();
-        thiscurabox.find('a.nc-save').hide("normal");        
+        thiscurabox.find('a.nc-submit').hide("normal");        
         thiscurabox.find('div.nc-curation-toolbox').hide();
         thiscurabox.find('a.nc-curation-toolbox-preview').click();        
     });        
-    //var allcontents = ;    
     curabox.find('.nc-curation-content').on("click" , function() {        
         var thiscurabox = $(this).parent();                
         if (thiscurabox.parent().hasClass("nc-editable-text-visible")) {
             thiscurabox.find('.nc-curation-toolbox').show('normal');
             thiscurabox.find('div.nc-curation-content').hide();
-            thiscurabox.find('textarea, a.nc-save').show();            
+            thiscurabox.find('textarea,a.nc-submit').show();            
         }        
     });
    
@@ -591,7 +608,7 @@ nc.ui.CommentBox = function(uid, rootid, parentid, annoid, annomd) {
         // this is a blank comment, i.e. an invitation to create a new comment
         commentbody.find('.nc-curation-toolbox,textarea').show();        
         commentbody.find('.nc-curation-toolbox-close').hide();                
-        commentbody.find('a.nc-save').off("click").show()
+        commentbody.find('a.nc-submit').off("click").show()
         .click(function() {        
             var annotext = $(this).parent().find("textarea").val();
             nc.createComment(annotext, rootid, parentid);
@@ -621,27 +638,35 @@ nc.ui.CommentBox = function(uid, rootid, parentid, annoid, annomd) {
 
 
 
-nc.ui.addCommentBox = function(datetime, ownerid, rootid, parentid, annoid, annotext) {
+/**
+ * Create one comment box and add it to the nc-comments div
+ * @param comdata array with elements datetime, modified, owner_id, root_id, parent_id,
+ * anno_id, anno_text
+ */
+nc.ui.addCommentBox = function(comdata) { //datetime, ownerid, rootid, parentid, annoid, annotext) {
     
-    var cbox = $('#nc-comments');   
-    
-    var html = '<div class="nc-mb-5"><span class="nc-log-entry-date">'+datetime+'</span>';
-    html += '<span class="nc-log-entry-user">'+ownerid+'</span></div>';    
-    var commentbox = nc.ui.CommentBox(ownerid, rootid, parentid, annoid, annotext);    
-    commentbox.find('textarea').html(annotext);
-    commentbox.find('.media-body a.nc-curation-toolbox-preview').click();                        
-    commentbox.find('.media-body').prepend(html).addClass("nc-editable-text").attr("val", annoid);  
-    
-    if (rootid==parentid) {
-        cbox.append(commentbox);    
-    } else {
-        commentbox.insertBefore ($('.media-body a[val="'+parentid+'"]'));
-    }    
-    
-    // when a new comment is added live, the date is null, make animation
-    if (datetime=='just now') {
-        commentbox.hide().show('normal');            
+    var cbox = $('#nc-comments');       
+    var html = '<div class="nc-mb-5"><span class="nc-log-entry-date">'+comdata.datetime+'</span>';    
+    html += '<span class="nc-log-entry-user">'+comdata.owner_id+'</span>';     
+    if (comdata.modified !=null) {
+        html += '<span class="nc-log-entry-date"> (edited '+comdata.modified+' by <span class="nc-log-entry-user">'+comdata.user_id+'</span>)</span>';        
     }
+    html+='</div>';        
+    var commentbox = nc.ui.CommentBox(comdata.owner_id, comdata.root_id, 
+        comdata.parent_id, comdata.anno_id, comdata.anno_text);    
+    commentbox.find('textarea').html(comdata.anno_text);
+    commentbox.find('.media-body a.nc-curation-toolbox-preview').click();  
+    commentbox.find('div.nc-curation-content').css("min-height", 0);
+    commentbox.find('.media-body').prepend(html).addClass("nc-editable-text").attr("val", comdata.anno_id);      
+    if (comdata.root_id==comdata.parent_id) {        
+        cbox.append(commentbox);    
+    } else {        
+        commentbox.insertBefore ($('.media-body a[val="'+comdata.parent_id+'"]'));
+    }        
+    // when a new comment is added live, the date is null, make animation
+    if (comdata.datetime=='just now') {
+        commentbox.hide().show('normal');            
+    }    
 }
 
 /**
@@ -649,8 +674,9 @@ nc.ui.addCommentBox = function(datetime, ownerid, rootid, parentid, annoid, anno
  */
 nc.ui.populateCommentsBox = function(commentarray) {        
     var rootid = $('#nc-comments').attr("val");        
-    $.each(commentarray, function(key, val){                          
-        nc.ui.addCommentBox(val['datetime'], val['owner_id'], rootid, val['parent_id'], 
-            val['anno_id'], val['anno_text']);                   
+    $.each(commentarray, function(key, val){     
+        var obj = val;
+        obj.root_id = rootid;                
+        nc.ui.addCommentBox(val); 
     })
 }

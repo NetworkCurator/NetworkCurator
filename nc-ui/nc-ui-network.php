@@ -34,7 +34,7 @@ if ($view !== 'graph' && $view !== 'log'
 $coreurl = "?page=network&network=$network&view=";
 ?>
 
-<nav class="navbar navbar-default nc-navbar navbar-static-top navbar2">
+<nav class="navbar navbar-default nc-navbar navbar-static-top nc-navbar2">
     <div class="container">
         <div class="navbar-collapse"> 
             <ul class="nav navbar-nav">  
@@ -57,8 +57,8 @@ $coreurl = "?page=network&network=$network&view=";
             </ul>
             <ul class="nav navbar-nav pull-right nc-nav-icon">                
                 <li class="nc-curator" style="display: none">
-                    <a role="button" id="nc-curation-lock" class="nc-looking">
-                        <i class="fa fa-lock fa-lg fa-fw"></i>
+                    <a role="button" id="nc-curation-lock" class="nc-looking">                        
+                        <span class="glyphicon glyphicon-pencil"></span>
                     </a>
                 </li>
             </ul>

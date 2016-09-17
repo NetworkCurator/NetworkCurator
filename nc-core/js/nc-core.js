@@ -153,7 +153,7 @@ nc.init.initLog = function() {
         action: "getActivityLogSize", 
         network_name: nc.network        
     }, function(data) {  
-        data = $.parseJSON(data);
+        data = JSON.parse(data);
         var logsize = +data['data'];
         logdiv.append(nc.ui.ActivityLogToolbar(logsize, 50));           
         nc.loadActivity(0, 50);
@@ -190,7 +190,7 @@ nc.init.initComments = function() {
         root_id: cbox.attr("val")
     }, function(data) {        
         nc.utils.alert(data);  
-        data = $.parseJSON(data);
+        data = JSON.parse(data);
         if (!data['success']) {  
             nc.msg("Hey!", "Got error response from server: "+data['data']);  
             return;
@@ -231,7 +231,7 @@ nc.init.initCuration = function() {
     var lockbtn = $('#nc-curation-lock');
     lockbtn.on("click",
         function() {
-            lockbtn.find('i.fa-lock, i.fa-unlock').toggleClass('fa-lock fa-unlock');
+            lockbtn.find('span.glyphicon-pencil, span.glyphicon-lock').toggleClass('glyphicon-pencil glyphicon-lock');
             lockbtn.toggleClass("nc-editing nc-looking");            
             $('.nc-editable-text').toggleClass('nc-editable-text-visible');            
         });    
@@ -259,7 +259,7 @@ nc.init.initMarkdown = function() {
 nc.init.initNetwork = function() {       
     if (nc.networktitle!='') {
         $('#nc-nav-network-title').html(nc.networktitle);        
-        $('body').addClass('body2');
+        $('body').addClass('nc-body2');
     }
     
     // hide certain components depending on current users permissions level
@@ -301,7 +301,7 @@ nc.loadActivity = function(pagenum, pagelen) {
         offset: pagenum*pagelen,
         limit: pagelen
     }, function(data) {                 
-        data = $.parseJSON(data);
+        data = JSON.parse(data);
         if (data['success']) {
             nc.ui.populateActivityArea(data['data']);
         } else {
@@ -337,10 +337,10 @@ nc.updateAnnotationText = function(annoid, annomd) {
         anno_text: annomd
     }, function(data) {        
         nc.utils.alert(data);  
-        data = $.parseJSON(data);
+        data = JSON.parse(data);
         if (!data['success']) {  
             nc.msg("Hey!", "Got error response from server: "+data['data']);            
-        }
+        }        
     });
 }
 
@@ -361,11 +361,9 @@ nc.createComment = function(annomd, rootid, parentid) {
     if (annomd.length<2) exit();        
 
     // provide click feedback
-    $('#nc-newcomment a.nc-save').removeClass('btn-success').addClass('btn-default')
+    $('#nc-newcomment a.nc-submit').removeClass('btn-success').addClass('btn-default')
     .html('Sending...');
-        
-    var timeout = this.timeout;
-        
+                
     // send a request to the server
     $.post(nc.api, 
     {
@@ -375,20 +373,22 @@ nc.createComment = function(annomd, rootid, parentid) {
         root_id: rootid,
         parent_id: parentid,
         anno_text: annomd
-    }, function(data) {        
+    }, function(data) {                
         nc.utils.alert(data);  
-        data = $.parseJSON(data);
+        data = JSON.parse(data);
         if (!data['success']) {  
             nc.msg("Hey!", "Got error response from server: "+data['data']);            
         }
         // provide feedback in the button
-        $('#nc-newcomment a.nc-save').html('Done');        
+        $('#nc-newcomment a.nc-submit').html('Done');        
         setTimeout(function(){
-            $('#nc-newcomment a.nc-save').addClass('btn-success').removeClass('btn-default').html('Save');
-        }, timeout);         
-        // add the comment to the page
-        nc.ui.addCommentBox('just now', nc.userid, rootid, parentid, 
-            data['data'], annomd);
+            $('#nc-newcomment a.nc-submit').addClass('btn-success').removeClass('btn-default').html('Submit');
+        }, this.timeout);         
+        // add the comment to the page       
+        var comdata = {datetime: 'just now', modified: null, 
+            user_id: nc.userid, owner_id: nc.userid, root_id: rootid,
+        parent_id: parentid, anno_id: data['data'], anno_text: annomd};        
+        nc.ui.addCommentBox(comdata);
         if (rootid!=parentid) {
             $('.media-body .media[val=""]').hide();    
         }

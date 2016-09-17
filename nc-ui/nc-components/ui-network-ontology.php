@@ -53,24 +53,23 @@ echo ncScriptObject("nc.ontology.links", $linkclasses);
                     Are you sure you want to <span id="nc-deprecateconfirm-action">deprecate</span> 
                     class <b><span id="nc-deprecateconfirm-class" val=""></span></b>?                    
                 </p>
-                <p><b>Heads up!</b></p>
+                <p><b>This is important!</b></p>
                 <p val="deprecate">
-                    If the class has already been applied to a graph element, 
-                    deprecating the class will also deprecate all those elements, but will not delete them. 
-                    The class will remain visible on this page and can be re-activated later.
+                    If the class has already been applied to a graph element
+                    this action will deprecate all those elements, too. 
+                    The graph elements will still exist, but will not be visible in the graph.
+                    The ontology class will remain visible on this page and can be re-activated later.
                 </p>
                 <p val="deprecate">
-                    If the class has not been used yet, this action will remove it 
-                    completely.                    
+                    If the class has not been used yet, this action will remove it completely.                    
                 </p>
                 <p val="activate">
-                    Activating the deprecated class will make it accessible again for use. 
-                    Any graph elements using the class will remain 
-                    deprecated until re-activated separately. 
+                    Activating the deprecated class will make it accessible again on the graph page. 
+                    Any graph elements using the class will automatically re-appear. 
                 </p>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-danger" data-dismiss="modal" val="confirm">OK</button>
+                <button class="btn btn-danger" data-dismiss="modal" val="nc-confirm">OK</button>
                 <button class="btn btn-warning" data-dismiss="modal">Cancel</button>
             </div>
         </div>

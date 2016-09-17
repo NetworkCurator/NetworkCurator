@@ -38,11 +38,10 @@ echo "nc.userid='$uid',
         <script type='text/javascript' src='<?php echo NC_JS_PATH; ?>/nc-users.js'></script>         
         <script type='text/javascript' src='<?php echo NC_JS_PATH; ?>/nc-utils.js'></script>        
 
-        <link rel='stylesheet' href='<?php echo NC_INCLUDES_PATH; ?>/bootstrap-3.3.7/css/bootstrap.min.css'>
-        <link rel='stylesheet' href='<?php echo NC_INCLUDES_PATH; ?>/font-awesome-4.6.3/css/font-awesome.min.css'>
+        <link rel='stylesheet' href='<?php echo NC_INCLUDES_PATH; ?>/bootstrap-3.3.7/css/bootstrap.min.css'>        
         <link rel='stylesheet' href='<?php echo NC_CSS_PATH; ?>/nc-core.css'>
         <link rel='stylesheet' media='screen and (max-width: 400px)' href='<?php echo NC_CSS_PATH; ?>/nc-core-small.css' />      
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans|Roboto:700" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans|Roboto:300,700" rel="stylesheet">
         <link href='<?php echo NC_UI_PATH; ?>/css/nc-ui.css' rel='stylesheet' type='text/css'>        
         <title>NetworkCurator <?php if ($network) echo ": " . $network; ?></title>
     </head>

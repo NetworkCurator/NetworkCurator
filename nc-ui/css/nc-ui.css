@@ -8,77 +8,26 @@
  * General page/body elements
  * -------------------------------------------------------------------------- */
 
-html {
-    position: relative;
-    min-height: 100%;
-}
-
 h1, h2, h3, h4 {     
     font-family: 'Roboto', Helvetica, sans-serif;
 }
 
+h1, h2, h4 {
+    font-weight: 700;
+}
+h3 {
+    font-weight: 300;
+    padding-bottom: 8px;    
+}
+
 body {       
-    font-family: 'Open Sans', Helvetica, sans-serif;
-    /** top padding prevents navigation bar overlaying content **/
-    padding-top: 32px;
-    margin-bottom: 80px;
+    font-family: 'Open Sans', Helvetica, sans-serif;   
 }
 
 
 
-/* --------------------------------------------------------------------------
- * Navbars
- * -------------------------------------------------------------------------- */
-
-.nc-navbar { 
-    min-height:32px; 
-}
-.nc-navbar .navbar-brand { 
-    padding: 0px 15px; 
-    font-size: inherit;
-    height: 32px;
-    line-height: 32px; }
-.nc-navbar .navbar-nav > li > a {  
-    padding: 0px 15px;
-    line-height: 32px; 
-}
-.nc-navbar .navbar-text { 
-    padding: 0px 15px 0px 0px;
-    margin: 0px 15px;
-    line-height: 32px; 
-}
-.navbar2 .container {
-    padding-left: 0px !important;
-}
-.navbar2 .active {
-    background-color: #c0c0c0;
-}
-
-.navbar2 {
-    position: absolute;    
-    top: 32px;
-    left: 0;
-    right: 0;
-}
-.body2 {
-    padding-top: 80px;
-}
 
 
-/* --------------------------------------------------------------------------
- * Footer
- * -------------------------------------------------------------------------- */
-
-.footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;    
-    height: 50px;    
-}
-.footer .container {
-    padding-left: 0px !important;
-    padding-right: 0px !important;
-}
 
 
 /* --------------------------------------------------------------------------
@@ -90,35 +39,6 @@ body {
     min-width: 94px !important;
 }
 
-.nc-fg-name {
-    min-width: 260px !important;
-    max-width: 260px !important;
-    width: 260px !important;    
-    white-space: nowrap;   
-    overflow: hidden;
-    text-overflow: ellipsis;
-    vertical-align: inherit;
-    margin-bottom: 0px;
-}
-
-.nc-form-permissions {
-    margin-top: 6px;
-    margin-bottom: 6px;
-}
-
-
-form {
-    margin-top: 14px;
-    margin-bottom: 30px;
-}
-.form-group {
-    margin-bottom: 1em;
-}
-
-
-.form-inline button {
-    margin-left: 12px;
-}
 
 
 
@@ -150,61 +70,6 @@ form {
 
 
 
-/* --------------------------------------------------------------------------
- * Class tree structures
- * -------------------------------------------------------------------------- */
-
-body.dragging, body.dragging * {
-    cursor: move !important;
-}
-.dragged {
-    position: absolute;
-    opacity: 0.4;
-    z-index: 1000;
-}
-ol.droptarget {
-    background-color: #f2f2f2;
-}
-li span {
-    padding: 2px 8px;
-}
-span.nc-directional {
-    padding-left: 0px;
-}
-li.aftermove > div:first-child span {
-    background-color: #f0f0f0;
-    color: #000;
-    font-weight: 600;
-}
-
-.nc-ontology-tree {
-    margin-bottom: 4em;
-}
-.nc-classtree-children {
-    list-style: none;
-    min-height: 5px; 
-    padding: 5px 0px 0px 25px;    
-}
-ol {
-    list-style: none;
-}
-.nc-classdisplay {    
-    padding: 3px 0px;
-}
-.nc-btn-edit {
-    margin-left: 6px;
-    margin-right: 6px;
-}
-.nc-class-form {
-    margin-bottom: 2px;
-}
-.nc-class-form .form-check-inline {    
-    font-weight: 300;    
-}
-.nc-class-form .form-check-input {
-    margin-left: 8px; 
-    margin-right: 4px;     
-}
 
 
 

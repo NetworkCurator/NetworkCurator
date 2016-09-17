@@ -44,17 +44,17 @@ nc.users.sendLogin = function(fgid, fgpwd, fgremember) {
         target_password: $('#'+fgpwd+' input').val(),
         remember: $('#'+fgremember+' input').is(':checked')
     }, function(data) {         
-        nc.utils.alert(data);        
-        data = $.parseJSON(data);
+        nc.utils.alert(data);                
+        data = JSON.parse(data);
         if (nc.utils.checkAPIresult(data)) {
             if (data['success']==false) {
-                $('#ncfg-userid,#ncfg-password').addClass('has-error has-feedback');                
-                $('#ncfg-userid label').html("Please verify the username is correct:");
-                $('#ncfg-password label').html("Please verify the password is correct:");
+                $('#fg-userid,#fg-password').addClass('has-error has-feedback');                
+                $('#fg-userid label').html("Please verify the username is correct:");
+                $('#fg-password label').html("Please verify the password is correct:");
             } else {
                 window.location.replace("?page=front");
             }
-        }                                
+        }                             
     }
     );    
     
@@ -97,7 +97,7 @@ nc.users.lookup = function() {
         target_id: targetid        
     }, function(data) {        
         nc.utils.alert(data);        
-        data = $.parseJSON(data);
+        data = JSON.parse(data);
         btn.html('Lookup').removeClass('btn-warning disabled').addClass('btn-success');                    
         if (nc.utils.checkAPIresult(data)) {            
             if (data['success']==false) {              
@@ -139,7 +139,7 @@ nc.users.updatePermissions = function(targetid) {
     nc.users.updatePermissionsGeneric(targetid, nowval, 
         function (data) {
             nc.utils.alert(data);        
-            data = $.parseJSON(data);
+            data = JSON.parse(data);
             btn.removeClass('btn-warning btn-success').html('Done').addClass('btn-default');        
             setTimeout(function(){
                 btn.html('Update').removeClass('btn-default disabled').addClass('btn-success');            
@@ -168,7 +168,7 @@ nc.users.grantView = function() {
     nc.users.updatePermissionsGeneric(targetid, 1, 
         function myfun(data) {                
             nc.utils.alert(data); 
-            data = $.parseJSON(data);
+            data = JSON.parse(data);
             // clear the text box and add new row to the widget
             $('#nc-form-permissions input').val('');                     
             var new_item = $(nc.ui.PermissionsWidget(data['data'])).hide();
@@ -177,7 +177,6 @@ nc.users.grantView = function() {
         });
     return false;        
 }
-
 
 
 /**
