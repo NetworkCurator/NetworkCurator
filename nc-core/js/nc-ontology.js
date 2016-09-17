@@ -165,7 +165,7 @@ nc.ontology.confirmDeprecate = function() {
             var thisrow = $('li[val="'+classid+'"]');            
             if (data['data']==true) {
                 // the class has been truly removed
-                thisrow.fadeOut('normal', function() {
+                thisrow.fadeOut(nc.ui.speed, function() {
                     $(this).remove()
                 } ); 
             } else {

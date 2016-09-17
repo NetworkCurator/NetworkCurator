@@ -11,7 +11,7 @@ if (typeof nc == "undefined") {
     throw new Error("nc is undefined");
 }
 nc.ui = {};
-
+nc.ui.speed = 'normal';
 
 
 /* ==========================================================================
@@ -374,8 +374,8 @@ nc.ui.addClassTreeRow = function(classrow) {
     } else {               
         targetdiv.append(newobj);
     }   
-    targetdiv.find("li").show('normal');
-    targetdiv.find("div.nc-classdisplay").show('normal');    
+    targetdiv.find("li").show(nc.ui.speed);
+    targetdiv.find("div.nc-classdisplay").show(nc.ui.speed);    
     
     return true;
 }
@@ -560,14 +560,14 @@ nc.ui.AnnoEditBox = function() {
     // clicking close triggers preview and makes the toolbox disappear
     curabox.find('a.nc-curation-toolbox-close').click(function() { 
         var thiscurabox = $(this).parent().parent();
-        thiscurabox.find('a.nc-submit').hide("normal");        
+        thiscurabox.find('a.nc-submit').hide(nc.ui.speed);        
         thiscurabox.find('div.nc-curation-toolbox').hide();
         thiscurabox.find('a.nc-curation-toolbox-preview').click();        
     });        
     curabox.find('.nc-curation-content').on("click" , function() {        
         var thiscurabox = $(this).parent();                
         if (thiscurabox.parent().hasClass("nc-editable-text-visible")) {
-            thiscurabox.find('.nc-curation-toolbox').show('normal');
+            thiscurabox.find('.nc-curation-toolbox').show(nc.ui.speed);
             thiscurabox.find('div.nc-curation-content').hide();
             thiscurabox.find('textarea,a.nc-submit').show();            
         }        
@@ -665,7 +665,7 @@ nc.ui.addCommentBox = function(comdata) { //datetime, ownerid, rootid, parentid,
     }        
     // when a new comment is added live, the date is null, make animation
     if (comdata.datetime=='just now') {
-        commentbox.hide().show('normal');            
+        commentbox.hide().show(nc.ui.speed);            
     }    
 }
 

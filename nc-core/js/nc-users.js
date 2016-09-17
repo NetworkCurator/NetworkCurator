@@ -151,7 +151,7 @@ nc.users.updatePermissions = function(targetid) {
             if (nowval==0 && targetid!=="guest") {                
                 // if setting user to 0, remove the form element from the page
                 var ncfp = $('.nc-form-permissions[val="'+targetid+'"]');
-                ncfp.fadeOut('normal', function() {
+                ncfp.fadeOut(nc.ui.speed, function() {
                     ncfp.remove()
                 }); 
             }
@@ -173,7 +173,7 @@ nc.users.grantView = function() {
             $('#nc-form-permissions input').val('');                     
             var new_item = $(nc.ui.PermissionsWidget(data['data'])).hide();
             $('#nc-permissions-users').append(new_item);
-            new_item.show('normal');        
+            new_item.show(nc.ui.speed);        
         });
     return false;        
 }

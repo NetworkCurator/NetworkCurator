@@ -83,6 +83,9 @@ nc.msg = function(h, b) {
  * startup duties.
  */
 nc.init.all = function() {    
+    var speed = nc.ui.speed;
+    nc.ui.speed = 0;
+    
     nc.init.initNetwork();
     nc.init.initPermissions();
     nc.init.initLog();
@@ -94,6 +97,8 @@ nc.init.all = function() {
     nc.init.initComments();    
     nc.init.initOntology();    
     nc.init.initGraph();       
+    
+    nc.ui.speed = speed;
 }
 
 /**
