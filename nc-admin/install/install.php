@@ -206,9 +206,9 @@ $sql = "CREATE TABLE $tabname (
   parent_id $vc32col,  
   anno_text $textcol,  
   anno_status $statuscol,
-  KEY level (network_id, anno_level),
-  KEY anno_id (anno_id),  
-  KEY root_id (root_id)  
+  KEY level (network_id, anno_level), 
+  KEY anno_id (anno_id),
+  KEY root_id (network_id, root_id)  
 ) COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
 
@@ -229,7 +229,8 @@ $sql = "CREATE TABLE $tabname (
   anno_valueunit $vc24col,  
   anno_status $statuscol,
   KEY level (network_id, anno_level),
-  KEY anno_id (anno_id)
+  KEY anno_id (anno_id),
+  KEY root_id (network_id, root_id)
 ) COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
 
@@ -242,13 +243,14 @@ $tabname = $tp . "datafiles";
 echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (  
   datetime DATETIME NOT NULL,
-  network_id $vc32col,  
+  file_id $vc32col,
   user_id $vc32col,  
-  original_filename $vc256col,
-  filename $vc64col,  
-  filetype $vc24col,
-  filesize BIGINT NOT NULL DEFAULT 0,
-  PRIMARY KEY (filename),
+  network_id $vc32col,    
+  file_name $vc256col,  
+  file_type $vc24col,
+  file_desc $vc256col,
+  file_size BIGINT NOT NULL DEFAULT 0,
+  PRIMARY KEY (file_id),
   KEY network_id (network_id)
 ) COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
@@ -266,8 +268,7 @@ $sql = "CREATE TABLE $tabname (
   network_id $vc32col,    
   action $vc64col,
   target_name $vc32col,  
-  value $textcol,
-  KEY datetime (datetime),
+  value $textcol, 
   KEY network_id (network_id, datetime)
 ) COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
@@ -373,6 +374,7 @@ $myconf .= "define('NC_TABLE_ACTIVITY',\t'" . DB_TABLE_PREFIX . "_activity');\n"
 $myconf .= "define('NC_TABLE_ANNOTEXT',\t'" . DB_TABLE_PREFIX . "_anno_text');\n";
 $myconf .= "define('NC_TABLE_ANNONUM',\t'" . DB_TABLE_PREFIX . "_anno_numeric');\n";
 $myconf .= "define('NC_TABLE_CLASSES',\t'" . DB_TABLE_PREFIX . "_classes');\n";
+$myconf .= "define('NC_TABLE_FILES',\t'" . DB_TABLE_PREFIX . "_datafiles');\n";
 $myconf .= "define('NC_TABLE_LINKS',\t'" . DB_TABLE_PREFIX . "_links');\n";
 $myconf .= "define('NC_TABLE_LOG',\t\t'" . DB_TABLE_PREFIX . "_log');\n";
 $myconf .= "define('NC_TABLE_NETWORKS',\t'" . DB_TABLE_PREFIX . "_networks');\n";

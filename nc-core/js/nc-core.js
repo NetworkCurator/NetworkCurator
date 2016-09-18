@@ -332,7 +332,11 @@ nc.loadActivity = function(pagenum, pagelen) {
 nc.updateAnnotationText = function(annoid, annomd) {  
 
     if (nc.network=='') return;        
-                     
+    if (annomd=='') {
+        nc.msg("Hey", "Annotation text cannot be blank");
+        return;
+    }
+    
     $.post(nc.api, 
     {
         controller: "NCAnnotations", 

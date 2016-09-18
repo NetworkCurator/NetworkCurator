@@ -94,11 +94,7 @@ class NCNetworks extends NCLogger {
         // 3/6, insert a new row into the networks table and annotations       
         $sql = "INSERT INTO " . NC_TABLE_NETWORKS . "
                    (network_id, owner_id) VALUES (?, ?)";
-        try {
-            $stmt = prepexec($this->_db, $sql, [$netid, $this->_uid]);
-        } catch (Exception $ex) {
-            throw new Exception("Error inserting new table");
-        }
+        prepexec($this->_db, $sql, [$netid, $this->_uid]);
 
         // 4/6, create a starting log entry for creation of the network        
         $this->logActivity($this->_uid, $netid, "created network", $params['network_name'], $params['network_title']);
@@ -110,13 +106,9 @@ class NCNetworks extends NCLogger {
         // 6/6, create permissions for admin and guest
         $sql = "INSERT INTO " . NC_TABLE_PERMISSIONS . "
                    (user_id, network_id, permissions) VALUES (?, ?, ?)";
-        try {
-            $stmt = $this->_db->prepare($sql);
-            $stmt->execute(['admin', $netid, NC_PERM_SUPER]);
-            $stmt->execute(['guest', $netid, NC_PERM_NONE]);
-        } catch (Exception $ex) {
-            throw new Exception("Error setting user permissions");
-        }
+        $stmt = $this->_db->prepare($sql);
+        $stmt->execute(['admin', $netid, NC_PERM_SUPER]);
+        $stmt->execute(['guest', $netid, NC_PERM_NONE]);
 
         return true;
     }
@@ -177,6 +169,7 @@ FROM (SELECT $tp.$ni AS $ni,
     (CASE WHEN $tac = " . NC_ABSTRACT . " THEN $tai ELSE '' END) AS 'abstract_id'    
 FROM $ta JOIN $tp ON $ta.$ni = $tp.$ni
     WHERE BINARY $tp.user_id = '$uid' AND $tp.permissions>" . NC_PERM_NONE . "
+    AND $ta.root_id LIKE 'W%'
     AND $ta.anno_status = 1 AND $tac <=" . NC_ABSTRACT . "
 GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         $stmt = $this->_db->query($sql);
@@ -231,22 +224,21 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
 
         // find the network id that corresponds to the name
         $netid = $this->getNetworkId($this->_network, true);
-        
+
         // check if user has permission to view the table        
         if ($this->getUserPermissionsNetID($netid, $this->_uid) < NC_PERM_VIEW) {
             throw new Exception("Insufficient permission to view the network");
         }
 
         $tu = "" . NC_TABLE_USERS;
-        $ta = "" . NC_TABLE_ANNOTEXT;
+        $tat = "" . NC_TABLE_ANNOTEXT;
         $tp = "" . NC_TABLE_PERMISSIONS;
 
         // find the title, abstract, etc
-        $sql = "SELECT network_id, anno_id, anno_level, anno_text FROM $ta 
+        $sql = "SELECT network_id, anno_id, anno_level, anno_text FROM $tat 
               WHERE BINARY network_id = ? AND root_id = ?
                 AND anno_status = " . NC_ACTIVE . " AND anno_level <= " . NC_CONTENT;
         $stmt = prepexec($this->_db, $sql, [$netid, $netid]);
-
         // record the results into an array that will eventually be output
         $result = array('network_id' => $netid);
         while ($row = $stmt->fetch()) {
@@ -280,7 +272,6 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
                     AND $tp.permissions<=" . NC_PERM_CURATE . "
                 ORDER BY $tu.user_lastname, $tu.user_firstname, $tu.user_middlename";
         $stmt = prepexec($this->_db, $sql, [$netid]);
-
         // move information from sql result into three new arrays by permission level
         $curators = array();
         $authors = array();
@@ -311,7 +302,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
     public function getNetworkTitle() {
 
         // find the network id that corresponds to the name
-        $netid = $this->getNetworkId($this->_network, true);        
+        $netid = $this->getNetworkId($this->_network, true);
 
         // check if user has permission to view the table        
         if ($this->getUserPermissionsNetID($netid, $this->_uid) < NC_PERM_VIEW) {
@@ -340,7 +331,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
      */
     public function getNetworkActivity() {
 
-        $netid = $this->getNetworkId($this->_network, true);        
+        $netid = $this->getNetworkId($this->_network, true);
 
         // settings for limiting output
         $offset = 0;

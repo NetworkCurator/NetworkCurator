@@ -15,18 +15,39 @@ class NCLogger {
     protected $_params;
     protected $_uid; // user_id (or guest)
     protected $_upw; // user_confirmation code (or guest(
-
+    private $_log = true;
+    // some prepped statements
+    private $_query_iat = null;
+    
     /**
      * Constructor with connection to database
      * 
      * @param PDO $db 
      * 
      */
-
-    public function __construct($db, $_params) {
+    public function __construct($db, $params) {
         $this->_db = $db;
-        $this->_params = $_params;
-        $this->_uid = $_paramas['user_id'];
+        $this->_params = $params;
+        $this->_uid = $params['user_id'];
+    }
+
+    /**
+     * Resets the parameters for this class.
+     * This is used when the API class is used internally.
+     * 
+     * @param type $params
+     */
+    public function resetParams($params) {
+        $this->_params = $params;
+    }
+
+    /**
+     * Set logging for this class. By default logging is on.
+     * 
+     * @param type $tolog
+     */
+    public function setLogging($tolog) {
+        $this->_log = $tolog;
     }
 
     /**
@@ -50,14 +71,13 @@ class NCLogger {
      * 
      */
     protected function makeRandomID($dbtable, $idcolumn, $idprefix, $stringlength) {
-        // this does not use prepared statements at the moment
-        //echo "making random ID\n";
+        // this does not use prepared statements at the moment                
         $newid = "";
         $keeplooking = true;
         while ($keeplooking) {
             $newid = $idprefix . makeRandomString($stringlength);
             $sql = "SELECT $idcolumn FROM $dbtable WHERE $idcolumn='$newid'";
-            $keeplooking = $this->_db->query($sql)->fetchAll();
+            $keeplooking = $this->_db->query($sql)->fetch();
         }
         return $newid;
     }
@@ -73,16 +93,18 @@ class NCLogger {
      * 
      */
     public function logAction($userid, $userip, $controller, $action, $value) {
-        // prepare a statement for log-logging
-        $sqllog = "INSERT INTO " . NC_TABLE_LOG . "
+        if ($this->_log) {
+            // prepare a statement for log-logging
+            $sqllog = "INSERT INTO " . NC_TABLE_LOG . "
             (datetime, user_id, user_ip, controller, action, value) VALUES 
             (UTC_TIMESTAMP(), :user_id, :user_ip, :controller, :action, :value)";
-        $stmt = $this->_db->prepare($sqllog);
-        // execture the query with current parameters
-        $pp = array('user_id' => $userid, 'user_ip' => $userip,
-            'controller' => $controller, 'action' => $action,
-            'value' => $value);
-        $stmt->execute($pp);
+            $stmt = $this->_db->prepare($sqllog);
+            // execture the query with current parameters
+            $pp = array('user_id' => $userid, 'user_ip' => $userip,
+                'controller' => $controller, 'action' => $action,
+                'value' => $value);
+            $stmt->execute($pp);
+        }
         return 1;
     }
 
@@ -97,21 +119,23 @@ class NCLogger {
      * @throws Exception
      */
     public function logActivity($userid, $netid, $action, $targetname, $value) {
-        // prepare a statement for activity-logging
-        $sqlact = "INSERT INTO " . NC_TABLE_ACTIVITY . "
+        if ($this->_log) {
+            // prepare a statement for activity-logging
+            $sqlact = "INSERT INTO " . NC_TABLE_ACTIVITY . "
                    (datetime, user_id, network_id, action, target_name, value) 
                    VALUES 
                    (UTC_TIMESTAMP(), :user_id, :network_id, :action, 
                        :target_name, :value)";
-        $stmt = $this->_db->prepare($sqlact);
-        // execute the query with current parameters
-        $pp = array('user_id' => $userid, 'network_id' => $netid,
-            'action' => $action, 'target_name' => $targetname,
-            'value' => $value);
-        $stmt->execute($pp);
+            $stmt = $this->_db->prepare($sqlact);
+            // execute the query with current parameters
+            $pp = array('user_id' => $userid, 'network_id' => $netid,
+                'action' => $action, 'target_name' => $targetname,
+                'value' => $value);
+            $stmt->execute($pp);
+        }
         return 1;
     }
-   
+
     /**
      * Execute a db query that insert an annotation into the table. 
      * 
@@ -136,17 +160,20 @@ class NCLogger {
         $params['anno_id'] = $newid;
 
         // insert the annotation into the table
-        // (this is somewhat inelegant, uses twice the named placeholders with A/B.
-        $sql = "INSERT INTO $tat 
+        // this uses query prep caching (in case the query is used twice in this class)
+        if ($this->_query_iat == null) {
+            $sql = "INSERT INTO $tat 
                    (datetime, network_id, owner_id, user_id, root_id, parent_id, 
                    anno_id, anno_text, anno_level, anno_status) VALUES 
                    (UTC_TIMESTAMP(), :network_id, :owner_id, :user_id, :root_id, :parent_id,
                    :anno_id, :anno_text, :anno_level, " . NC_ACTIVE . ")";
-        $stmt = prepexec($this->_db, $sql, $params);
+            $this->_query_iat = $this->_db->prepare($sql);
+        }
+        $this->_query_iat->execute($params);
 
         return $newid;
     }
-        
+
     /**
      * Updates the annotext table with some new data.
      * Updating means changing an existing row with anno_id to status=OLD,
@@ -154,8 +181,8 @@ class NCLogger {
      * 
      * @param array $params
      * 
-     * The function assumes the array contains seven elements.
-     * network_id, owner_id, user_id, root_id, parent_id, anno_text, anno_level
+     * The function assumes the array contains exactly these elements.
+     * network_id, user_id, root_id, parent_id, anno_id, anno_text, anno_level
      * 
      * @return
      * 
@@ -167,15 +194,24 @@ class NCLogger {
         $tat = "" . NC_TABLE_ANNOTEXT;
 
         // fetch the old date
-        $sql = "SELECT datetime FROM $tat WHERE network_id = ? AND anno_id = ? 
-            AND anno_status = ".NC_ACTIVE;
+        $sql = "SELECT datetime, owner_id FROM $tat WHERE network_id = ? AND anno_id = ? 
+            AND anno_status = " . NC_ACTIVE;
         $stmt = prepexec($this->_db, $sql, [$params['network_id'], $params['anno_id']]);
         $result = $stmt->fetch();
         if (!$result) {
             throw new Exception("Could not identify annotation");
         }
         $olddate = $result['datetime'];
-        
+        $params['owner_id'] = $result['owner_id'];
+
+        // avoid further work if the annotations are the same
+        if ($result['anno_text'] == $params['anno_text']) {
+            return 0;
+        }
+        if ($params['anno_text'] == '') {
+            throw new Exception("Cannot insert empty annotation");
+        }
+
         // prepare a statement setting all anno_status to disabled for a given anno_id
         $sql = "UPDATE $tat SET anno_status=" . NC_OLD . "                           
                 WHERE network_id = ? AND anno_id = ? AND anno_status=" . NC_ACTIVE;
@@ -215,7 +251,7 @@ class NCLogger {
         if (!$result) {
             return NC_PERM_NONE;
         }
-        return (int) $result[permissions];
+        return (int) $result['permissions'];
     }
 
     /**
@@ -255,22 +291,20 @@ class NCLogger {
      * 
      * @return string
      * 
-     * A code used in the db, e.g. "W0123456789".
+     * A code used in the db, e.g. "Wxxxxxx".
      * If a network does nto exists, return the empty string.
      *  
      */
-    protected function getNetworkId($netname, $throw=false) {
-        //echo "getNetworkID\n";
+    protected function getNetworkId($netname, $throw = false) {
         $sql = "SELECT network_id FROM " . NC_TABLE_ANNOTEXT . "
             WHERE BINARY anno_text = ? AND anno_level = " . NC_NAME . " 
                 AND anno_status = 1";
-        $stmt = $this->_db->prepare($sql);
-        $stmt->execute([$netname]);
+        $stmt = prepexec($this->_db, $sql, [$netname]);
         $result = $stmt->fetch();
         if (!$result) {
             if ($throw) {
                 throw new Exception("Network does not exist");
-            } 
+            }
             return "";
         } else {
             return $result['network_id'];
@@ -292,7 +326,7 @@ class NCLogger {
     protected function getNameAnnoRootId($netid, $nameanno, $throw = true) {
         $sql = "SELECT root_id, anno_status FROM " . NC_TABLE_ANNOTEXT . "
            WHERE BINARY network_id = ? AND anno_text = ? AND 
-           anno_level = " . NC_NAME . " AND anno_status != ".NC_OLD;
+           anno_level = " . NC_NAME . " AND anno_status != " . NC_OLD;
         $stmt = prepexec($this->_db, $sql, [$netid, $nameanno]);
         $result = $stmt->fetch();
         if ($throw) {
@@ -301,6 +335,38 @@ class NCLogger {
             }
         }
         return $result;
+    }
+
+    /**
+     * Fetches the anno_id associated with an annotation
+     * (e.g. if want to update the title of a network,
+     * set netid, rootid=netid, level=NC_NAME
+     * 
+     * @param type $netid
+     * @param type $rootid
+     * @param type $level
+     * @return string
+     * 
+     * the anno_id
+     * 
+     * @throws Exception
+     * 
+     * (should never happen as this function is used internaly)
+     * 
+     */
+    protected function getAnnoId($netid, $rootid, $level) {
+        if ($level != NC_ABSTRACT && $level == NC_TITLE && $level == NC_CONTENT) {
+            throw new Exception("Function only suitable for title, abstract, content");
+        }
+        $sql = "SELECT anno_id FROM " . NC_TABLE_ANNOTEXT . " 
+            WHERE BINARY network_id = ? AND root_id = ? AND 
+            anno_level = ? AND anno_status = " . NC_ACTIVE;
+        $stmt = prepexec($this->_db, $sql, [$netid, $rootid, $level]);
+        $result = $stmt->fetch();
+        if (!$result) {
+            throw new Exception("Error fetching anno id");
+        }
+        return $result['anno_id'];
     }
 
     /**

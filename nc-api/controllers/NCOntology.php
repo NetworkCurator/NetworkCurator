@@ -14,7 +14,7 @@ class NCOntology extends NCLogger {
     // some variables extracted from $_params, for convenience
     private $_network;
     private $_netid;
-    private $_uperm;
+    private $_uperm;    
 
     /**
      * Constructor 
@@ -43,7 +43,7 @@ class NCOntology extends NCLogger {
             throw new Exception("NCOntology requires parameter user_id");
         }
 
-        // all function will need to know the network id code
+        // all functions will need to know the network id code
         $this->_netid = $this->getNetworkId($this->_network, true);
 
         // check that the user has permissions to view this network   
@@ -52,7 +52,7 @@ class NCOntology extends NCLogger {
             throw new Exception("Insufficient permissions to query ontology");
         }
     }
-
+        
     /**
      * Similar to listOntology with parameter ontology='nodes'
      */
@@ -121,8 +121,8 @@ class NCOntology extends NCLogger {
     public function createNewClass() {
 
         // check that required parameters are defined
-        $params = $this->subsetArray($this->_params, ["user_id", "network_name",
-            "parent_id", "connector", "directional", "class_name"]);
+        $params = $this->subsetArray($this->_params, ["parent_id", 
+            "connector", "directional", "class_name"]);
 
         if (strlen($params['class_name']) < 2) {
             throw new Exception("Class name too short");
@@ -375,18 +375,7 @@ class NCOntology extends NCLogger {
             // class is used - set as inactive
             $sql = "UPDATE $tc SET class_status = " . NC_DEPRECATED . " WHERE 
                      network_id = ? AND class_id = ? ";
-            prepexec($this->_db, $sql, [$this->_netid, $classid]);
-
-            // deprecate all nodes and links that use this class?
-            //if ($olddata['connector']) {
-            //    $sql = "UPDATE " . NC_TABLE_LINKS . " SET link_status = " . NC_DEPRECATED;
-            //} else {
-            //    $sql = "UPDATE " . NC_TABLE_NODES . " SET node_status = " . NC_DEPRECATED;
-            // }
-            //$sql .= " WHERE network_id = ? and class_id = ?";
-            //prepexec($this->_db, $sql, [$this->_netid, $classid]);
-            // when deprecating a node class, also deprecate 
-            // TODO
+            prepexec($this->_db, $sql, [$this->_netid, $classid]);           
             
             // log the event
             $this->logActivity($this->_uid, $this->_netid, "deprecated class", $olddata['class_name'], $classid);

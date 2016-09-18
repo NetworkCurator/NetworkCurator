@@ -25,8 +25,7 @@ $view = 'summary';
 if (isset($_REQUEST['view'])) {
     $view = strtolower($_REQUEST['view']);
 }
-if ($view !== 'graph' && $view !== 'log'
-        && $view !== 'permissions' && $view !== "ontology") {
+if (!in_array($view, array('graph', 'log', 'data', 'permissions', 'ontology'))) {
     $view = 'summary';
 }
 
@@ -46,6 +45,9 @@ $coreurl = "?page=network&network=$network&view=";
                 </li>                
                 <li class='<?php if ($view == 'ontology') echo 'active'; ?>'>
                     <a href='<?php echo $coreurl . 'ontology'; ?>'>Ontology</a>
+                </li>                
+                <li class='<?php if ($view == 'data') echo 'active'; ?>'>
+                    <a href='<?php echo $coreurl . 'data'; ?>'>Data</a>
                 </li>                
                 <li class='<?php if ($view == 'log') echo 'active'; ?>'>
                     <a href='<?php echo $coreurl . 'log'; ?>'>Log</a>
@@ -75,7 +77,5 @@ include_once "nc-ui/nc-components/ui-network-$view.php";
 echo "<script>nc.networktitle='$nettitle';</script>";
 echo ncScriptObject("nc.md", $netmd);
 echo ncScriptObject("nc.comments", $netcomments);
-
-
 ?>
 

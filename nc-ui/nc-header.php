@@ -32,6 +32,7 @@ echo "nc.userid='$uid',
 ?>
         </script>
         <script type='text/javascript' src='<?php echo NC_JS_PATH; ?>/nc-admin.js'></script>                
+        <script type='text/javascript' src='<?php echo NC_JS_PATH; ?>/nc-data.js'></script>                
         <script type='text/javascript' src='<?php echo NC_JS_PATH; ?>/nc-graph.js'></script>                
         <script type='text/javascript' src='<?php echo NC_JS_PATH; ?>/nc-ontology.js'></script>                
         <script type='text/javascript' src='<?php echo NC_JS_PATH; ?>/nc-ui.js'></script>  
