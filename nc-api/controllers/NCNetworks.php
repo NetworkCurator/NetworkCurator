@@ -95,7 +95,7 @@ class NCNetworks extends NCLogger {
         // 3/6, insert a new row into the networks table and annotations       
         $sql = "INSERT INTO " . NC_TABLE_NETWORKS . "
                    (network_id, owner_id) VALUES (?, ?)";
-        prepexec($this->_db, $sql, [$netid, $this->_uid]);
+        $this->qPE($sql, [$netid, $this->_uid]);
 
         // 4/6, create a starting log entry for creation of the network        
         $this->logActivity($this->_uid, $netid, "created network", $params['network_name'], $params['network_title']);
@@ -206,7 +206,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
                   WHERE BINARY $tp.user_id!='admin' AND $tp.user_id!='guest'
                      AND $tp.network_id = ? AND $tp.permissions>" . NC_PERM_NONE . "
                      ORDER BY $tu.user_id";
-        $stmt = prepexec($this->_db, $sql, [$netid]);
+        $stmt = $this->qPE($sql, [$netid]);
         $result = array();
         while ($row = $stmt->fetch()) {
             $result[$row['user_id']] = $row;
@@ -239,7 +239,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         $sql = "SELECT network_id, anno_id, anno_level, anno_text FROM $tat 
               WHERE BINARY network_id = ? AND root_id = ?
                 AND anno_status = " . NC_ACTIVE . " AND anno_level <= " . NC_CONTENT;
-        $stmt = prepexec($this->_db, $sql, [$netid, $netid]);
+        $stmt = $this->qPE($sql, [$netid, $netid]);
         // record the results into an array that will eventually be output
         $result = array('network_id' => $netid);
         while ($row = $stmt->fetch()) {
@@ -272,7 +272,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
                 WHERE $tp.network_id = ? AND $tp.permissions>" . NC_PERM_VIEW . "
                     AND $tp.permissions<=" . NC_PERM_CURATE . "
                 ORDER BY $tu.user_lastname, $tu.user_firstname, $tu.user_middlename";
-        $stmt = prepexec($this->_db, $sql, [$netid]);
+        $stmt = $this->qPE($sql, [$netid]);
         // move information from sql result into three new arrays by permission level
         $curators = array();
         $authors = array();
@@ -315,7 +315,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         $sql = "SELECT anno_text FROM $ta 
               WHERE BINARY network_id = ? AND root_id = ?
                 AND anno_status = " . NC_ACTIVE . " AND anno_level = " . NC_TITLE;
-        $stmt = prepexec($this->_db, $sql, [$netid, $netid]);
+        $stmt = $this->qPE($sql, [$netid, $netid]);
         $result = $stmt->fetch();
         if (!$result) {
             throw new Exception("Error fetching network title");
@@ -366,10 +366,10 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         $sqlorder = "ORDER BY datetime DESC ";
         if (is_null($startdate)) {
             $sql .= $sqlorder . " LIMIT $limit OFFSET $offset";
-            $stmt = prepexec($this->_db, $sql, [$netid]);
+            $stmt = $this->qPE($sql, [$netid]);
         } else {
             $sql .= " WHERE datetime >= ? AND datetime <= ? $sqlorder";
-            $stmt = prepexec($this->_db, $sql, [$netid, $startdate, $enddate]);
+            $stmt = $this->qPE($sql, [$netid, $startdate, $enddate]);
         }
 
         $result = array();
@@ -395,7 +395,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
 
         $sql = "SELECT COUNT(*) AS logsize FROM " .
                 NC_TABLE_ACTIVITY . " WHERE network_id = ? ";
-        $stmt = prepexec($this->_db, $sql, [$netid]);
+        $stmt = $this->qPE($sql, [$netid]);
         $result = $stmt->fetch();
         if (!$result) {
             throw new Exception("Error fetching error log");

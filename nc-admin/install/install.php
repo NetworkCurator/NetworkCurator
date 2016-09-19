@@ -41,6 +41,8 @@ $statuscol = " TINYINT NOT NULL DEFAULT 1";
 $dblcol = " DOUBLE NOT NULL DEFAULT 0.0";
 $datecol = " DATETIME NOT NULL";
 
+$engine = " ENGINE = InnoDB ";
+//$engine = " ENGINE = MyISAM ";
 
 /* --------------------------------------------------------------------------
  * Start installation
@@ -100,7 +102,7 @@ $sql = "CREATE TABLE $tabname (
   user_extpwd $vc256col,   
   user_status $statuscol,
   PRIMARY KEY (`user_id`)
-  ) COLLATE utf8_unicode_ci";
+  ) $engine COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
 
 
@@ -116,7 +118,7 @@ $sql = "CREATE TABLE $tabname (
   permissions INT NOT NULL DEFAULT 0,
   UNIQUE KEY user_network (user_id, network_id),
   KEY network_id (network_id)
-) COLLATE utf8_unicode_ci";
+) $engine COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
 
 
@@ -129,7 +131,7 @@ $sql = "CREATE TABLE $tabname (
   network_id $vc32col,       
   owner_id $vc32col,  
   PRIMARY KEY (network_id)  
-) COLLATE utf8_unicode_ci";
+) $engine COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
 
 
@@ -145,7 +147,7 @@ $sql = "CREATE TABLE $tabname (
   node_status $statuscol,
   PRIMARY KEY (node_id),
   KEY network_id (network_id)
-) COLLATE utf8_unicode_ci";
+) $engine COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
 
 
@@ -165,7 +167,7 @@ $sql = "CREATE TABLE $tabname (
   KEY source_id (source_id),
   KEY target_id (target_id),
   KEY network_id (network_id)
-) COLLATE utf8_unicode_ci";
+) $engine COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
 
 
@@ -183,18 +185,17 @@ $sql = "CREATE TABLE $tabname (
   directional TINYINT NOT NULL DEFAULT 0,
   class_score $dblcol,
   class_status $statuscol,
-  PRIMARY KEY (class_id),
-  KEY network_id (network_id, parent_id)
-) COLLATE utf8_unicode_ci";
+  PRIMARY KEY (class_id)  
+) $engine COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
-
+//KEY network_id (network_id, parent_id)
 
 // -----------------------------------------------------------------------------
 // The annotations table will hold comments, subcomments for all components
 
 $tabname = $tp . "anno_text";
 echo "Creating table $tabname: ";
-$sql = "CREATE TABLE $tabname (  
+$sql = "CREATE TABLE $tabname (    
   datetime DATETIME NOT NULL,
   modified DATETIME,
   anno_id $vc32col,
@@ -205,11 +206,11 @@ $sql = "CREATE TABLE $tabname (
   root_id $vc32col,
   parent_id $vc32col,  
   anno_text $textcol,  
-  anno_status $statuscol,
+  anno_status $statuscol,  
   KEY level (network_id, anno_level), 
   KEY anno_id (anno_id),
   KEY root_id (network_id, root_id)  
-) COLLATE utf8_unicode_ci";
+) $engine COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
 
 
@@ -231,7 +232,7 @@ $sql = "CREATE TABLE $tabname (
   KEY level (network_id, anno_level),
   KEY anno_id (anno_id),
   KEY root_id (network_id, root_id)
-) COLLATE utf8_unicode_ci";
+) $engine COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
 
 
@@ -252,7 +253,7 @@ $sql = "CREATE TABLE $tabname (
   file_size BIGINT NOT NULL DEFAULT 0,
   PRIMARY KEY (file_id),
   KEY network_id (network_id)
-) COLLATE utf8_unicode_ci";
+) $engine COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
 
 
@@ -270,7 +271,7 @@ $sql = "CREATE TABLE $tabname (
   target_name $vc32col,  
   value $textcol, 
   KEY network_id (network_id, datetime)
-) COLLATE utf8_unicode_ci";
+) $engine COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
 
 
@@ -288,7 +289,7 @@ $sql = "CREATE TABLE $tabname (
   action $vc64col,
   value $textcol,
   KEY user_id (user_id, datetime)
-) COLLATE utf8_unicode_ci";
+) $engine COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
 
 

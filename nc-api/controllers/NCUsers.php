@@ -53,7 +53,7 @@ class NCUsers extends NCLogger {
         // check that the network does not already exist?                  
         $sql = "SELECT user_id FROM " . NC_TABLE_USERS . " WHERE user_id = ? ";
         //ncInterpolateQuery($sql, $params)
-        $stmt = prepexec($this->_db, $sql, [$params['target_id']]);
+        $stmt = $this->qPE($sql, [$params['target_id']]);
         if ($stmt->fetchAll()) {
             throw new Exception("Target user id exists");
         }
@@ -72,7 +72,7 @@ class NCUsers extends NCLogger {
         $pp = $this->subsetArray($params, ['target_id',
             'target_firstname', 'target_middlename', 'target_lastname',
             'target_email', 'target_password', 'target_extpwd']);
-        $stmt = prepexec($this->_db, $sql, $pp);
+        $stmt = $this->qPE($sql, $pp);
 
         // create a user identicon        
         $userimg = new NCIdenticons();
@@ -109,7 +109,7 @@ class NCUsers extends NCLogger {
         $sql = "SELECT user_id, user_pwd, user_extpwd, user_firstname, 
             user_middlename, user_lastname 
             FROM " . NC_TABLE_USERS . " WHERE BINARY user_id = ? ";
-        $stmt = prepexec($this->_db, $sql, [$params['target_id']]);
+        $stmt = $this->qPE($sql, [$params['target_id']]);
         $result = $stmt->fetch();
         if (!$result) {
             throw new Exception("Invalid user id or password");
@@ -149,7 +149,7 @@ class NCUsers extends NCLogger {
         // Verify that user is in database         
         $sql = "SELECT user_extpwd FROM " . NC_TABLE_USERS . " 
             WHERE BINARY user_id = ?";
-        $stmt = prepexec($this->_db, $sql, [$this->_uid]);
+        $stmt = $this->qPE($sql, [$this->_uid]);
         $result = $stmt->fetch();
         if (!$result) {
             throw new Exception("Invalid user_id");
@@ -204,7 +204,7 @@ class NCUsers extends NCLogger {
         }
         $sql = "SELECT user_id, user_firstname, user_middlename, user_lastname 
             FROM " . NC_TABLE_USERS . " WHERE BINARY user_id = ?";
-        $stmt = prepexec($this->_db, $sql, [$targetid]);
+        $stmt = $this->qPE($sql, [$targetid]);
         $result = $stmt->fetch();
         if (!$result) {
             throw new Exception("Target user does not exist");
@@ -223,7 +223,7 @@ class NCUsers extends NCLogger {
         $sql = "INSERT INTO " . NC_TABLE_PERMISSIONS . " 
             (user_id, network_id, permissions) VALUES 
             (?, ?, ?) ON DUPLICATE KEY UPDATE permissions = ?";
-        $stmt = prepexec($this->_db, $sql, [$targetid, $netid, $newperm, $newperm]);
+        $stmt = $this->qPE($sql, [$targetid, $netid, $newperm, $newperm]);
 
         // log the activity           
         $this->logActivity($this->_uid, $netid, "updated permissions for user", $targetid, $newperm);
@@ -259,7 +259,7 @@ class NCUsers extends NCLogger {
         // make sure the target user exist
         $sql = "SELECT user_id FROM " . NC_TABLE_USERS . "
             WHERE BINARY user_id = ?";
-        $stmt = prepexec($this->_db, $sql, [$params['target_id']]);
+        $stmt = $this->qPE($sql, [$params['target_id']]);
         if (!$stmt->fetch()) {
             throw new Exception("Target user does not exist");
         }

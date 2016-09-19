@@ -1,0 +1,42 @@
+<?php
+
+/*
+ * Class handling db querying, including query caching.
+ * 
+ * Functions assume that the NC configuration definitions are already loaded
+ * 
+ */
+
+class NCDB {
+
+    // general connection
+    protected $_db;
+    
+    /**
+     * Constructor with connection to database
+     * 
+     * @param PDO $db 
+     * 
+     */
+    public function __construct($db) {
+        $this->_db = $db;
+    }
+
+    /**
+     * Preps and executes a query.
+     * 
+     * @param type $sql
+     * @param type $bind
+     * @return PDOStatement
+     * 
+     * The output can be used to fetch() results of the query
+     * 
+     */
+    protected function qPE($sql, $arr) {
+        $stmt = $this->_db->prepare($sql);
+        $stmt->execute($arr);
+        return $stmt;
+    }
+       
+}
+?>

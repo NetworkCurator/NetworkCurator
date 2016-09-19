@@ -24,16 +24,16 @@ class NCGraphs extends NCLogger {
      * array with parameters
      */
     public function __construct($db, $params) {
-                
+
         parent::__construct($db, $params);
-        
+
         // check for required parameters
         if (isset($params['network_name'])) {
             $this->_network = $params['network_name'];
         } else {
             $this->_network = "";
-        }                
-        $this->_netid = $this->getNetworkId($this->_network, true);        
+        }
+        $this->_netid = $this->getNetworkId($this->_network, true);
     }
 
     /**
@@ -57,7 +57,7 @@ class NCGraphs extends NCLogger {
         // get the connector setting from the classes table
         $sql = "SELECT class_id, connector, class_status FROM " . NC_TABLE_CLASSES . " WHERE 
             network_id = ? AND class_id = ?";
-        $stmt = prepexec($this->_db, $sql, [$netid, $classid]);
+        $stmt = $this->qPE($sql, [$netid, $classid]);
         $result = $stmt->fetch();
         if (!$result) {
             throw new Exception("Invalid class");
@@ -77,7 +77,7 @@ class NCGraphs extends NCLogger {
      * @param type $nodename
      */
     private function getNodeId($netid, $nodename) {
-        
+
         $nodeid = $this->getNameAnnoRootId($netid, $nodename);
         if ($nodeid['anno_status'] == NC_ACTIVE) {
             $nodeid = $nodeid['root_id'];
@@ -88,7 +88,7 @@ class NCGraphs extends NCLogger {
         // check that the id is actually in the nodes table
         $sql = "SELECT node_id, node_status FROM " . NC_TABLE_NODES . "
             WHERE network_id = ? AND node_id = ?";
-        $stmt = prepexec($this->_db, $sql, [$netid, $nodeid]);
+        $stmt = $this->qPE($sql, [$netid, $nodeid]);
         $result = $stmt->fetch();
         if (!$result) {
             throw new Exception("Invalid node name");
@@ -108,8 +108,7 @@ class NCGraphs extends NCLogger {
     public function createNewNode() {
 
         // check that required inputs are defined
-        $params = $this->subsetArray($this->_params, ["network_name",
-            "node_name", "node_title", "class_name"]);       
+        $params = $this->subsetArray($this->_params, ["node_name", "node_title", "class_name"]);
 
         // get the class id associated with the class name
         $classinfo = $this->getClassInfo($this->_netid, $params['class_name']);
@@ -118,24 +117,50 @@ class NCGraphs extends NCLogger {
             throw new Exception("Invalid class for a node");
         }
 
-        // check if this node name already exists
+        // check if this node name already exists        
         $nodename = $this->getNameAnnoRootId($this->_netid, $params['node_name'], false);
         if ($nodename) {
             throw new Exception("Node name already exists");
         }
 
-        // if reached here, create the new node        
-        $nodeid = $this->makeRandomID(NC_TABLE_NODES, 'node_id', 'N', NC_ID_LEN);
-        $sql = "INSERT INTO " . NC_TABLE_NODES . " 
-            (network_id, node_id, class_id, node_status) VALUES (?, ?, ?, ?)";
-        $stmt = prepexec($this->_db, $sql, [$this->_netid, $nodeid, $classid, NC_ACTIVE]);
+        // if reached here, create the new node  
+        $nodeid = $this->insertNode($params['node_name'], $classid, $params['node_title']);
 
         // log entry for creation
         $this->logActivity($this->_uid, $this->_netid, "created node", $params['node_name'], $params['node_title']);
 
-        // insert name, title, abstract, content, annotations for the link
-        $this->insertNewAnnoSet($this->_netid, $this->_uid, $nodeid, $params['node_name'], $params['node_title'], '');
+        return $nodeid;
+    }
 
+    /**
+     * Internal function that perform data insert for a valid node.
+     * 
+     * The function requires a prepped query, so make sure to call
+     * prepInsertNode() before using this function.
+     * 
+     * The inputs go straight into the db, without any checks.
+     * 
+     * @param type $nodename
+     * @param type $nodetitle
+     * @param type $nodeabstract
+     * @param type $nodecontent
+     * 
+     * @return type
+     */
+    protected function insertNode($nodename, $classid, $nodetitle, $nodeabstract = '', $nodecontent = '') {
+
+        $nodeid = $this->makeRandomID(NC_TABLE_NODES, 'node_id', 'N', NC_ID_LEN);
+
+        //$this->recordTime("A");
+        // insert a node
+        $sql = "INSERT INTO " . NC_TABLE_NODES . " 
+            (network_id, node_id, class_id, node_status) VALUES (?, ?, ?, ?)";
+        $this->qPE($sql, [$this->_netid, $nodeid, $classid, NC_ACTIVE]);
+        //$this->recordTime("B");
+        // insert name, title, abstract, content, annotations for the link
+        $this->insertNewAnnoSet($this->_netid, $this->_uid, $nodeid, $nodename, $nodetitle, $nodeabstract, $nodecontent);
+        //$this->recordTime("C");
+        //$this->showTimes();
         return $nodeid;
     }
 
@@ -150,7 +175,7 @@ class NCGraphs extends NCLogger {
         // check that required inputs are defined
         $params = $this->subsetArray($this->_params, ["network_name",
             "link_name", "link_title", "class_name", "source_name", "target_name"]);
-     
+
         // get the class id associated with the class name
         $classinfo = $this->getClassInfo($this->_netid, $params['class_name']);
         $classid = $classinfo['class_id'];
@@ -169,18 +194,48 @@ class NCGraphs extends NCLogger {
         }
 
         // if reached here, create the new node        
-        $linkid = $this->makeRandomID(NC_TABLE_LINKS, 'link_id', 'L', NC_ID_LEN);
-        $sql = "INSERT INTO " . NC_TABLE_LINKS . " 
-            (network_id, link_id, source_id, target_id, class_id, link_status) 
-              VALUES 
-            (?, ?, ?, ?, ?, ?)";
-        prepexec($this->_db, $sql, [$this->_netid, $linkid, $sourceid, $targetid, $classid, NC_ACTIVE]);
+        $linkid = $this->insertLink($params['link_name'], $classid, $sourceid, $targetid, $params['link_title']);
 
         // log entry for creation
         $this->logActivity($this->_uid, $this->_netid, "created link", $params['link_name'], $params['link_title']);
 
+        return $linkid;
+    }
+
+    /**
+     * Internal function that perform data insert for a valid link.
+     * 
+     * The function requires a prepped query, so make sure to call
+     * prepInsertLink() before using this function.
+     * 
+     * The inputs go straight into the db, without any checks.
+     * 
+     * @param type $linkname
+     * @param type $classid
+     * @param type $sourceid
+     * @param type $targetid
+     * @param type $linkname
+     * @param type $linktitle
+     * @param type $linkabstract
+     * @param type $linkcontent
+     * @return string
+     * 
+     * id for the new link
+     */
+    protected function insertLink($linkname, $classid, $sourceid, $targetid, $linktitle, $linkabstract = '', $linkcontent = '') {
+
+        $linkid = $this->makeRandomID(NC_TABLE_LINKS, 'link_id', 'L', NC_ID_LEN);
+
+        // insert new link data
+        $sql = "INSERT INTO " . NC_TABLE_LINKS . " 
+            (network_id, link_id, source_id, target_id, class_id, link_status) 
+              VALUES 
+            (?, ?, ?, ?, ?, ?)";
+        $this->qPE($sql, [$this->_netid, $linkid, $sourceid,
+            $targetid, $classid, NC_ACTIVE]);
+
         // insert name, title, abstract, content, annotations for the link
-        $this->insertNewAnnoSet($this->_netid, $this->_uid, $linkid, $params['link_name'], $params['link_title'], '');
+        $this->insertNewAnnoSet($this->_netid, $this->_uid, $linkid, $linkname, $linktitle, $linkabstract, $linkcontent);
 
         return $linkid;
     }
@@ -190,10 +245,15 @@ class NCGraphs extends NCLogger {
      * 
      * Provides node ids, node names, and class names
      * 
+     * @param boolean $namekeys
+     * 
+     * when true, the output is indexed by the node name (Nxxxxxx)
+     * when false, there are not named indexes 
+     * 
      * @return array
      */
-    public function getAllNodes() {
-       
+    public function getAllNodes($namekeys = false) {
+
         $tn = "" . NC_TABLE_NODES;
         $tat = "" . NC_TABLE_ANNOTEXT;
 
@@ -210,10 +270,16 @@ class NCGraphs extends NCLogger {
                       AND nodenameT.anno_status = " . NC_ACTIVE . " 
                       AND classnameT.anno_level = " . NC_NAME . "                      
                       AND classnameT.anno_status = " . NC_ACTIVE;
-        $stmt = prepexec($this->_db, $sql, [$this->_netid]);
+        $stmt = $this->qPE($sql, [$this->_netid]);
         $result = array();
-        while ($row = $stmt->fetch()) {
-            $result[] = $row;
+        if ($namekeys) {
+            while ($row = $stmt->fetch()) {
+                $result[$row['name']] = $row;
+            }
+        } else {
+            while ($row = $stmt->fetch()) {
+                $result[] = $row;
+            }
         }
 
         return $result;
@@ -223,11 +289,13 @@ class NCGraphs extends NCLogger {
      * Fetch all links associated with a network
      * 
      * Provides link ids, linkages, and link names, and class names
+     *
+     * @param boolean namekeys
      * 
      * @return array
      */
-    public function getAllLinks() {
-       
+    public function getAllLinks($namekeys = false) {
+
         $tl = "" . NC_TABLE_LINKS;
         $tat = "" . NC_TABLE_ANNOTEXT;
 
@@ -246,12 +314,17 @@ class NCGraphs extends NCLogger {
                       AND linknameT.anno_status = " . NC_ACTIVE . " 
                       AND classnameT.anno_level = " . NC_NAME . "                      
                       AND classnameT.anno_status = " . NC_ACTIVE;
-        $stmt = prepexec($this->_db, $sql, [$this->_netid]);
+        $stmt = $this->qPE($sql, [$this->_netid]);
         $result = array();
-        while ($row = $stmt->fetch()) {
-            $result[] = $row;
+        if ($namekeys) {
+            while ($row = $stmt->fetch()) {
+                $result[$row['name']] = $row;
+            }
+        } else {
+            while ($row = $stmt->fetch()) {
+                $result[] = $row;
+            }
         }
-
         return $result;
     }
 

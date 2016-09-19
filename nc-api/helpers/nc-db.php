@@ -19,17 +19,4 @@ function connectDB($server, $dbname, $account, $password) {
     return $db;
 }
 
-
-/**
- * Helper function to prepare an sql query and execute it in one line.
- * 
- * @param type $sql
- * @param type $bind
- * @return type
- */
-function prepexec($db, $sql, $arr) {
-    $stmt = $db->prepare($sql);
-    $stmt->execute($arr);
-    return $stmt;
-}
 ?>

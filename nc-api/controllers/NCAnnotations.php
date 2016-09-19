@@ -64,7 +64,7 @@ class NCAnnotations extends NCLogger {
         // need to find details of the existing annotation, user_id, root_id, etc.  
         $sql = "SELECT owner_id, root_id, parent_id, anno_level FROM " . NC_TABLE_ANNOTEXT . "
                 WHERE network_id = ? AND anno_id = ? AND anno_status =" . NC_ACTIVE;
-        $stmt = prepexec($this->_db, $sql, [$this->_netid, $params['anno_id']]);
+        $stmt = $this->qPE($sql, [$this->_netid, $params['anno_id']]);
         $result = $stmt->fetch();
         if (!$result) {
             throw new Exception("Error retrieving annotation owner");
@@ -113,7 +113,7 @@ class NCAnnotations extends NCLogger {
             // check that the parent id is valid and active
             $sql = "SELECT anno_level FROM $tat WHERE 
                 network_id = ? AND anno_id = ? AND anno_status = " . NC_ACTIVE;
-            $stmt = prepexec($this->_db, $sql, [$this->_netid, $params['parent_id']]);
+            $stmt = $this->qPE($sql, [$this->_netid, $params['parent_id']]);
             $result = $stmt->fetch();
             if (!$result) {
                 throw new Exception("Parent annotation does not exist");
@@ -125,7 +125,7 @@ class NCAnnotations extends NCLogger {
         // check the root annotation is valid and active
         $sql = "SELECT anno_status FROM $tat WHERE 
                 network_id = ? AND anno_id = ? AND anno_status = " . NC_ACTIVE;
-        $stmt = prepexec($this->_db, $sql, [$this->_netid, $params['root_id']]);
+        $stmt = $this->qPE($sql, [$this->_netid, $params['root_id']]);
         if (!$stmt->fetch()) {
             throw new Exception("Root annotation does not exist");
         }
@@ -161,7 +161,7 @@ class NCAnnotations extends NCLogger {
                   FROM " . NC_TABLE_ANNOTEXT . "
                   WHERE network_id = ? and root_id = ? AND anno_status = " . NC_ACTIVE
                 . " ORDER BY anno_level, datetime";
-        $stmt = prepexec($this->_db, $sql, [$this->_netid, $params['root_id']]);
+        $stmt = $this->qPE($sql, [$this->_netid, $params['root_id']]);
         $result = [];
         while ($row = $stmt->fetch()) {
             $result[$row['anno_id']] = $row;

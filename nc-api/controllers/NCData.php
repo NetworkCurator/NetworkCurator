@@ -43,7 +43,7 @@ class NCData extends NCGraphs {
      */
     public function importData() {
 
-        $tstart = microtime(true);
+        $this->recordTime("import start");
 //echo "ID1 ";
         // check that required inputs are defined
         $params = $this->subsetArray($this->_params, ["user_id", "file_name",
@@ -84,7 +84,7 @@ class NCData extends NCGraphs {
                    :file_type, :file_desc, :file_size)";
         $pp = array_merge(['file_id' => $fileid, 'network_id' => $this->_netid,
             'file_type' => 'json', 'file_size' => strlen($filestring)], $params);
-        $stmt = prepexec($this->_db, $sql, $pp);
+        $this->qPE($sql, $pp);
 //echo "ID7 ";
         // log the upload
         $this->logActivity($this->_uid, $this->_netid, "uploaded data file", $params['file_name'], $params['file_desc']);
@@ -92,9 +92,9 @@ class NCData extends NCGraphs {
         // drop certain indexes on the annotation table        
         try {
             $sql = "DROP INDEX root_id ON " . NC_TABLE_ANNOTEXT;
-            $this->_db->prepare($sql)->execute();
+            $this->qPE($sql, []);
         } catch (Exception $ex) {
-            
+            echo "could not drop index root_id?\n";
         }
 //echo "ID9 ";
         // it will be useful to have access to the ontology        
@@ -104,36 +104,48 @@ class NCData extends NCGraphs {
         $NConto->setLogging(false);
         $nodeontology = $NConto->getNodeOntology(false);
         $linkontology = $NConto->getLinkOntology(false);
-//echo "ID10 ";
+//echo "ID9.5 ";
 
         $status = "";
         // import ontology, nodes, links
+        $this->recordTime("importSummary");
         if ($this->_uperm >= NC_PERM_CURATE) {
             $status .= $this->importSummary($filedata['network'][0], $params["file_name"]);
         }
 //echo "ID 20 ";
+        $this->recordTime("importOntology");
         if ($this->_uperm >= NC_PERM_CURATE && array_key_exists('ontology', $filedata)) {
             $status .= $this->importOntology($NConto, $nodeontology, $linkontology, $filedata['ontology'], $params["file_name"]);
         }
+
+        // re-get the node and link ontology after the adjustments
+        $nodeontology = $NConto->getNodeOntology(false);
+        $linkontology = $NConto->getLinkOntology(false);
+
 //echo "ID 30 ";
+        $this->recordTime("importNodes");
         if ($this->_uperm >= NC_PERM_EDIT && array_key_exists('nodes', $filedata)) {
-            $status .= $this->importNodes($NConto, $nodeontology, $filedata['nodes'], $params["file_name"]);
+            $status .= $this->importNodes($nodeontology, $filedata['nodes'], $params["file_name"]);
         }
 //echo "ID 40 ";
+        $this->recordTime("importLinks");
         if ($this->_uperm >= NC_PERM_EDIT && array_key_exists('links', $filedata)) {
-            $status .= $this->importLinks($NConto, $nodeontology, $linkontology, $filedata['links'], $params["file_name"]);
+            $status .= $this->importLinks($nodeontology, $linkontology, $filedata['links'], $params["file_name"]);
         }
 //echo "ID 50 ";
         // recreate indexes on annotation table
+        $this->recordTime("indexing");
         try {
             $sql = "CREATE INDEX root_id ON " . NC_TABLE_ANNOTEXT . " (network_id, root_id)";
-            $this->_db->prepare($sql)->execute();
+            $this->qPE($sql, []);
         } catch (Exception $ex) {
-            
+            echo "error creating index\n";
         }
-//echo "ID 60 ";
-        $tend = microtime(true);
-        return "$status \n  -- time: " . ($tend - $tstart);
+//echo "ID 60 ";     
+        $this->recordTime("import end");
+        //$this->showTimes();
+
+        return "$status\n".$this->showTimes();
     }
 
     /**
@@ -183,7 +195,7 @@ class NCData extends NCGraphs {
      */
     private function equalOntoData($x, $y, $types = ['parent_id', 'connector', 'directional', 'class_status']) {
         foreach ($types as $nowtype) {
-            if ($x[$nowtype] != $y[$nowtype]) {                
+            if ($x[$nowtype] != $y[$nowtype]) {
                 return false;
             }
         }
@@ -301,23 +313,104 @@ class NCData extends NCGraphs {
             $this->logActivity($this->_uid, $this->_netid, "updated ontology classes from file", $filename, $numupdated);
         }
 
-        
-        return $ans . "\n -- ontology: added $numadded / updated $numupdated / skipped $numskipped\n";
+
+        return $ans . " -- ontology: added $numadded / updated $numupdated / skipped $numskipped\n";
     }
 
     /**
-     * Helper function processes adjustments for ontology classes
+     * Helper function processes adjustments for nodes
      * 
-     * @param type $NConto
-     * @param type $nodeonto
-     * @param type $linkonto
-     * @param type $ontodata
+     * @param NCGraphs $NCgraph
+     * @param array $nodeonto
+     * @param array $nodedata
+     * @param string $filename
+     * 
      */
-    private function importNodes($NConto, $nodeonto, $nodedata, $filename) {
-        return "nodes: todo\n";
+    private function importNodes($nodeonto, $nodedata, $filename) {
+               
+        // start a log with output messages
+        $ans = "";
+
+        // all nodes require a name, class_name, title, status
+        $defaults = ["node_name" => '', "class" => '',
+            "title" => '', "abstract" => '', "content" => '',
+            "class_id" => '', "class_status" => 1];
+
+        // loop throw ontodata and make sure all entries have all fields        
+        for ($i = 0; $i < count($nodedata); $i++) {
+            if (array_key_exists('name', $nodedata[$i])) {
+                $nodedata[$i]['node_name'] = $nodedata[$i]['name'];
+                foreach ($defaults as $key => $value) {
+                    if (!array_key_exists($key, $nodedata[$i])) {
+                        $nodedata[$i][$key] = $value;
+                    }
+                }
+            }
+        }
+
+        // collect data from all nodes
+        $allnodes = $this->getAllNodes(true);
+       
+        $numadded = 0;
+        $numupdated = 0;
+        $numskipped = 0;
+
+        for ($i = 0; $i < count($nodedata); $i++) {
+            if (array_key_exists('name', $nodedata[$i])) {
+                $nowdata = $nodedata[$i];
+                $nowname = $nowdata['name'];
+
+                if (array_key_exists($nowname, $allnodes)) {
+                    
+                } else {
+                    // insert the node? Start optimistic, skip if there are problems
+                    $insertok = true;
+                    $nowclass = $nowdata['class'];
+                    if (array_key_exists($nowclass, $nodeonto)) {
+                        if ($nodeonto[$nowclass]['class_status'] != 1) {
+                            $insertok = false;
+                        }
+                        $nowclassid = $nodeonto[$nowclass]['class_id'];
+                    } else {
+                        $insertok = false;
+                    }
+                    if (strlen($nowdata['title']) < 2) {
+                        $insertok = false;
+                    }
+                    //echo "considering: $nowname $nowclass $nowclassid $insertok \n";
+                    if ($insertok) {
+                        //echo "adding\n";
+                        $this->insertNode($nowname, $nowclassid, $nowdata['title'], $nowdata['abstract'], $nowdata['content']);
+                        $numadded++;
+                    } else {
+                        $numskipped++;
+                    }
+                }
+            }
+        }
+
+        if ($numadded > 0) {
+            $this->logActivity($this->_uid, $this->_netid, "added nodes from file", $filename, $numadded);
+        }
+        if ($numupdated > 0) {
+            $this->logActivity($this->_uid, $this->_netid, "updated nodes from file", $filename, $numupdated);
+        }
+
+        return $ans . " -- nodes: added $numadded / updated $numupdated / skipped $numskipped\n";
     }
 
-    private function importLinks($NConto, $nodeonto, $linkonto, $ontodata, $filename) {
+    /**
+     * Helper function processes updates on links
+     * 
+     * 
+     * @param type $NCgraph
+     * @param type $nodeonto
+     * @param type $linkonto
+     * @param type $linkdata
+     * @param type $filename
+     * @return string
+     */
+    private function importLinks($nodeonto, $linkonto, $linkdata, $filename) {
         return "links: todo\n";
     }
 

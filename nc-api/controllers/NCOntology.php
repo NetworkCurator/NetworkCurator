@@ -100,7 +100,7 @@ class NCOntology extends NCLogger {
             throw new Exception("Unrecognized ontology");
         }
         $sql .= " ORDER BY parent_id, class_name";
-        $stmt = prepexec($this->_db, $sql, [$this->_netid]);
+        $stmt = $this->qPE($sql, [$this->_netid]);
         $result = array();
         if ($idkeys == true) {
             while ($row = $stmt->fetch()) {
@@ -134,7 +134,7 @@ class NCOntology extends NCLogger {
         // check if the requested class name and parent_id exist        
         $sql = "SELECT anno_text, anno_status FROM " . NC_TABLE_ANNOTEXT . " 
              WHERE network_id = ? AND anno_text = ? AND anno_level = " . NC_NAME;
-        $stmt = prepexec($this->_db, $sql, [$this->_netid, $params['class_name']]);
+        $stmt = $this->qPE($sql, [$this->_netid, $params['class_name']]);
         $result = $stmt->fetch();
         if ($result) {
             if ($result['anno_status'] != NC_ACTIVE) {
@@ -146,7 +146,7 @@ class NCOntology extends NCLogger {
         if ($params['parent_id'] != '') {
             $sql = "SELECT class_id, connector, directional FROM " .
                     NC_TABLE_CLASSES . " WHERE class_id = ?";
-            $stmt = prepexec($this->_db, $sql, [$params['parent_id']]);
+            $stmt = $this->qPE($sql, [$params['parent_id']]);
             $result = $stmt->fetch();
             if (!$result) {
                 throw new Exception("Parent id does not exist");
@@ -167,13 +167,12 @@ class NCOntology extends NCLogger {
         $sql = "INSERT INTO " . NC_TABLE_CLASSES . "
                    (network_id, class_id, parent_id, connector, directional) 
                    VALUES 
-                   (:network_id, :class_id, :parent_id, :connector, :directional)";
-        $stmt = $this->_db->prepare($sql);
+                   (:network_id, :class_id, :parent_id, :connector, :directional)";        
         $pp = ['network_id' => $this->_netid, 'class_id' => $newid,
             'parent_id' => $params['parent_id'],
             'connector' => $params['connector'], 'directional' => $params['directional']];
-        $stmt = prepexec($this->_db, $sql, $pp);
-
+        $stmt = $this->qPE($sql, $pp);
+        
         // create an annotation entry (registers the name of the class)         
         $pp = ['network_id' => $this->_netid,
             'owner_id' => $this->_uid, 'user_id' => $this->_uid,
@@ -213,7 +212,7 @@ class NCOntology extends NCLogger {
               WHERE $tc.network_id = ? AND $tc.class_id = ? 
                   AND $tat.anno_level= " . NC_NAME . "
                   AND $tat.anno_status=" . NC_ACTIVE;
-        $stmt = prepexec($this->_db, $sql, [$this->_netid, $classid]);
+        $stmt = $this->qPE($sql, [$this->_netid, $classid]);
         $classinfo = $stmt->fetch();
         if (!$classinfo) {
             throw new Exception("Class $classid does not exist");
@@ -265,7 +264,7 @@ class NCOntology extends NCLogger {
         if ($params['parent_id'] !== "") {
             $sql = "SELECT class_id, connector, directional FROM $tc 
             WHERE class_id = ?";
-            $stmt = prepexec($this->_db, $sql, [$params['parent_id']]);
+            $stmt = $this->qPE($sql, [$params['parent_id']]);
             $parentdata = $stmt->fetch();
             if (!$parentdata) {
                 throw new Exception("Could not retrieve parent data");
@@ -290,7 +289,7 @@ class NCOntology extends NCLogger {
             $sql = "SELECT anno_id FROM $tat WHERE
                      network_id = ? AND anno_level=" . NC_NAME . " AND
                          root_id LIKE 'C%' AND anno_text = ? AND anno_status=" . NC_ACTIVE;
-            $stmt = prepexec($this->_db, $sql, [$this->_netid, $params['class_name']]);
+            $stmt = $this->qPE($sql, [$this->_netid, $params['class_name']]);
             if ($stmt->fetch()) {
                 throw new Exception("Class name already exists");
             }
@@ -317,7 +316,7 @@ class NCOntology extends NCLogger {
                 'class_status' => $params['class_status'],
                 'network_id' => $this->_netid,
                 'class_id' => $params['class_id']];
-            prepexec($this->_db, $sql, $pp);
+            $this->qPE($sql, $pp);
 
             $value = $pp['parent_id'] . "," . $pp['directional'] . "," . $pp['class_status'];
             $this->logActivity($this->_uid, $this->_netid, "updated class properties for class", $params['class_name'], $value);
@@ -344,7 +343,7 @@ class NCOntology extends NCLogger {
         // does the class have active descendants?
         $sql = "SELECT class_id FROM $tc WHERE network_id = ? 
                     AND parent_id = ? AND class_status = " . NC_ACTIVE;
-        $stmt = prepexec($this->_db, $sql, [$this->_netid, $classid]);
+        $stmt = $this->qPE($sql, [$this->_netid, $classid]);
         if ($stmt->fetch()) {
             throw new Exception("Cannot remove: class has active descendants");
         }
@@ -357,7 +356,7 @@ class NCOntology extends NCLogger {
             $sql .= NC_TABLE_NODES;
         }
         $sql .= " WHERE network_id = ? AND class_id = ? ";
-        $stmt = prepexec($this->_db, $sql, [$this->_netid, $classid]);
+        $stmt = $this->qPE($sql, [$this->_netid, $classid]);
         $result = $stmt->fetch();
         if (!$result) {
             throw new Exception("Error fetching class usage");
@@ -365,11 +364,11 @@ class NCOntology extends NCLogger {
         if ($result['count'] == 0) {
             // class is not used - remove it permanently from all tables            
             $sql = "DELETE FROM $tc WHERE network_id = ? AND class_id = ?";
-            prepexec($this->_db, $sql, [$this->_netid, $classid]);
+            $this->qPE($sql, [$this->_netid, $classid]);
             $sql = "DELETE FROM $tat WHERE network_id = ? AND root_id = ?";
-            prepexec($this->_db, $sql, [$this->_netid, $classid]);
+            $this->qPE($sql, [$this->_netid, $classid]);
             $sql = "DELETE FROM $tan WHERE network_id = ? AND root_id = ?";
-            prepexec($this->_db, $sql, [$this->_netid, $classid]);
+            $this->qPE($sql, [$this->_netid, $classid]);
             // log the event
             $this->logActivity($this->_uid, $this->_netid, "deleted class", $olddata['class_name'], $classid);
 
@@ -378,7 +377,7 @@ class NCOntology extends NCLogger {
             // class is used - set as inactive
             $sql = "UPDATE $tc SET class_status = " . NC_DEPRECATED . " WHERE 
                      network_id = ? AND class_id = ? ";
-            prepexec($this->_db, $sql, [$this->_netid, $classid]);
+            $this->qPE($sql, [$this->_netid, $classid]);
 
             // log the event
             $this->logActivity($this->_uid, $this->_netid, "deprecated class", $olddata['class_name'], $classid);
@@ -426,7 +425,7 @@ class NCOntology extends NCLogger {
         // finally just set new status 
         $sql = "UPDATE " . NC_TABLE_CLASSES . " SET class_status = " . NC_ACTIVE . "
             WHERE network_id = ? AND class_id = ? ";
-        prepexec($this->_db, $sql, [$this->_netid, $params['class_id']]);
+        $this->qPE($sql, [$this->_netid, $params['class_id']]);
 
         // log the activity
         $this->logActivity($this->_uid, $this->_netid, "re-activated class", $classinfo['class_name'], $params['class_id']);

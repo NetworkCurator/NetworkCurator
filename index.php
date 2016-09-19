@@ -87,7 +87,7 @@ if ($page == "login" || $page == "admin") {
 } else if ($page == "front" || $page == '') {
     include_once "nc-ui/nc-ui-front.php";
 } else {
-    include_once "nc-ui/nc-ui-custompage.php";
+    include_once "nc-ui/nc-ui-custom.php";
 }
 
 // the footer is common to all pages

@@ -1,5 +1,7 @@
 <?php
 
+include_once "NCDB.php";
+
 /*
  * Class handling logging activity into the _activity and _log tables.
  * It also forms the basis for all the controllers.
@@ -8,31 +10,31 @@
  * 
  */
 
-class NCLogger {
+class NCLogger extends NCDB {
 
-    // general connection
-    protected $_db;
+    // class inherits _db from NCCacher
+    // here define other parameters
     protected $_params;
     protected $_uid; // user_id (or guest)
     protected $_upw; // user_confirmation code (or guest)
     private $_log = true;
-    // some prepped statements
-    private $_query_iat = null;
-    
+    private $_times = [];
+    private $_tlabs = [];
+
     /**
      * Constructor with connection to database
      * 
      * @param PDO $db 
      * 
      */
-    public function __construct($db, $params) {        
-        $this->_db = $db;
+    public function __construct($db, $params) {
+        parent::__construct($db);
         $this->_params = $params;
         if (isset($params['user_id'])) {
             $this->_uid = $params['user_id'];
-        } else {            
+        } else {
             throw new Exception("Missing required parameter user_id");
-        }       
+        }
     }
 
     /**
@@ -75,7 +77,7 @@ class NCLogger {
      * 
      */
     protected function makeRandomID($dbtable, $idcolumn, $idprefix, $stringlength) {
-        // this does not use prepared statements at the moment                
+// this does not use prepared statements at the moment                
         $newid = "";
         $keeplooking = true;
         while ($keeplooking) {
@@ -160,20 +162,16 @@ class NCLogger {
         // get a new annotation id
         $tat = "" . NC_TABLE_ANNOTEXT;
         $newid = $this->makeRandomID($tat, 'anno_id', 'AT', NC_ID_LEN);
-
+        $this->recordTime("bbb");
         $params['anno_id'] = $newid;
 
         // insert the annotation into the table
-        // this uses query prep caching (in case the query is used twice in this class)
-        if ($this->_query_iat == null) {
-            $sql = "INSERT INTO $tat 
+        $sql = "INSERT INTO $tat 
                    (datetime, network_id, owner_id, user_id, root_id, parent_id, 
                    anno_id, anno_text, anno_level, anno_status) VALUES 
                    (UTC_TIMESTAMP(), :network_id, :owner_id, :user_id, :root_id, :parent_id,
                    :anno_id, :anno_text, :anno_level, " . NC_ACTIVE . ")";
-            $this->_query_iat = $this->_db->prepare($sql);
-        }
-        $this->_query_iat->execute($params);
+        $this->qPE($sql, $params);
 
         return $newid;
     }
@@ -197,10 +195,10 @@ class NCLogger {
 
         $tat = "" . NC_TABLE_ANNOTEXT;
 
-        // fetch the old date
+// fetch the old date
         $sql = "SELECT datetime, owner_id FROM $tat WHERE network_id = ? AND anno_id = ? 
             AND anno_status = " . NC_ACTIVE;
-        $stmt = prepexec($this->_db, $sql, [$params['network_id'], $params['anno_id']]);
+        $stmt = $this->qPE($sql, [$params['network_id'], $params['anno_id']]);
         $result = $stmt->fetch();
         if (!$result) {
             throw new Exception("Could not identify annotation");
@@ -208,7 +206,7 @@ class NCLogger {
         $olddate = $result['datetime'];
         $params['owner_id'] = $result['owner_id'];
 
-        // avoid further work if the annotations are the same
+// avoid further work if the annotations are the same
         if ($result['anno_text'] == $params['anno_text']) {
             return 0;
         }
@@ -216,18 +214,18 @@ class NCLogger {
             throw new Exception("Cannot insert empty annotation");
         }
 
-        // prepare a statement setting all anno_status to disabled for a given anno_id
+// prepare a statement setting all anno_status to disabled for a given anno_id
         $sql = "UPDATE $tat SET anno_status=" . NC_OLD . "                           
                 WHERE network_id = ? AND anno_id = ? AND anno_status=" . NC_ACTIVE;
-        $stmt = prepexec($this->_db, $sql, [$params['network_id'], $params['anno_id']]);
+        $this->qPE($sql, [$params['network_id'], $params['anno_id']]);
 
-        // insert an extra copy for historical records
+// insert an extra copy for historical records
         $sql = "INSERT INTO $tat 
                    (datetime, modified, network_id, owner_id, user_id, root_id, parent_id, 
                    anno_id, anno_text, anno_level, anno_status) VALUES                          
                    ('$olddate', UTC_TIMESTAMP(), :network_id, :owner_id, :user_id, :root_id, :parent_id,
                    :anno_id, :anno_text, :anno_level, " . NC_ACTIVE . ")";
-        $stmt = prepexec($this->_db, $sql, $params);
+        $this->qPE($sql, $params);
 
         return 1;
     }
@@ -272,7 +270,7 @@ class NCLogger {
     protected function getUserPermissionsNetID($netid, $uid) {
         $sql = "SELECT permissions FROM " . NC_TABLE_PERMISSIONS .
                 " WHERE BINARY user_id = ? AND network_id = ?";
-        $stmt = prepexec($this->_db, $sql, [$uid, $netid]);
+        $stmt = $this->qPE($sql, [$uid, $netid]);
         $result = $stmt->fetch();
         if (!$result) {
             return NC_PERM_NONE;
@@ -303,7 +301,7 @@ class NCLogger {
         $sql = "SELECT network_id FROM " . NC_TABLE_ANNOTEXT . "
             WHERE BINARY anno_text = ? AND anno_level = " . NC_NAME . " 
                 AND anno_status = 1";
-        $stmt = prepexec($this->_db, $sql, [$netname]);
+        $stmt = $this->qPE($sql, [$netname]);
         $result = $stmt->fetch();
         if (!$result) {
             if ($throw) {
@@ -320,6 +318,7 @@ class NCLogger {
      * E.g. if we know a class name is "GOOD_NODE", this function will
      * return the "Cxxxxxx" code associated with this class name.
      * 
+     * 
      * @param type $netname
      * @param type $nameanno
      * 
@@ -328,10 +327,11 @@ class NCLogger {
      * The root id, or empty string when the name annotation does not match
      */
     protected function getNameAnnoRootId($netid, $nameanno, $throw = true) {
+
         $sql = "SELECT root_id, anno_status FROM " . NC_TABLE_ANNOTEXT . "
            WHERE BINARY network_id = ? AND anno_text = ? AND 
            anno_level = " . NC_NAME . " AND anno_status != " . NC_OLD;
-        $stmt = prepexec($this->_db, $sql, [$netid, $nameanno]);
+        $stmt = $this->qPE($sql, [$netid, $nameanno]);
         $result = $stmt->fetch();
         if ($throw) {
             if (!$result) {
@@ -365,7 +365,7 @@ class NCLogger {
         $sql = "SELECT anno_id FROM " . NC_TABLE_ANNOTEXT . " 
             WHERE BINARY network_id = ? AND root_id = ? AND 
             anno_level = ? AND anno_status = " . NC_ACTIVE;
-        $stmt = prepexec($this->_db, $sql, [$netid, $rootid, $level]);
+        $stmt = $this->qPE($sql, [$netid, $rootid, $level]);
         $result = $stmt->fetch();
         if (!$result) {
             throw new Exception("Error fetching anno id");
@@ -386,26 +386,77 @@ class NCLogger {
      * @param string $annoname
      * @param string $annotitle
      */
-    protected function insertNewAnnoSet($netid, $uid, $rootid, $annoname, $annotitle, $annoabstract) {
-        // create starting annotations for the title, abstract and content        
-        $nameparams = array('network_id' => $netid, 'user_id' => $uid, 'owner_id' => $uid,
+    protected function insertNewAnnoSetOld($netid, $uid, $rootid, $annoname, $annotitle, $annoabstract = '', $annocontent = '') {
+// create starting annotations for the title, abstract and content        
+        $params = array('network_id' => $netid, 'user_id' => $uid, 'owner_id' => $uid,
             'root_id' => $rootid, 'parent_id' => $rootid, 'anno_level' => NC_NAME,
             'anno_text' => $annoname);
-        $this->insertAnnoText($nameparams);
-        // insert annotation for network title
-        $titleparams = $nameparams;
-        $titleparams['anno_text'] = $annotitle;
-        $titleparams['anno_level'] = NC_TITLE;
-        $this->insertAnnoText($titleparams);
-        // insert annotation for network abstract        
-        $descparams = $titleparams;
-        $descparams['anno_text'] = $annoabstract;
-        $descparams['anno_level'] = NC_ABSTRACT;
-        $this->insertAnnoText($descparams);
-        // insert annotation for network content (more than an abstract)
-        $contentparams = $descparams;
-        $contentparams['anno_level'] = NC_CONTENT;
-        $this->insertAnnoText($contentparams);
+// insert object name
+        $this->insertAnnoText($params);
+// insert title        
+        $params['anno_text'] = $annotitle;
+        $params['anno_level'] = NC_TITLE;
+        $this->insertAnnoText($params);
+// insert abstract                
+        $params['anno_text'] = $annoabstract;
+        $params['anno_level'] = NC_ABSTRACT;
+        $this->insertAnnoText($params);
+        // insert content
+        $params['anno_text'] = $annocontent;
+        $params['anno_level'] = NC_CONTENT;
+        $this->insertAnnoText($params);
+    }
+
+    /**
+     * New way of inserting a set of annotation that does not use anno_id lookup
+     * and uses only on insert statement.
+     * 
+     * @param type $netid
+     * @param type $uid
+     * @param type $rootid
+     * @param type $annoname
+     * @param type $annotitle
+     * @param type $annoabstract
+     * @param type $annocontent
+     * 
+     */
+    protected function insertNewAnnoSet($netid, $uid, $rootid, $annoname, $annotitle, $annoabstract = '', $annocontent = '') {
+
+        //$this->recordTime("aaa");
+        // create an array of parameter values (one set for name, abstrat, title, content)
+        $params = [];
+        foreach (["A", "B", "C", "D"] as $abc) {
+            $params['network_id' . $abc] = $netid;
+            $params['owner_id' . $abc] = $uid;
+            $params['user_id' . $abc] = $uid;
+            $params['root_id' . $abc] = $rootid;
+            $params['parent_id' . $abc] = $rootid;
+        }
+        $params['anno_idA'] = "AT" . $rootid . "." . NC_NAME;
+        $params['anno_idB'] = "AT" . $rootid . "." . NC_TITLE;
+        $params['anno_idC'] = "AT" . $rootid . "." . NC_ABSTRACT;
+        $params['anno_idD'] = "AT" . $rootid . "." . NC_CONTENT;
+        $params['anno_textA'] = $annoname;
+        $params['anno_textB'] = $annotitle;
+        $params['anno_textC'] = $annoabstract;
+        $params['anno_textD'] = $annocontent;
+
+        $sql = "INSERT INTO " . NC_TABLE_ANNOTEXT . "
+             (datetime, network_id, owner_id, user_id, root_id, parent_id, 
+             anno_id, anno_text, anno_level, anno_status) VALUES 
+             (UTC_TIMESTAMP(), :network_idA, :owner_idA, :user_idA, :root_idA, :parent_idA,
+             :anno_idA, :anno_textA, " . NC_NAME . ", " . NC_ACTIVE . "),                       
+             (UTC_TIMESTAMP(), :network_idB, :owner_idB, :user_idB, :root_idB, :parent_idB,
+             :anno_idB, :anno_textB, " . NC_TITLE . ", " . NC_ACTIVE . "),
+             (UTC_TIMESTAMP(), :network_idC, :owner_idC, :user_idC, :root_idC, :parent_idC,
+             :anno_idC, :anno_textC, " . NC_ABSTRACT . ", " . NC_ACTIVE . "),
+             (UTC_TIMESTAMP(), :network_idD, :owner_idD, :user_idD, :root_idD, :parent_idD,
+             :anno_idD, :anno_textD, " . NC_CONTENT . ", " . NC_ACTIVE . ")";
+
+        $this->qPE($sql, $params);
+
+        //$this->recordTime("ccc");
+        //$this->showTimes();
     }
 
     /**
@@ -434,6 +485,34 @@ class NCLogger {
         }
 
         return $result;
+    }
+    
+    /**
+     * record a time
+     */
+    protected function recordTime($lab) {
+        $this->_times[] = microtime(true);
+        $this->_tlabs[] = $lab;
+    }
+
+    /**
+     * print out a log of time intervals between recorded time points
+     */
+    protected function showTimes() {        
+        $ans = "\n";
+        for ($i = 1; $i < count($this->_times); $i++) {
+            $t2 = $this->_times[$i];
+            $t1 = $this->_times[$i - 1];
+            $l2 = $this->_tlabs[$i];
+            $l1 = $this->_tlabs[$i - 1];
+            $ans .= "[$l1] to [$l2] ...\t" . round(($t2 - $t1) * 1000, 2) . "\n";
+        }
+        $t0 = $this->_times[0];
+        $t9 = $this->_times[count($this->_times) - 1];
+        $ans .= "[total time] ...\t" . round(($t9 - $t0) * 1000, 2) . "\n";
+        $ans .= "\n";
+        $this->_times = [];
+        return $ans;
     }
 
 }
