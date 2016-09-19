@@ -185,9 +185,10 @@ $sql = "CREATE TABLE $tabname (
   directional TINYINT NOT NULL DEFAULT 0,
   class_score $dblcol,
   class_status $statuscol,
-  PRIMARY KEY (class_id)  
+  PRIMARY KEY (class_id)    
 ) $engine COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
+ //
 //KEY network_id (network_id, parent_id)
 
 // -----------------------------------------------------------------------------

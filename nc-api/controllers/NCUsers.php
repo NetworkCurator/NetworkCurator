@@ -24,7 +24,7 @@ class NCUsers extends NCLogger {
      * 
      * array with parameters
      */
-    public function __construct($db, $params) {        
+    public function __construct($db, $params) {
         parent::__construct($db, $params);
     }
 
@@ -50,6 +50,8 @@ class NCUsers extends NCLogger {
             throw new Exception("Insufficient permissions to create a user");
         }
 
+        $this->dblock([NC_TABLE_USERS]);
+        
         // check that the network does not already exist?                  
         $sql = "SELECT user_id FROM " . NC_TABLE_USERS . " WHERE user_id = ? ";
         //ncInterpolateQuery($sql, $params)
@@ -61,8 +63,8 @@ class NCUsers extends NCLogger {
         // if reached here, create the new user  
         // create a new external password code (for cookies)        
         $params['target_extpwd'] = md5(makeRandomHexString(32));
-
-        // write the target user into the database
+        
+        // write the target user into the database        
         $sql = "INSERT INTO " . NC_TABLE_USERS . "
                    (datetime, user_id, user_firstname, user_middlename, user_lastname, 
                    user_email, user_pwd, user_extpwd, user_status) VALUES 
@@ -73,7 +75,9 @@ class NCUsers extends NCLogger {
             'target_firstname', 'target_middlename', 'target_lastname',
             'target_email', 'target_password', 'target_extpwd']);
         $stmt = $this->qPE($sql, $pp);
-
+        
+        $this->dbunlock();
+        
         // create a user identicon        
         $userimg = new NCIdenticons();
         $imgfile = dirname(__FILE__) . "/../../nc-data/users/" . $pp['target_id'] . ".png";
@@ -243,7 +247,7 @@ class NCUsers extends NCLogger {
         // check that required parameters are defined
         $params = $this->subsetArray($this->_params, ["user_id",
             "target_id", "network_name"]);
-        
+
         // get network id
         $netid = $this->getNetworkId($params['network_name']);
 

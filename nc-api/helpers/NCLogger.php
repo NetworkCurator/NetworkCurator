@@ -77,7 +77,7 @@ class NCLogger extends NCDB {
      * 
      */
     protected function makeRandomID($dbtable, $idcolumn, $idprefix, $stringlength) {
-// this does not use prepared statements at the moment                
+        // this does not use prepared statements at the moment                
         $newid = "";
         $keeplooking = true;
         while ($keeplooking) {

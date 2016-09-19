@@ -10,7 +10,7 @@
 class NCDB {
 
     // general connection
-    protected $_db;
+    protected $_db;    
     
     /**
      * Constructor with connection to database
@@ -22,6 +22,17 @@ class NCDB {
         $this->_db = $db;
     }
 
+    protected function dblock($tables) {
+        $this->_db->beginTransaction();        
+        $sql = "LOCK TABLES " . implode(" WRITE, ", $tables)." WRITE ";        
+        $this->_db->exec($sql);                
+    }
+    
+    protected function dbunlock() {
+        $this->_db->commit();
+        $this->_db->exec('UNLOCK TABLES');
+    }
+    
     /**
      * Preps and executes a query.
      * 

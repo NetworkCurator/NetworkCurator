@@ -131,6 +131,8 @@ class NCOntology extends NCLogger {
             throw new Exception("Class name too short");
         }
 
+        $this->dblock([NC_TABLE_ANNOTEXT, NC_TABLE_CLASSES]);
+        
         // check if the requested class name and parent_id exist        
         $sql = "SELECT anno_text, anno_status FROM " . NC_TABLE_ANNOTEXT . " 
              WHERE network_id = ? AND anno_text = ? AND anno_level = " . NC_NAME;
@@ -180,6 +182,8 @@ class NCOntology extends NCLogger {
             'anno_text' => $params['class_name'], 'anno_level' => NC_NAME];
         $this->insertAnnoText($pp);
 
+        $this->dbunlock();
+        
         // log the activity
         $this->logActivity($this->_params['user_id'], $this->_netid, "created new class", $params['class_name'], $newid);
 
@@ -240,6 +244,8 @@ class NCOntology extends NCLogger {
             throw new Exception("Use a different function to change class status");
         }
 
+        $this->dblock([NC_TABLE_ANNOTEXT, NC_TABLE_CLASSES]);
+        
         // fetch the current information about this class
         $olddata = $this->getClassInfo($params['class_id']);
 
@@ -250,13 +256,16 @@ class NCOntology extends NCLogger {
         $Q4 = $params['connector'] == $olddata['connector'];
         $Q5 = $params['class_status'] == $olddata['class_status'];
         if ($Q1 && $Q2 && $Q3 && $Q4 && $Q5) {
+            $this->dbunlock();
             throw new Exception("Update is consistent with existing data");
         }
         // check that the new connector and old connector information matches
         if (!$Q4) {
+            $this->dbunlock();
             throw new Exception("Cannot toggle connector status");
         }
         if (!$Q5) {
+            $this->dbunlock();
             throw new Exception("Cannot toggle status (use another function for that)");
         }
 
@@ -267,17 +276,20 @@ class NCOntology extends NCLogger {
             $stmt = $this->qPE($sql, [$params['parent_id']]);
             $parentdata = $stmt->fetch();
             if (!$parentdata) {
+                $this->dbunlock();
                 throw new Exception("Could not retrieve parent data");
             }
 
             // connector status must match
             if ($parentdata['connector'] != $params['connector']) {
+                $this->dbunlock();
                 throw new Exception("Incompatible class/parent connector status");
             }
 
             // for links that are non-directional, make sure the parent is also 
             if (!$params['directional'] && $params['connector']) {
                 if ($parentdata['directional'] > $params['directional']) {
+                    $this->dbunlock();
                     throw new Exception("Incompatible directional status (parent is a directional link)");
                 }
             }
@@ -291,6 +303,7 @@ class NCOntology extends NCLogger {
                          root_id LIKE 'C%' AND anno_text = ? AND anno_status=" . NC_ACTIVE;
             $stmt = $this->qPE($sql, [$this->_netid, $params['class_name']]);
             if ($stmt->fetch()) {
+                $this->dbunlock();
                 throw new Exception("Class name already exists");
             }
 
@@ -321,6 +334,9 @@ class NCOntology extends NCLogger {
             $value = $pp['parent_id'] . "," . $pp['directional'] . "," . $pp['class_status'];
             $this->logActivity($this->_uid, $this->_netid, "updated class properties for class", $params['class_name'], $value);
         }
+        
+        $this->dbunlock();
+        
         return 1;
     }
 

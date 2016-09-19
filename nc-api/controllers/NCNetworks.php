@@ -63,6 +63,8 @@ class NCNetworks extends NCLogger {
      *       
      */
     public function createNewNetwork() {
+        
+        $this->dblock([NC_TABLE_NETWORKS, NC_TABLE_ANNOTEXT, NC_TABLE_ACTIVITY, NC_TABLE_PERMISSIONS]);
 
         // check that required parameters are defined
         $params = $this->subsetArray($this->_params, ["user_id",
@@ -96,7 +98,7 @@ class NCNetworks extends NCLogger {
         $sql = "INSERT INTO " . NC_TABLE_NETWORKS . "
                    (network_id, owner_id) VALUES (?, ?)";
         $this->qPE($sql, [$netid, $this->_uid]);
-
+                
         // 4/6, create a starting log entry for creation of the network        
         $this->logActivity($this->_uid, $netid, "created network", $params['network_name'], $params['network_title']);
 
