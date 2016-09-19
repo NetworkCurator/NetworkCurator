@@ -14,7 +14,7 @@ class NCLogger {
     protected $_db;
     protected $_params;
     protected $_uid; // user_id (or guest)
-    protected $_upw; // user_confirmation code (or guest(
+    protected $_upw; // user_confirmation code (or guest)
     private $_log = true;
     // some prepped statements
     private $_query_iat = null;
@@ -25,10 +25,14 @@ class NCLogger {
      * @param PDO $db 
      * 
      */
-    public function __construct($db, $params) {
+    public function __construct($db, $params) {        
         $this->_db = $db;
         $this->_params = $params;
-        $this->_uid = $params['user_id'];
+        if (isset($params['user_id'])) {
+            $this->_uid = $params['user_id'];
+        } else {            
+            throw new Exception("Missing required parameter user_id");
+        }       
     }
 
     /**

@@ -90,6 +90,7 @@ class NCNetworks extends NCLogger {
         if (!mkdir($networkdir, 0777, true)) {
             throw new Exception("Failed creating network data space: " . $networkdir);
         }
+        chmod ($networkdir, 0777);
 
         // 3/6, insert a new row into the networks table and annotations       
         $sql = "INSERT INTO " . NC_TABLE_NETWORKS . "

@@ -6,7 +6,7 @@
  * 
  */
 
-sleep(1);
+sleep(2);
 
 echo "\n";
 echo "NetworkCurator - test data\n\n";
@@ -14,6 +14,8 @@ include_once "test-prep.php";
 
 // remove networks that may be stored under the networks directory
 $netdir = "/var/www/NetworkCurator/nc-data/networks/";
+umask(0777);
+system("rm -f /var/www/NetworkCurator/nc-data/networks/*/*");
 array_map('rmdir', glob($netdir."*"));
 
 
@@ -40,7 +42,7 @@ try {
 
 
 try {
-    $newnetworks = array('net-zulu', 'test-yankee', 'xray');
+    $newnetworks = array('net-zulu', 'net-yankee', 'xray');
     foreach ($newnetworks as $nn) {
         echo "Creating network $nn\n";
         $params = array('controller' => 'NCNetworks', 'action' => 'createNewNetwork',

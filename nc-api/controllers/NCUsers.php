@@ -24,16 +24,8 @@ class NCUsers extends NCLogger {
      * 
      * array with parameters
      */
-    public function __construct($db, $params) {
-        $this->_db = $db;
-        $this->_params = $params;
-
-        // check for required parameters       
-        if (isset($params['user_id'])) {
-            $this->_uid = $this->_params['user_id'];
-        } else {
-            throw new Exception("NCUsers requires parameter user_id");
-        }
+    public function __construct($db, $params) {        
+        parent::__construct($db, $params);
     }
 
     /**

@@ -89,7 +89,7 @@ try {
             $params['target_password'] = 'password';
         }
 
-        $logger = new NCLogger($db);
+        $logger = new NCLogger($db, ["user_id"=> $params['user_id']]);
         $logger->logAction($params['user_id'], $sourceaddr, $controller, $action, json_encode($params));
     }
 

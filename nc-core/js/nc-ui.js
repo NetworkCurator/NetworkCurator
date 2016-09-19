@@ -632,7 +632,15 @@ nc.ui.CommentBox = function(uid, rootid, parentid, annoid, annomd) {
         commentbody.append(rhtml);
     }
     
-    
+    // if this is a response to a comment box that's empty, show a close button
+    if (rootid!=parentid && annomd=='') {        
+        commentbody.find('.nc-curation-toolbox-close').show()
+        .off("click").on("click", function() {                  
+            commentbody.parent().parent().find('a.nc-comment-response').show();
+            commentbody.parent().remove();                                    
+        });        
+    }
+        
     return commentbox;    
 }
 

@@ -1,0 +1,516 @@
+{
+    "network": [
+        {
+            "name": "net-zulu",
+            "title": "Signaling by MST1",
+            "content": "http://pathvisio.org/GPML/2013a"
+        }
+    ],
+    "nodes": [
+        {
+            "name": "dfb40",
+            "title": "a89ba",
+            "class": "Group"
+        },
+        {
+            "name": "eb407",
+            "title": "f1a83",
+            "class": "Group"
+        },
+        {
+            "name": "b7a46",
+            "title": "d5dd8",
+            "class": "Group"
+        },
+        {
+            "name": "ac569",
+            "title": "eecaa",
+            "class": "Group"
+        },
+        {
+            "name": "bb684",
+            "title": "f382c",
+            "class": "Group"
+        },
+        {
+            "name": "b7f46",
+            "title": "fafab",
+            "class": "Group"
+        },
+        {
+            "name": "af022",
+            "title": "e1611",
+            "class": "Group"
+        },
+        {
+            "name": "a88e5",
+            "title": "cbd4c",
+            "class": "Group"
+        },
+        {
+            "name": "a8434",
+            "title": "MST1R dimer",
+            "class": "Complex"
+        },
+        {
+            "name": "b2f95",
+            "title": "MST1R (25-304)",
+            "class": "Protein"
+        },
+        {
+            "name": "efe70",
+            "title": "MST1R (310-1400)",
+            "class": "Protein"
+        },
+        {
+            "name": "c7caf",
+            "title": "HPN heterodimer",
+            "class": "Complex"
+        },
+        {
+            "name": "bb36b",
+            "title": "HPN(1-162)",
+            "class": "Protein"
+        },
+        {
+            "name": "fdc4e",
+            "title": "HPN(163-417)",
+            "class": "Protein"
+        },
+        {
+            "name": "a702c",
+            "title": "MST1 dimer",
+            "class": "Complex"
+        },
+        {
+            "name": "c45c1",
+            "title": "MST1(19-483)",
+            "class": "Protein"
+        },
+        {
+            "name": "a1d21",
+            "title": "MST1(484-711)",
+            "class": "Protein"
+        },
+        {
+            "name": "cb952",
+            "title": "SPINT1,2",
+            "class": "Complex"
+        },
+        {
+            "name": "ffc48",
+            "title": "SPINT1",
+            "class": "Protein"
+        },
+        {
+            "name": "a144a",
+            "title": "SPINT2",
+            "class": "Protein"
+        },
+        {
+            "name": "a3e32",
+            "title": "pro-MST1",
+            "class": "Protein"
+        },
+        {
+            "name": "a1642",
+            "title": "MST1 dimer:MST1R\ndimer",
+            "class": "Complex"
+        },
+        {
+            "name": "d2e10",
+            "title": "MST1(19-483)",
+            "class": "Protein"
+        },
+        {
+            "name": "eb37a",
+            "title": "MST1(484-711)",
+            "class": "Protein"
+        },
+        {
+            "name": "d7a69",
+            "title": "MST1R (25-304)",
+            "class": "Protein"
+        },
+        {
+            "name": "db416",
+            "title": "MST1R (310-1400)",
+            "class": "Protein"
+        },
+        {
+            "name": "fb3bc",
+            "title": "MST1 dimer:2x\np-4Y-MST1R dimer",
+            "class": "Complex"
+        },
+        {
+            "name": "da803",
+            "title": "MST1(19-483)",
+            "class": "Protein"
+        },
+        {
+            "name": "d1178",
+            "title": "MST1(484-711)",
+            "class": "Protein"
+        },
+        {
+            "name": "d2e5d",
+            "title": "MST1R (25-304)",
+            "class": "Protein"
+        },
+        {
+            "name": "dc555",
+            "title": "p-Y1238,1239,1353,1360-MST1R (310-1400)",
+            "class": "Protein"
+        },
+        {
+            "name": "ee41c",
+            "title": "H2O",
+            "class": "Metabolite"
+        },
+        {
+            "name": "e278f",
+            "title": "ATP",
+            "class": "Metabolite"
+        },
+        {
+            "name": "c5a35",
+            "title": "MST1 dimer:2xMST1R\ndimer",
+            "class": "Complex"
+        },
+        {
+            "name": "d3411",
+            "title": "MST1(19-483)",
+            "class": "Protein"
+        },
+        {
+            "name": "a2757",
+            "title": "MST1(484-711)",
+            "class": "Protein"
+        },
+        {
+            "name": "f410b",
+            "title": "MST1R (25-304)",
+            "class": "Protein"
+        },
+        {
+            "name": "dfc03",
+            "title": "MST1R (310-1400)",
+            "class": "Protein"
+        },
+        {
+            "name": "d4a25",
+            "title": "ADP",
+            "class": "Metabolite"
+        }
+    ],
+    "links": [
+        {
+            "name": "X70",
+            "title": "X70",
+            "source": "b2f95",
+            "target": "dfb40",
+            "class": "InGroup"
+        },
+        {
+            "name": "X70",
+            "title": "X70",
+            "source": "efe70",
+            "target": "dfb40",
+            "class": "InGroup"
+        },
+        {
+            "name": "X70",
+            "title": "X70",
+            "source": "bb36b",
+            "target": "eb407",
+            "class": "InGroup"
+        },
+        {
+            "name": "X70",
+            "title": "X70",
+            "source": "fdc4e",
+            "target": "eb407",
+            "class": "InGroup"
+        },
+        {
+            "name": "X70",
+            "title": "X70",
+            "source": "c45c1",
+            "target": "b7a46",
+            "class": "InGroup"
+        },
+        {
+            "name": "X70",
+            "title": "X70",
+            "source": "a1d21",
+            "target": "b7a46",
+            "class": "InGroup"
+        },
+        {
+            "name": "X70",
+            "title": "X70",
+            "source": "ffc48",
+            "target": "ac569",
+            "class": "InGroup"
+        },
+        {
+            "name": "X70",
+            "title": "X70",
+            "source": "a144a",
+            "target": "ac569",
+            "class": "InGroup"
+        },
+        {
+            "name": "X70",
+            "title": "X70",
+            "source": "d2e10",
+            "target": "bb684",
+            "class": "InGroup"
+        },
+        {
+            "name": "X70",
+            "title": "X70",
+            "source": "eb37a",
+            "target": "bb684",
+            "class": "InGroup"
+        },
+        {
+            "name": "X70",
+            "title": "X70",
+            "source": "d7a69",
+            "target": "bb684",
+            "class": "InGroup"
+        },
+        {
+            "name": "X70",
+            "title": "X70",
+            "source": "db416",
+            "target": "bb684",
+            "class": "InGroup"
+        },
+        {
+            "name": "X70",
+            "title": "X70",
+            "source": "da803",
+            "target": "b7f46",
+            "class": "InGroup"
+        },
+        {
+            "name": "X70",
+            "title": "X70",
+            "source": "d1178",
+            "target": "b7f46",
+            "class": "InGroup"
+        },
+        {
+            "name": "X70",
+            "title": "X70",
+            "source": "d2e5d",
+            "target": "b7f46",
+            "class": "InGroup"
+        },
+        {
+            "name": "X70",
+            "title": "X70",
+            "source": "dc555",
+            "target": "b7f46",
+            "class": "InGroup"
+        },
+        {
+            "name": "X70",
+            "title": "X70",
+            "source": "d3411",
+            "target": "af022",
+            "class": "InGroup"
+        },
+        {
+            "name": "X70",
+            "title": "X70",
+            "source": "a2757",
+            "target": "af022",
+            "class": "InGroup"
+        },
+        {
+            "name": "X70",
+            "title": "X70",
+            "source": "f410b",
+            "target": "af022",
+            "class": "InGroup"
+        },
+        {
+            "name": "X70",
+            "title": "X70",
+            "source": "dfc03",
+            "target": "af022",
+            "class": "InGroup"
+        },
+        {
+            "name": "ef060",
+            "title": "ef060"
+        },
+        {
+            "name": "bc92a",
+            "title": "bc92a",
+            "source": "e278f",
+            "target": "a4f2d"
+        },
+        {
+            "name": "fa2c0",
+            "title": "fa2c0",
+            "source": "c5a35",
+            "target": "a4f2d"
+        },
+        {
+            "name": "c713b",
+            "title": "c713b",
+            "source": "d5f8a",
+            "target": "fb3bc",
+            "class": "Arrow"
+        },
+        {
+            "name": "fbed9",
+            "title": "fbed9",
+            "source": "d5f8a",
+            "target": "d4a25",
+            "class": "Arrow"
+        },
+        {
+            "name": "ed041",
+            "title": "ed041",
+            "source": "c5a35",
+            "target": "ae1ba",
+            "class": "mim-catalysis"
+        },
+        {
+            "name": "f896c",
+            "title": "f896c"
+        },
+        {
+            "name": "b4a2e",
+            "title": "b4a2e",
+            "source": "a1642",
+            "target": "f058b"
+        },
+        {
+            "name": "a6f0d",
+            "title": "a6f0d",
+            "source": "a8434",
+            "target": "f058b"
+        },
+        {
+            "name": "a2bee",
+            "title": "a2bee",
+            "source": "cb4ab",
+            "target": "c5a35",
+            "class": "Arrow"
+        },
+        {
+            "name": "d7b89",
+            "title": "d7b89"
+        },
+        {
+            "name": "e9aaa",
+            "title": "e9aaa",
+            "source": "ee41c",
+            "target": "dafd8"
+        },
+        {
+            "name": "d8279",
+            "title": "d8279",
+            "source": "a3e32",
+            "target": "dafd8"
+        },
+        {
+            "name": "acad9",
+            "title": "acad9",
+            "source": "e98a1",
+            "target": "a702c",
+            "class": "Arrow"
+        },
+        {
+            "name": "d687d",
+            "title": "d687d",
+            "source": "c7caf",
+            "target": "da501",
+            "class": "mim-catalysis"
+        },
+        {
+            "name": "b414f",
+            "title": "b414f",
+            "source": "cb952",
+            "target": "aae0d",
+            "class": "TBar"
+        },
+        {
+            "name": "a9f18",
+            "title": "a9f18"
+        },
+        {
+            "name": "ece27",
+            "title": "ece27",
+            "source": "a8434",
+            "target": "bda6b"
+        },
+        {
+            "name": "e29c0",
+            "title": "e29c0",
+            "source": "a702c",
+            "target": "bda6b"
+        },
+        {
+            "name": "c9dec",
+            "title": "c9dec",
+            "source": "f1c45",
+            "target": "a1642",
+            "class": "Arrow"
+        }
+    ],
+    "ontology": [
+        {
+            "name": "Group",
+            "connector": "0",
+            "directional": "0"
+        },
+        {
+            "name": "Complex",
+            "connector": "0",
+            "directional": "0"
+        },
+        {
+            "name": "Protein",
+            "connector": "0",
+            "directional": "0"
+        },
+        {
+            "name": "InGroup",
+            "connector": "1",
+            "directional": "1"
+        },
+        {
+            "name": "Metabolite",
+            "connector": "0",
+            "directional": "0"
+        },
+        {
+            "name": "UnknownLink",
+            "connector": "1",
+            "directional": "1"
+        },
+        {
+            "name": "Arrow",
+            "connector": "1",
+            "directional": "1"
+        },
+        {
+            "name": "mim-catalysis",
+            "connector": "1",
+            "directional": "1"
+        },
+        {
+            "name": "TBar",
+            "connector": "1",
+            "directional": "1"
+        }
+    ]
+}
+

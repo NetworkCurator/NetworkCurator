@@ -39,7 +39,7 @@ nc.users.sendLogin = function(fgid, fgpwd, fgremember) {
     $.post(nc.api, 
     {
         controller: "NCUsers", 
-        action: "verify", 
+        action: "verify",        
         target_id: $('#'+fgid+' input').val(),
         target_password: $('#'+fgpwd+' input').val(),
         remember: $('#'+fgremember+' input').is(':checked')

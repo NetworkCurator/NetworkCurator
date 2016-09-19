@@ -28,27 +28,18 @@ class NCAnnotations extends NCLogger {
      */
     public function __construct($db, $params) {
 
-        $this->_db = $db;
-        $this->_params = $params;
-
+        parent::__construct($db, $params);
+        
         // check for required parameters
         if (isset($params['network_name'])) {
             $this->_network = $this->_params['network_name'];
         } else {
             throw new Exception("NCAnnotations requires a network name");
         }
-        if (isset($params['user_id'])) {
-            $this->_uid = $this->_params['user_id'];
-        } else {
-            throw new Exception("NCAnnotations requires parameter user_id");
-        }
-
+        
         // find the network id that corresponds to the name
         $this->_netid = $this->getNetworkId($this->_network, true);
-        if ($this->_netid == '') {
-            throw new Exception('Invalid network name');
-        }
-
+        
         // fetch user permissions 
         $this->_uperm = $this->getUserPermissionsNetID($this->_netid, $this->_uid);
     }

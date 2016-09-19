@@ -14,7 +14,7 @@ class NCOntology extends NCLogger {
     // some variables extracted from $_params, for convenience
     private $_network;
     private $_netid;
-    private $_uperm;    
+    private $_uperm;
 
     /**
      * Constructor 
@@ -29,18 +29,12 @@ class NCOntology extends NCLogger {
      */
     public function __construct($db, $params) {
 
-        $this->_db = $db;
-        $this->_params = $params;
+        parent::__construct($db, $params);
 
         if (isset($params['network_name'])) {
             $this->_network = $this->_params['network_name'];
         } else {
-            throw new Exception("NCOntology requires parameter network_name");
-        }
-        if (isset($params['user_id'])) {
-            $this->_uid = $this->_params['user_id'];
-        } else {
-            throw new Exception("NCOntology requires parameter user_id");
+            throw new Exception("Missing required parameter network_name");
         }
 
         // all functions will need to know the network id code
@@ -52,33 +46,36 @@ class NCOntology extends NCLogger {
             throw new Exception("Insufficient permissions to query ontology");
         }
     }
-        
+
     /**
      * Similar to listOntology with parameter ontology='nodes'
      */
-    public function getNodeOntology() {
+    public function getNodeOntology($idkeys = true) {
         $this->_params['ontology'] = 'nodes';
-        return $this->getOntology();
+        return $this->getOntology($idkeys);
     }
 
     /**
      * Similar to listOntology with parameter ontology='links'
      */
-    public function getLinkOntology() {
+    public function getLinkOntology($idkeys = true) {
         $this->_params['ontology'] = 'links';
-        return $this->getOntology();
+        return $this->getOntology($idkeys);
     }
 
     /**
      * Looks all the classes associated with nodes or links in a network
      * 
+     * @param logical idkeys
+     * 
+     * set true to get an array indexed by class_id. set false for indexes by class_name
      * 
      * @return array of classes
      * 
      * @throws Exception
      * 
      */
-    public function getOntology() {
+    public function getOntology($idkeys = true) {
 
         // check that required parameters are defined
         $params = $this->subsetArray($this->_params, ["ontology"]);
@@ -105,8 +102,14 @@ class NCOntology extends NCLogger {
         $sql .= " ORDER BY parent_id, class_name";
         $stmt = prepexec($this->_db, $sql, [$this->_netid]);
         $result = array();
-        while ($row = $stmt->fetch()) {
-            $result[$row['class_id']] = $row;
+        if ($idkeys == true) {
+            while ($row = $stmt->fetch()) {
+                $result[$row['class_id']] = $row;
+            }
+        } else {
+            while ($row = $stmt->fetch()) {
+                $result[$row['class_name']] = $row;
+            }
         }
         return $result;
     }
@@ -121,7 +124,7 @@ class NCOntology extends NCLogger {
     public function createNewClass() {
 
         // check that required parameters are defined
-        $params = $this->subsetArray($this->_params, ["parent_id", 
+        $params = $this->subsetArray($this->_params, ["parent_id",
             "connector", "directional", "class_name"]);
 
         if (strlen($params['class_name']) < 2) {
@@ -228,8 +231,8 @@ class NCOntology extends NCLogger {
     public function updateClass() {
 
         // check that required inputs are defined
-        $params = $this->subsetArray($this->_params, ["user_id", "network_name",
-            "class_id", "parent_id", "connector", "directional", "class_name", "class_status"]);
+        $params = $this->subsetArray($this->_params, ["class_id", "parent_id", 
+            "connector", "directional", "class_name", "class_status"]);
 
         $tc = "" . NC_TABLE_CLASSES;
         $tat = "" . NC_TABLE_ANNOTEXT;
@@ -375,8 +378,8 @@ class NCOntology extends NCLogger {
             // class is used - set as inactive
             $sql = "UPDATE $tc SET class_status = " . NC_DEPRECATED . " WHERE 
                      network_id = ? AND class_id = ? ";
-            prepexec($this->_db, $sql, [$this->_netid, $classid]);           
-            
+            prepexec($this->_db, $sql, [$this->_netid, $classid]);
+
             // log the event
             $this->logActivity($this->_uid, $this->_netid, "deprecated class", $olddata['class_name'], $classid);
 

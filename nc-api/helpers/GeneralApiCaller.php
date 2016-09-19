@@ -59,12 +59,13 @@ class GeneralApiCaller {
         } 
         
         //echo "GAC: ".$ans."\n";
+        $rawans = $ans;
         $ans = json_decode($ans, true);        
         //echo "ABC: ".$ans."\n";
                 
         //check if we're able to json_decode the result correctly
         if ($ans == false || isset($ans['success']) == false) {            
-            throw new Exception('Request was not correct in GeneralApiCaller');
+            throw new Exception('Request was not correct in GeneralApiCaller: '.$rawans);
         }
         
         // if there was an error in the request, throw an exception

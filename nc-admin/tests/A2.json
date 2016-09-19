@@ -1,0 +1,9 @@
+{
+    "network": [
+        {
+            "name": "net-zuli",
+            "title": "Import title",
+            "contents": "http://www.screensignatures.org"
+        }
+    ]
+}
