@@ -150,17 +150,14 @@ class NCGraphs extends NCLogger {
     protected function insertNode($nodename, $classid, $nodetitle, $nodeabstract = '', $nodecontent = '') {
 
         $nodeid = $this->makeRandomID(NC_TABLE_NODES, 'node_id', 'N', NC_ID_LEN);
-
-        //$this->recordTime("A");
+        
         // insert a node
         $sql = "INSERT INTO " . NC_TABLE_NODES . " 
             (network_id, node_id, class_id, node_status) VALUES (?, ?, ?, ?)";
-        $this->qPE($sql, [$this->_netid, $nodeid, $classid, NC_ACTIVE]);
-        //$this->recordTime("B");
+        $this->qPE($sql, [$this->_netid, $nodeid, $classid, NC_ACTIVE]);        
         // insert name, title, abstract, content, annotations for the link
         $this->insertNewAnnoSet($this->_netid, $this->_uid, $nodeid, $nodename, $nodetitle, $nodeabstract, $nodecontent);
-        //$this->recordTime("C");
-        //$this->showTimes();
+        
         return $nodeid;
     }
 

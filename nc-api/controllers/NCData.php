@@ -42,8 +42,9 @@ class NCData extends NCGraphs {
      * @throws Exception
      */
     public function importData() {
-
-        $this->recordTime("import start");
+        
+        $timer = new NCTimer();
+        $timer->recordTime("import start");
 //echo "ID1 ";
         // check that required inputs are defined
         $params = $this->subsetArray($this->_params, ["user_id", "file_name",
@@ -108,12 +109,12 @@ class NCData extends NCGraphs {
 
         $status = "";
         // import ontology, nodes, links
-        $this->recordTime("importSummary");
+        $timer->recordTime("importSummary");
         if ($this->_uperm >= NC_PERM_CURATE) {
             $status .= $this->importSummary($filedata['network'][0], $params["file_name"]);
         }
 //echo "ID 20 ";
-        $this->recordTime("importOntology");
+        $timer->recordTime("importOntology");
         if ($this->_uperm >= NC_PERM_CURATE && array_key_exists('ontology', $filedata)) {
             $status .= $this->importOntology($NConto, $nodeontology, $linkontology, $filedata['ontology'], $params["file_name"]);
         }
@@ -123,18 +124,18 @@ class NCData extends NCGraphs {
         $linkontology = $NConto->getLinkOntology(false);
 
 //echo "ID 30 ";
-        $this->recordTime("importNodes");
+        $timer->recordTime("importNodes");
         if ($this->_uperm >= NC_PERM_EDIT && array_key_exists('nodes', $filedata)) {
             $status .= $this->importNodes($nodeontology, $filedata['nodes'], $params["file_name"]);
         }
 //echo "ID 40 ";
-        $this->recordTime("importLinks");
+        $timer->recordTime("importLinks");
         if ($this->_uperm >= NC_PERM_EDIT && array_key_exists('links', $filedata)) {
             $status .= $this->importLinks($nodeontology, $linkontology, $filedata['links'], $params["file_name"]);
         }
 //echo "ID 50 ";
         // recreate indexes on annotation table
-        $this->recordTime("indexing");
+        $timer->recordTime("indexing");
         try {
             $sql = "CREATE INDEX root_id ON " . NC_TABLE_ANNOTEXT . " (network_id, root_id)";
             $this->qPE($sql, []);
@@ -142,10 +143,9 @@ class NCData extends NCGraphs {
             echo "error creating index\n";
         }
 //echo "ID 60 ";     
-        $this->recordTime("import end");
-        //$this->showTimes();
+        $timer->recordTime("import end");        
 
-        return "$status\n".$this->showTimes();
+        return "$status\n".$timer->showTimes();
     }
 
     /**

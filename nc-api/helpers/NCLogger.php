@@ -1,6 +1,7 @@
 <?php
 
 include_once "NCDB.php";
+include_once "NCTimer.php";
 
 /*
  * Class handling logging activity into the _activity and _log tables.
@@ -17,9 +18,7 @@ class NCLogger extends NCDB {
     protected $_params;
     protected $_uid; // user_id (or guest)
     protected $_upw; // user_confirmation code (or guest)
-    private $_log = true;
-    private $_times = [];
-    private $_tlabs = [];
+    private $_log = true;    
 
     /**
      * Constructor with connection to database
@@ -161,8 +160,7 @@ class NCLogger extends NCDB {
 
         // get a new annotation id
         $tat = "" . NC_TABLE_ANNOTEXT;
-        $newid = $this->makeRandomID($tat, 'anno_id', 'AT', NC_ID_LEN);
-        $this->recordTime("bbb");
+        $newid = $this->makeRandomID($tat, 'anno_id', 'AT', NC_ID_LEN);        
         $params['anno_id'] = $newid;
 
         // insert the annotation into the table
@@ -421,8 +419,7 @@ class NCLogger extends NCDB {
      * 
      */
     protected function insertNewAnnoSet($netid, $uid, $rootid, $annoname, $annotitle, $annoabstract = '', $annocontent = '') {
-
-        //$this->recordTime("aaa");
+        
         // create an array of parameter values (one set for name, abstrat, title, content)
         $params = [];
         foreach (["A", "B", "C", "D"] as $abc) {
@@ -454,9 +451,7 @@ class NCLogger extends NCDB {
              :anno_idD, :anno_textD, " . NC_CONTENT . ", " . NC_ACTIVE . ")";
 
         $this->qPE($sql, $params);
-
-        //$this->recordTime("ccc");
-        //$this->showTimes();
+        
     }
 
     /**
@@ -486,35 +481,7 @@ class NCLogger extends NCDB {
 
         return $result;
     }
-    
-    /**
-     * record a time
-     */
-    protected function recordTime($lab) {
-        $this->_times[] = microtime(true);
-        $this->_tlabs[] = $lab;
-    }
-
-    /**
-     * print out a log of time intervals between recorded time points
-     */
-    protected function showTimes() {        
-        $ans = "\n";
-        for ($i = 1; $i < count($this->_times); $i++) {
-            $t2 = $this->_times[$i];
-            $t1 = $this->_times[$i - 1];
-            $l2 = $this->_tlabs[$i];
-            $l1 = $this->_tlabs[$i - 1];
-            $ans .= "[$l1] to [$l2] ...\t" . round(($t2 - $t1) * 1000, 2) . "\n";
-        }
-        $t0 = $this->_times[0];
-        $t9 = $this->_times[count($this->_times) - 1];
-        $ans .= "[total time] ...\t" . round(($t9 - $t0) * 1000, 2) . "\n";
-        $ans .= "\n";
-        $this->_times = [];
-        return $ans;
-    }
-
+        
 }
 
 ?>
