@@ -95,8 +95,8 @@ class GeneralApiCaller {
      * @return type 
      * 
      */
-    public function sendReq($user_name, $controller, $action, $params) {
-        $params['user_name'] = $user_name;
+    public function sendReq($user_id, $controller, $action, $params) {
+        $params['user_id'] = $user_id;
         $params['controller'] = $controller;
         $params['action'] = $action;        
         return $this->sendRequest($params);

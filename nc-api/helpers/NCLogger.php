@@ -16,11 +16,9 @@ class NCLogger extends NCDB {
     // class inherits _db from NCCacher
     // here define other parameters
     protected $_params;
-    protected $_uname; // user name (string)
-    protected $_uid; // user_id (or 0 for guest)
+    protected $_uid; // user_id (or guest)
     protected $_upw; // user_confirmation code (or guest)
-    private $_log = true;
-    private $_counter = 0;
+    private $_log = true;    
 
     /**
      * Constructor with connection to database
@@ -30,18 +28,12 @@ class NCLogger extends NCDB {
      */
     public function __construct($db, $params) {
         parent::__construct($db);
-
-        if (isset($params['user_name'])) {
-            $this->_uname = $params['user_name'];
-            $udata = $this->getUserData($params['user_name']);
-            $this->_uid = (int) $udata['user_id'];
-            $this->_upw = $udata['user_extpwd'];
-        } else {
-            throw new Exception("Missing required parameter user_name");
-        }
-        unset($params['user_name']);
-
         $this->_params = $params;
+        if (isset($params['user_id'])) {
+            $this->_uid = $params['user_id'];
+        } else {
+            throw new Exception("Missing required parameter user_id");
+        }
     }
 
     /**
@@ -84,9 +76,6 @@ class NCLogger extends NCDB {
      * 
      */
     protected function makeRandomID($dbtable, $idcolumn, $idprefix, $stringlength) {
-
-        echo "makeRandomID: should be deprecated\n";
-
         // this does not use prepared statements at the moment                
         $newid = "";
         $keeplooking = true;
@@ -101,22 +90,19 @@ class NCLogger extends NCDB {
     /**
      * Add entry into log table
      * 
-     * @param int $userid
-     * 
-     * keep this as userid (int)
-     * 
+     * @param string $userid
      * @param string $userip
      * @param string $action
      * @param string $value
      * @throws Exception
      * 
      */
-    protected function logAction($userid, $userip, $controller, $action, $value) {
+    public function logAction($userid, $userip, $controller, $action, $value) {
         if ($this->_log) {
             // prepare a statement for log-logging
             $sqllog = "INSERT INTO " . NC_TABLE_LOG . "
             (datetime, user_id, user_ip, controller, action, value) VALUES 
-            (UTC_TIMESTAMP(), :user_name, :user_ip, :controller, :action, :value)";
+            (UTC_TIMESTAMP(), :user_id, :user_ip, :controller, :action, :value)";
             $stmt = $this->_db->prepare($sqllog);
             // execture the query with current parameters
             $pp = array('user_id' => $userid, 'user_ip' => $userip,
@@ -130,24 +116,24 @@ class NCLogger extends NCDB {
     /**
      * Add entry into activity table
      * 
-     * @param string $username
+     * @param type $uid
      * @param type $netid
      * @param type $action
      * @param type $targetid
      * @param type $value
      * @throws Exception
      */
-    protected function logActivity($username, $netid, $action, $targetname, $value) {
+    public function logActivity($userid, $netid, $action, $targetname, $value) {
         if ($this->_log) {
             // prepare a statement for activity-logging
             $sqlact = "INSERT INTO " . NC_TABLE_ACTIVITY . "
-                   (datetime, user_name, network_id, action, target_name, value) 
+                   (datetime, user_id, network_id, action, target_name, value) 
                    VALUES 
-                   (UTC_TIMESTAMP(), :user_name, :network_id, :action, 
+                   (UTC_TIMESTAMP(), :user_id, :network_id, :action, 
                        :target_name, :value)";
             $stmt = $this->_db->prepare($sqlact);
             // execute the query with current parameters
-            $pp = array('user_name' => $username, 'network_id' => $netid,
+            $pp = array('user_id' => $userid, 'network_id' => $netid,
                 'action' => $action, 'target_name' => $targetname,
                 'value' => $value);
             $stmt->execute($pp);
@@ -163,28 +149,29 @@ class NCLogger extends NCDB {
      * @param array $params
      * 
      * the array should have entries: 
-     * network_id, owner_id, user_id, root_id, root_type, parent_id, anno_text, anno_type
+     * network_id, owner_id, user_id, root_id, parent_id, anno_text, anno_level
      * 
      * @return 
      * 
      * id code for the new annotation
      * 
      */
-    protected function insertAnnoText($params) {
+    public function insertAnnoText($params) {
 
         // get a new annotation id
         $tat = "" . NC_TABLE_ANNOTEXT;
-        //$newid = $this->makeRandomID($tat, 'anno_id', 'AT', NC_ID_LEN);
-        //$params['anno_id'] = $newid;
+        $newid = $this->makeRandomID($tat, 'anno_id', 'AT', NC_ID_LEN);        
+        $params['anno_id'] = $newid;
+
         // insert the annotation into the table
         $sql = "INSERT INTO $tat 
-                   (datetime, network_id, owner_id, user_id, root_id, root_type, 
-                   parent_id, anno_name, anno_text, anno_type, anno_status) VALUES 
-                   (UTC_TIMESTAMP(), :network_id, :owner_id, :user_id, :root_id, :root_type, 
-                   :parent_id, :anno_name, :anno_text, :anno_type, " . NC_ACTIVE . ")";
+                   (datetime, network_id, owner_id, user_id, root_id, parent_id, 
+                   anno_id, anno_text, anno_level, anno_status) VALUES 
+                   (UTC_TIMESTAMP(), :network_id, :owner_id, :user_id, :root_id, :parent_id,
+                   :anno_id, :anno_text, :anno_level, " . NC_ACTIVE . ")";
         $this->qPE($sql, $params);
 
-        //return $newid;
+        return $newid;
     }
 
     /**
@@ -194,45 +181,51 @@ class NCLogger extends NCDB {
      * 
      * @param array $params
      * 
-     * The function assumes the array contains certain elements (see start of code)
-     * 
-     * datetime - refers to the datetime or creation of original annotation entry
-     * 
+     * The function assumes the array contains exactly these elements.
+     * network_id, user_id, root_id, parent_id, anno_id, anno_text, anno_level
      * 
      * @return
      * 
-     * the new annotation id
+     * integer 1 upon success
      *      
      */
-    protected function updateAnnoText($pp) {
+    public function updateAnnoText($params) {
 
-        $params = $this->subsetArray($pp, ["network_id", "datetime",
-            "owner_id", "root_id", "root_type", "parent_id",
-            "anno_id", "anno_name", "anno_text", "anno_type"]);
-        $params['user_id'] = $this->_uid;
+        $tat = "" . NC_TABLE_ANNOTEXT;
 
+// fetch the old date
+        $sql = "SELECT datetime, owner_id FROM $tat WHERE network_id = ? AND anno_id = ? 
+            AND anno_status = " . NC_ACTIVE;
+        $stmt = $this->qPE($sql, [$params['network_id'], $params['anno_id']]);
+        $result = $stmt->fetch();
+        if (!$result) {
+            throw new Exception("Could not identify annotation");
+        }
+        $olddate = $result['datetime'];
+        $params['owner_id'] = $result['owner_id'];
+
+// avoid further work if the annotations are the same
+        if ($result['anno_text'] == $params['anno_text']) {
+            return 0;
+        }
         if ($params['anno_text'] == '') {
             throw new Exception("Cannot insert empty annotation");
         }
 
-        $tat = "" . NC_TABLE_ANNOTEXT;
-
-        // set anno_status to disabled. This anno_id becomes the historical record
+// prepare a statement setting all anno_status to disabled for a given anno_id
         $sql = "UPDATE $tat SET anno_status=" . NC_OLD . "                           
                 WHERE network_id = ? AND anno_id = ? AND anno_status=" . NC_ACTIVE;
         $this->qPE($sql, [$params['network_id'], $params['anno_id']]);
 
-        // insert an extra copy. This becomes the active annotation 
+// insert an extra copy for historical records
         $sql = "INSERT INTO $tat 
-                   (datetime, modified, network_id, owner_id, user_id, 
-                   root_id, root_type, parent_id, 
-                   anno_name, anno_text, anno_type, anno_status) VALUES                          
-                   (:datetime, UTC_TIMESTAMP(), :network_id, :owner_id, :user_id, 
-                   :root_id, :root_type, :parent_id,
-                   :anno_name, :anno_text, :anno_type, " . NC_ACTIVE . ")";
-        unset($params['anno_id']);
+                   (datetime, modified, network_id, owner_id, user_id, root_id, parent_id, 
+                   anno_id, anno_text, anno_level, anno_status) VALUES                          
+                   ('$olddate', UTC_TIMESTAMP(), :network_id, :owner_id, :user_id, :root_id, :parent_id,
+                   :anno_id, :anno_text, :anno_level, " . NC_ACTIVE . ")";
         $this->qPE($sql, $params);
-        return $this->lID();
+
+        return 1;
     }
 
     /**
@@ -247,17 +240,14 @@ class NCLogger extends NCDB {
      * @throws Exception
      */
     protected function getUserPermissions($network, $uid) {
-
-        throw new Exception("getUserPermissions is deprecated");
-
         $tn = "" . NC_TABLE_NETWORKS;
         $tp = "" . NC_TABLE_PERMISSIONS;
         $sql = "SELECT permissions            
             FROM $tp JOIN $tn ON $tp.network_id = $tn.network_id                
-            WHERE $tp.user_id = ? AND $tn.network_name = ?";
+            WHERE BINARY $tp.user_id = ? AND $tn.network_name = ?";
         $stmt = $this->_db->prepare($sql);
         $stmt = $stmt->execute(array($uid, $network));
-        $result = $stmt->fetch();
+        $result = $stmt . fetch();
         if (!$result) {
             return NC_PERM_NONE;
         }
@@ -277,7 +267,7 @@ class NCLogger extends NCDB {
      */
     protected function getUserPermissionsNetID($netid, $uid) {
         $sql = "SELECT permissions FROM " . NC_TABLE_PERMISSIONS .
-                " WHERE user_id = ? AND network_id = ?";
+                " WHERE BINARY user_id = ? AND network_id = ?";
         $stmt = $this->qPE($sql, [$uid, $netid]);
         $result = $stmt->fetch();
         if (!$result) {
@@ -307,7 +297,7 @@ class NCLogger extends NCDB {
      */
     protected function getNetworkId($netname, $throw = false) {
         $sql = "SELECT network_id FROM " . NC_TABLE_ANNOTEXT . "
-            WHERE BINARY anno_text = ? AND anno_type = " . NC_NAME . " 
+            WHERE BINARY anno_text = ? AND anno_level = " . NC_NAME . " 
                 AND anno_status = 1";
         $stmt = $this->qPE($sql, [$netname]);
         $result = $stmt->fetch();
@@ -315,28 +305,9 @@ class NCLogger extends NCDB {
             if ($throw) {
                 throw new Exception("Network does not exist");
             }
-            return -1;
+            return "";
         } else {
-            return (int) $result['network_id'];
-        }
-    }
-
-    /**
-     * Converts between a user_name (string) and user_id (integer)
-     * 
-     * @param type $username
-     * @return type
-     * @throws Exception
-     */
-    protected function getUserData($username) {
-        $sql = "SELECT user_id, user_extpwd FROM " . NC_TABLE_USERS . "
-            WHERE BINARY user_name = ? AND user_status = " . NC_ACTIVE;
-        $stmt = $this->qPE($sql, [$username]);
-        $result = $stmt->fetch();
-        if (!$result) {
-            return ['user_id' => NC_USER_GUEST, 'user_extpwd' => "guest"];
-        } else {
-            return $result;
+            return $result['network_id'];
         }
     }
 
@@ -346,20 +317,19 @@ class NCLogger extends NCDB {
      * return the "Cxxxxxx" code associated with this class name.
      * 
      * 
-     * @param int $netname
-     * @param int $nameanno
-     * @param int $rootype
+     * @param type $netname
+     * @param type $nameanno
      * 
      * @return string 
      * 
      * The root id, or empty string when the name annotation does not match
      */
-    protected function getNameAnnoRootId($netid, $nameanno, $roottype, $throw = true) {
+    protected function getNameAnnoRootId($netid, $nameanno, $throw = true) {
 
-        $sql = "SELECT root_id, root_type, anno_status FROM " . NC_TABLE_ANNOTEXT . "
-           WHERE network_id = ? AND anno_text = ? AND root_type = ? 
-           AND anno_type = " . NC_NAME . " AND anno_status != " . NC_OLD;
-        $stmt = $this->qPE($sql, [$netid, $nameanno, $roottype]);
+        $sql = "SELECT root_id, anno_status FROM " . NC_TABLE_ANNOTEXT . "
+           WHERE BINARY network_id = ? AND anno_text = ? AND 
+           anno_level = " . NC_NAME . " AND anno_status != " . NC_OLD;
+        $stmt = $this->qPE($sql, [$netid, $nameanno]);
         $result = $stmt->fetch();
         if ($throw) {
             if (!$result) {
@@ -386,19 +356,19 @@ class NCLogger extends NCDB {
      * (should never happen as this function is used internaly)
      * 
      */
-    protected function getAnnoInfo($netid, $rootid, $roottype, $annotype) {
-        if ($annotype != NC_ABSTRACT && $annotype == NC_TITLE && $annotype == NC_CONTENT) {
+    protected function getAnnoId($netid, $rootid, $level) {
+        if ($level != NC_ABSTRACT && $level == NC_TITLE && $level == NC_CONTENT) {
             throw new Exception("Function only suitable for title, abstract, content");
         }
-        $sql = "SELECT anno_id, datetime, owner_id, anno_name FROM " . NC_TABLE_ANNOTEXT . " 
-            WHERE BINARY network_id = ? AND root_id = ? AND root_type= ? 
-               AND anno_type = ? AND anno_status = " . NC_ACTIVE;
-        $stmt = $this->qPE($sql, [$netid, $rootid, $roottype, $annotype]);
+        $sql = "SELECT anno_id FROM " . NC_TABLE_ANNOTEXT . " 
+            WHERE BINARY network_id = ? AND root_id = ? AND 
+            anno_level = ? AND anno_status = " . NC_ACTIVE;
+        $stmt = $this->qPE($sql, [$netid, $rootid, $level]);
         $result = $stmt->fetch();
         if (!$result) {
             throw new Exception("Error fetching anno id");
         }
-        return $result;
+        return $result['anno_id'];
     }
 
     /**
@@ -414,27 +384,24 @@ class NCLogger extends NCDB {
      * @param string $annoname
      * @param string $annotitle
      */
-    protected function insertNewAnnoSetOld($netid, $uid, $rootid, $annoname, $annotitle, $annoabstract = 'empty', $annocontent = 'empty') {
+    protected function insertNewAnnoSetOld($netid, $uid, $rootid, $annoname, $annotitle, $annoabstract = '', $annocontent = '') {
 // create starting annotations for the title, abstract and content        
-
-        throw new Exception("insertNewAnnoSetOld is deprecated");
-
         $params = array('network_id' => $netid, 'user_id' => $uid, 'owner_id' => $uid,
-            'root_id' => $rootid, 'parent_id' => $rootid, 'anno_type' => NC_NAME,
+            'root_id' => $rootid, 'parent_id' => $rootid, 'anno_level' => NC_NAME,
             'anno_text' => $annoname);
 // insert object name
         $this->insertAnnoText($params);
 // insert title        
         $params['anno_text'] = $annotitle;
-        $params['anno_type'] = NC_TITLE;
+        $params['anno_level'] = NC_TITLE;
         $this->insertAnnoText($params);
 // insert abstract                
         $params['anno_text'] = $annoabstract;
-        $params['anno_type'] = NC_ABSTRACT;
+        $params['anno_level'] = NC_ABSTRACT;
         $this->insertAnnoText($params);
         // insert content
         $params['anno_text'] = $annocontent;
-        $params['anno_type'] = NC_CONTENT;
+        $params['anno_level'] = NC_CONTENT;
         $this->insertAnnoText($params);
     }
 
@@ -451,8 +418,8 @@ class NCLogger extends NCDB {
      * @param type $annocontent
      * 
      */
-    protected function insertNewAnnoSet($netid, $uid, $rootid, $roottype, $annoname, $annotitle = 'empty', $annoabstract = 'empty', $annocontent = 'empty') {
-
+    protected function insertNewAnnoSet($netid, $uid, $rootid, $annoname, $annotitle, $annoabstract = '', $annocontent = '') {
+        
         // create an array of parameter values (one set for name, abstrat, title, content)
         $params = [];
         foreach (["A", "B", "C", "D"] as $abc) {
@@ -461,31 +428,30 @@ class NCLogger extends NCDB {
             $params['user_id' . $abc] = $uid;
             $params['root_id' . $abc] = $rootid;
             $params['parent_id' . $abc] = $rootid;
-            $params['root_type' . $abc] = $roottype;
         }
-        $basename = "T_" . $rootid . "_" . $roottype . "_";
-        $params['anno_nameA'] = $basename . NC_NAME;
-        $params['anno_nameB'] = $basename . NC_TITLE;
-        $params['anno_nameC'] = $basename . NC_ABSTRACT;
-        $params['anno_nameD'] = $basename . NC_CONTENT;
+        $params['anno_idA'] = "AT" . $rootid . "." . NC_NAME;
+        $params['anno_idB'] = "AT" . $rootid . "." . NC_TITLE;
+        $params['anno_idC'] = "AT" . $rootid . "." . NC_ABSTRACT;
+        $params['anno_idD'] = "AT" . $rootid . "." . NC_CONTENT;
         $params['anno_textA'] = $annoname;
         $params['anno_textB'] = $annotitle;
         $params['anno_textC'] = $annoabstract;
         $params['anno_textD'] = $annocontent;
 
         $sql = "INSERT INTO " . NC_TABLE_ANNOTEXT . "
-             (datetime, network_id, owner_id, user_id, root_id, root_type, parent_id, 
-             anno_name, anno_text, anno_type, anno_status) VALUES 
-             (UTC_TIMESTAMP(), :network_idA, :owner_idA, :user_idA, :root_idA, :root_typeA, :parent_idA,
-             :anno_nameA, :anno_textA, " . NC_NAME . ", " . NC_ACTIVE . "),                       
-             (UTC_TIMESTAMP(), :network_idB, :owner_idB, :user_idB, :root_idB, :root_typeB, :parent_idB,
-             :anno_nameB, :anno_textB, " . NC_TITLE . ", " . NC_ACTIVE . "),
-             (UTC_TIMESTAMP(), :network_idC, :owner_idC, :user_idC, :root_idC, :root_typeC, :parent_idC,
-             :anno_nameC, :anno_textC, " . NC_ABSTRACT . ", " . NC_ACTIVE . "),
-             (UTC_TIMESTAMP(), :network_idD, :owner_idD, :user_idD, :root_idD, :root_typeD, :parent_idD,
-             :anno_nameD, :anno_textD, " . NC_CONTENT . ", " . NC_ACTIVE . ")";
+             (datetime, network_id, owner_id, user_id, root_id, parent_id, 
+             anno_id, anno_text, anno_level, anno_status) VALUES 
+             (UTC_TIMESTAMP(), :network_idA, :owner_idA, :user_idA, :root_idA, :parent_idA,
+             :anno_idA, :anno_textA, " . NC_NAME . ", " . NC_ACTIVE . "),                       
+             (UTC_TIMESTAMP(), :network_idB, :owner_idB, :user_idB, :root_idB, :parent_idB,
+             :anno_idB, :anno_textB, " . NC_TITLE . ", " . NC_ACTIVE . "),
+             (UTC_TIMESTAMP(), :network_idC, :owner_idC, :user_idC, :root_idC, :parent_idC,
+             :anno_idC, :anno_textC, " . NC_ABSTRACT . ", " . NC_ACTIVE . "),
+             (UTC_TIMESTAMP(), :network_idD, :owner_idD, :user_idD, :root_idD, :parent_idD,
+             :anno_idD, :anno_textD, " . NC_CONTENT . ", " . NC_ACTIVE . ")";
 
         $this->qPE($sql, $params);
+        
     }
 
     /**
@@ -506,7 +472,7 @@ class NCLogger extends NCDB {
             // some of the keys are missing, make a string with a summary
             $missing = "";
             for ($i = 0; $i < count($keys); $i++) {
-                if (!array_key_exists($keys[$i], $array)) {
+                if (!in_array($keys[$i], $array)) {
                     $missing .= " " . $keys[$i];
                 }
             }
@@ -515,12 +481,7 @@ class NCLogger extends NCDB {
 
         return $result;
     }
-
-    protected function tick() {
-        echo ($this->_counter) . " ... ";
-        $this->_counter = $this->_counter + 1;        
-    }
-
+        
 }
 
 ?>

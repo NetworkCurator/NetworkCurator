@@ -41,7 +41,7 @@ class NCAnnotations extends NCLogger {
         $this->_netid = $this->getNetworkId($this->_network, true);
         
         // fetch user permissions 
-        $this->_uperm = $this->getUserPermissionsNetID($this->_netid, $this->_uid);       
+        $this->_uperm = $this->getUserPermissionsNetID($this->_netid, $this->_uid);
     }
 
     
@@ -153,6 +153,7 @@ class NCAnnotations extends NCLogger {
 
         // check that required parameters are defined
         $params = $this->subsetArray($this->_params, ["root_id"]);
+
 
         // fetch all the comments
         $sql = "SELECT datetime, modified, owner_id, user_id, anno_id, 

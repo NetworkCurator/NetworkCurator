@@ -24,31 +24,31 @@ function ncCheckLoginDeprecated($NCapi) {
     // default state is "guest"
     $g = "guest";
     $tim = time() + (3600 * 24 * 7);
-    $firstname = $uname = $upw = $g;
+    $firstname = $uid = $upw = $g;
     $lastname = $middlename = "";
 
     // check if a user has already been remembered
-    if (isset($_SESSION['uname']) && isset($_SESSION['upw'])) {
+    if (isset($_SESSION['uid']) && isset($_SESSION['upw'])) {
         // Username and password have been set.        
-        $uname = $_SESSION['uname'];
+        $uid = $_SESSION['uid'];
         $upw = $_SESSION['upw'];
         $firstname = $_SESSION['firstname'];
         $middlename = $_SESSION['middlename'];
         $lastname = $_SESSION['lastname'];
     } else {
-        if (isset($_COOKIE['nc_uname']) && isset($_COOKIE['nc_upw'])) {
-            $uname = $_COOKIE['nc_uname'];
+        if (isset($_COOKIE['nc_uid']) && isset($_COOKIE['nc_upw'])) {
+            $uid = $_COOKIE['nc_uid'];
             $upw = $_COOKIE['nc_upw'];
             $firstname = $_COOKIE['nc_firstname'];
             $middlename = $_COOKIE['nc_middlename'];
             $lastname = $_COOKIE['nc_lastname'];
         } else {
-            $_SESSION['uname'] = $g;
+            $_SESSION['uid'] = $g;
             $_SESSION['upw'] = $g;
             $_SESSION['firstname'] = $g;
             $_SESSION['middlename'] = "";
             $_SESSION['lastname'] = "";
-            $uname = $upw = $g;
+            $uid = $upw = $g;
             return false;
         }
     }
@@ -56,17 +56,17 @@ function ncCheckLoginDeprecated($NCapi) {
     // confirm the existence of the user using an API call
     //echo "Using API in nc-checklogin<br/>";    
     $apiparams = array('user_extpwd' => $upw);
-    $userconfirmed = $NCapi->sendReq($uname, "NCUsers", "confirm", $apiparams);
+    $userconfirmed = $NCapi->sendReq($uid, "NCUsers", "confirm", $apiparams);
 
     // update the cookies for logged-in users
     if ($userconfirmed) {
         if ($userconfirmed['success'] === true) {
-            $_SESSION['uname'] = $uname;
+            $_SESSION['uid'] = $uid;
             $_SESSION['upw'] = $upw;
             $_SESSION['firstname'] = $firstname;
             $_SESSION['middlename'] = $middlename;
             $_SESSION['lastname'] = $lastname;
-            setcookie("nc_uname", $uname, $tim, "/");
+            setcookie("nc_uid", $uid, $tim, "/");
             setcookie("nc_firstname", $firstname, $tim, "/");
             setcookie("nc_middlename", $middlename, $tim, "/");
             setcookie("nc_lastname", $lastname, $tim, "/");

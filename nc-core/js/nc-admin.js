@@ -73,13 +73,13 @@ nc.admin.createNetwork = function(fgname, fgtitle, fgdesc) {
 * @param fgfirst - id of formgroup with the new user's firstname
 * @param fgmiddle
 * @param fglast
-* @param fgname - formgroup with user id
+* @param fgid - formgroup with user id
 * @param fgemail - formgroup with email address
 * @param fgpwd - formgroup with password
 * @param fgpwd2 - formgroup with password (confirmation)
 * 
 */
-nc.admin.createUser = function(fgfirst, fgmiddle, fglast, fgname, fgemail, fgpwd, fgpwd2) {
+nc.admin.createUser = function(fgfirst, fgmiddle, fglast, fgid, fgemail, fgpwd, fgpwd2) {
     
     $('form .form-group').removeClass('has-warning has-error');
         
@@ -87,7 +87,7 @@ nc.admin.createUser = function(fgfirst, fgmiddle, fglast, fgname, fgemail, fgpwd
     if (nc.utils.checkFormInput(fgfirst, "first name", 1) 
         + nc.utils.checkFormInput(fgmiddle, "middle name", -1)
         + nc.utils.checkFormInput(fglast, "last name", 1)
-        + nc.utils.checkFormInput(fgname, "user id", 1)
+        + nc.utils.checkFormInput(fgid, "user id", 1)
         + nc.utils.checkFormInput(fgpwd, "password", 1)
         + nc.utils.checkFormInput(fgpwd2, "password", 1)
         + nc.utils.checkFormEmail(fgemail, "email") < 7) { return 0; };                
@@ -105,15 +105,15 @@ nc.admin.createUser = function(fgfirst, fgmiddle, fglast, fgname, fgemail, fgpwd
         target_middlename: $('#'+fgmiddle+' input').val(),
         target_lastname: $('#'+fglast+' input').val(),
         target_email: $('#'+fgemail+' input').val(),
-        target_name: $('#' +fgname+' input').val(),        
+        target_id: $('#' +fgid+' input').val(),        
         target_password: $('#'+fgpwd+' input').val()
     }, function(data) {          
         nc.utils.alert(data);        
         data = JSON.parse(data);
         if (nc.utils.checkAPIresult(data)) {
             if (data['success']==false || data['data']==false) {
-                $('#'+fgname).addClass('has-error has-feedback');                
-                $('#'+fgname+' label').html("Please choose another user id:");                
+                $('#'+fgid).addClass('has-error has-feedback');                
+                $('#'+fgid+' label').html("Please choose another user id:");                
             } else if (data['success']==true && data['data']==true) {                 
                 $('form .form-group').addClass('has-success has-feedback');                                                                
                 $('form button.submit').removeClass('btn-success').addClass('btn-default disabled').html("Success!");                

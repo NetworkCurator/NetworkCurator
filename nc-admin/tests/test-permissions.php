@@ -17,15 +17,18 @@ include_once "test-prep.php";
 $newusers = array('alpha', 'bravo', 'charlie', 'admin', 'charlie', 'echo');
 for ($i = 0; $i < count($newusers); $i++) {
 
-    $uname = $newusers[$i];
+    $uid = $newusers[$i];
     $uperm = 4 - $i;
 
-    echo "Adjusting permissions for user $uname to $uperm";
+    echo "Adjusting permissions for user $uid to $uperm\n";
     $params = array('controller' => 'NCUsers', 'action' => 'updatePermissions',
-        'user_name' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
-        'network_name' => 'net-zulu', 'target_name' => $uname, 'permissions' => $uperm);
-    tryreport($NCapi, $params);
+        'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
+        'network_name' => 'net-zulu', 'target_id' => $uid, 'permissions' => $uperm);
+    try {
+        $ok = $NCapi->sendRequest($params);
+    } catch (Exception $e) {
+        echo "Exception: " . $e->getMessage();
+        echo "\n";
+    }
 }
-
-echo "\n";
 ?>

@@ -5,7 +5,7 @@
  */
 
 // if the user is already logged-in, that's not good (can't log in twice)
-if ($_SESSION['uname'] !== "guest") {
+if ($_SESSION['uid'] !== "guest") {
     header("Refresh: 0, url=?page=front");
 }
 ?>

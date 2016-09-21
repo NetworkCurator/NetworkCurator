@@ -34,15 +34,14 @@ if (isset($_REQUEST['network'])) {
 
 // collect information about the user from the session
 session_start();
-if (!isset($_SESSION['uname'])) {
-    $uname = "guest";
+if (!isset($_SESSION['uid'])) {
+    $uid = "guest";
     $upw = "guest";
 } else {
-    $uname = $_SESSION['uname'];
+    $uid = $_SESSION['uid'];
     $upw = $_SESSION['upw'];
 }
-
-$NCapi = new NCApiCaller($uname, $upw);
+$NCapi = new NCApiCaller($uid, $upw);
 try {
     $userin = $NCapi->checkLogin();
 } catch (Exception $ex) {
@@ -51,7 +50,7 @@ try {
     exit();
 }
 if (!$userin) {
-    $uname = "guest";
+    $uid = "guest";
 }
 $userip = $_SERVER['REMOTE_ADDR'];
 

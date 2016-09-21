@@ -29,10 +29,17 @@ for ($i = 0; $i < count($filenames); $i++) {
     echo substr($nowdata, 0, 200) . " ...\n";
 
     $params = array('controller' => 'NCData', 'action' => 'importData',
-        'user_name' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
+        'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
         'network_name' => $nownetwork, 'file_name' => $nowfile,
         'file_content' => $nowdata, 'file_desc' => 'just testing');
-    tryreport($NCapi, $params);
+    try {
+        $ok = $NCapi->sendRequest($params);
+    } catch (Exception $e) {
+        $ok = "";
+        echo "Exception: " . $e->getMessage();
+        echo "\n";
+    }
+    echo $ok."\n";
     
     echo "done\n\n\n";
 }
