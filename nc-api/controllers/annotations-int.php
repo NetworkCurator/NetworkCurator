@@ -28,23 +28,23 @@ class NCAnnotations extends NCLogger {
      */
     public function __construct($db, $params) {
 
+        parent::__construct($db, $params);
+        
         // check for required parameters
         if (isset($params['network_name'])) {
-            $this->_network = $params['network_name'];
+            $this->_network = $this->_params['network_name'];
         } else {
             throw new Exception("NCAnnotations requires a network name");
         }
-        unset($params['network_name']);
-
-        parent::__construct($db, $params);
-
+        
         // find the network id that corresponds to the name
         $this->_netid = $this->getNetworkId($this->_network, true);
-
+        
         // fetch user permissions 
-        $this->_uperm = $this->getUserPermissionsNetID($this->_netid, $this->_uid);
+        $this->_uperm = $this->getUserPermissionsNetID($this->_netid, $this->_uid);       
     }
 
+    
     /**
      * processes request to update the text of an existing annotation
      * 
@@ -54,9 +54,7 @@ class NCAnnotations extends NCLogger {
     public function updateAnnotationText() {
 
         // check that required parameters are defined
-        $params = $this->subsetArray($this->_params, ["anno_id", "anno_text"]);
-        $params['user_id'] = $this->_uid;
-        $params['network_id'] = $this->_netid;
+        $params = $this->subsetArray($this->_params, ["user_id", "anno_id", "anno_text"]);
 
         // check if user has permission to view the table        
         if ($this->_uperm < NC_PERM_COMMENT) {
@@ -64,12 +62,12 @@ class NCAnnotations extends NCLogger {
         }
 
         // need to find details of the existing annotation, user_id, root_id, etc.  
-        $sql = "SELECT datetime, owner_id, root_id, parent_id, anno_type FROM " . NC_TABLE_ANNOTEXT . "
+        $sql = "SELECT owner_id, root_id, parent_id, anno_level FROM " . NC_TABLE_ANNOTEXT . "
                 WHERE network_id = ? AND anno_id = ? AND anno_status =" . NC_ACTIVE;
         $stmt = $this->qPE($sql, [$this->_netid, $params['anno_id']]);
         $result = $stmt->fetch();
         if (!$result) {
-            throw new Exception("Error retrieving current annotation");
+            throw new Exception("Error retrieving annotation owner");
         }
 
         // curator can edit anything, but others can only edit their own items
@@ -79,8 +77,9 @@ class NCAnnotations extends NCLogger {
             }
         }
 
-        // if reached here, it is safe to edit the annotation        
-        $this->updateAnnoText(array_merge($params, $result));
+        // if reached here, it is safe to edit the annotation
+        $pp = array_merge($params, $result, ['network_id' => $this->_netid]);
+        $this->updateAnnoText($pp);
 
         // log the action
         $this->logActivity($this->_uid, $this->_netid, "updated annotation text for", $params['anno_id'], $params['anno_text']);
@@ -96,7 +95,8 @@ class NCAnnotations extends NCLogger {
     public function createNewComment() {
 
         // check that required parameters are defined
-        $params = $this->subsetArray($this->_params, ["user_id", "anno_text", "root_id", "parent_id"]);
+        $params = $this->subsetArray($this->_params, ["user_id",
+            "anno_text", "root_id", "parent_id"]);
 
         // check if user has permission to view the table          
         if ($this->_uperm < NC_PERM_COMMENT) {
@@ -111,14 +111,14 @@ class NCAnnotations extends NCLogger {
             $params['parent_id'] = $this->_netid;
         } else {
             // check that the parent id is valid and active
-            $sql = "SELECT anno_type FROM $tat WHERE 
+            $sql = "SELECT anno_level FROM $tat WHERE 
                 network_id = ? AND anno_id = ? AND anno_status = " . NC_ACTIVE;
             $stmt = $this->qPE($sql, [$this->_netid, $params['parent_id']]);
             $result = $stmt->fetch();
             if (!$result) {
                 throw new Exception("Parent annotation does not exist");
             }
-            if ($result['anno_type'] == NC_COMMENT) {
+            if ($result['anno_level'] == NC_COMMENT) {
                 $annolevel = NC_SUBCOMMENT;
             }
         }
@@ -130,11 +130,11 @@ class NCAnnotations extends NCLogger {
             throw new Exception("Root annotation does not exist");
         }
 
-        // if reached here, insert the comment, log it, and finish
+        // if reached here, insert the comment and finish
         $pp = array('network_id' => $this->_netid,
             'owner_id' => $this->_uid, 'user_id' => $this->_uid,
             'root_id' => $params['root_id'], 'parent_id' => $params['parent_id'],
-            'anno_text' => $params['anno_text'], 'anno_type' => $annolevel);
+            'anno_text' => $params['anno_text'], 'anno_level' => $annolevel);
         $newid = $this->insertAnnoText($pp);
         $this->logActivity($this->_uid, $this->_netid, 'wrote a comment', $newid, $params['anno_text']);
 
@@ -159,7 +159,7 @@ class NCAnnotations extends NCLogger {
                        parent_id, anno_text 
                   FROM " . NC_TABLE_ANNOTEXT . "
                   WHERE network_id = ? and root_id = ? AND anno_status = " . NC_ACTIVE
-                . " ORDER BY anno_type, datetime";
+                . " ORDER BY anno_level, datetime";
         $stmt = $this->qPE($sql, [$this->_netid, $params['root_id']]);
         $result = [];
         while ($row = $stmt->fetch()) {
@@ -168,7 +168,7 @@ class NCAnnotations extends NCLogger {
 
         return $result;
     }
-
+    
 }
 
 ?>

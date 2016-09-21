@@ -20,15 +20,11 @@ for ($i = 0; $i < count($newusers); $i++) {
     $uid = $newusers[$i];
     $uperm = 4 - $i;
 
-    echo "Adjusting permissions for user $uid to $uperm\n";
+    echo "Adjusting permissions for user $uid to $uperm";
     $params = array('controller' => 'NCUsers', 'action' => 'updatePermissions',
         'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
         'network_name' => 'net-zulu', 'target_id' => $uid, 'permissions' => $uperm);
-    try {
-        $ok = $NCapi->sendRequest($params);
-    } catch (Exception $e) {
-        echo "Exception: " . $e->getMessage();
-        echo "\n";
-    }
+    tryreport($NCapi, $params);
+    
 }
 ?>

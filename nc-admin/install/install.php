@@ -200,7 +200,7 @@ $sql = "CREATE TABLE $tabname (
   datetime DATETIME NOT NULL,
   modified DATETIME,
   anno_id $vc32col,
-  anno_level INT NOT NULL DEFAULT 0,
+  anno_type INT NOT NULL DEFAULT 0,
   owner_id $vc32col,
   user_id $vc32col,  
   network_id $vc32col,  
@@ -208,7 +208,7 @@ $sql = "CREATE TABLE $tabname (
   parent_id $vc32col,  
   anno_text $textcol,  
   anno_status $statuscol,  
-  KEY level (network_id, anno_level), 
+  KEY anno_type (network_id, anno_type), 
   KEY anno_id (anno_id),
   KEY root_id (network_id, root_id)  
 ) $engine COLLATE utf8_unicode_ci";
@@ -221,7 +221,7 @@ $sql = "CREATE TABLE $tabname (
   datetime DATETIME NOT NULL,
   modified DATETIME,
   anno_id $vc32col,
-  anno_level INT NOT NULL DEFAULT 0,
+  anno_type INT NOT NULL DEFAULT 0,
   owner_id $vc32col,
   user_id $vc32col,  
   network_id $vc32col,  
@@ -230,7 +230,7 @@ $sql = "CREATE TABLE $tabname (
   anno_value $dblcol,
   anno_valueunit $vc24col,  
   anno_status $statuscol,
-  KEY level (network_id, anno_level),
+  KEY anno_type (network_id, anno_type),
   KEY anno_id (anno_id),
   KEY root_id (network_id, root_id)
 ) $engine COLLATE utf8_unicode_ci";

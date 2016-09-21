@@ -32,14 +32,8 @@ for ($i = 0; $i < count($filenames); $i++) {
         'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
         'network_name' => $nownetwork, 'file_name' => $nowfile,
         'file_content' => $nowdata, 'file_desc' => 'just testing');
-    try {
-        $ok = $NCapi->sendRequest($params);
-    } catch (Exception $e) {
-        $ok = "";
-        echo "Exception: " . $e->getMessage();
-        echo "\n";
-    }
-    echo $ok."\n";
+    $result = tryreport($NCapi, $params, true);    
+    echo $result."\n";
     
     echo "done\n\n\n";
 }

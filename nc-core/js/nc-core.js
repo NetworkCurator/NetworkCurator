@@ -93,8 +93,8 @@ nc.init.all = function() {
     nc.init.initCuration();
     //alert("going to initMarkdown");
     nc.init.initMarkdown();
-    //alert("going to initComments");
-    nc.init.initComments();    
+    //alert("going to initComments");    
+    nc.init.initComments();        
     nc.init.initOntology();    
     nc.init.initGraph();       
     

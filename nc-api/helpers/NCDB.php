@@ -23,9 +23,10 @@ class NCDB {
     }
 
     protected function dblock($tables) {
-        $this->_db->beginTransaction();        
+        //$this->_db->beginTransaction();        
         $sql = "LOCK TABLES " . implode(" WRITE, ", $tables)." WRITE ";        
         $this->_db->exec($sql);                
+        $this->_db->beginTransaction();        
     }
     
     protected function dbunlock() {
@@ -49,5 +50,9 @@ class NCDB {
         return $stmt;
     }
        
+    
+    protected function q($sql) {
+        $this->_db->query($sql);
+    }
 }
 ?>

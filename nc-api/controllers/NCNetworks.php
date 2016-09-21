@@ -63,7 +63,7 @@ class NCNetworks extends NCLogger {
      *       
      */
     public function createNewNetwork() {
-        
+
         $this->dblock([NC_TABLE_NETWORKS, NC_TABLE_ANNOTEXT, NC_TABLE_ACTIVITY, NC_TABLE_PERMISSIONS]);
 
         // check that required parameters are defined
@@ -85,26 +85,23 @@ class NCNetworks extends NCLogger {
 
         // if reached here, create the new network in 6 steps
         // 1/6, find a new ids for the network and annotations                 
-        $netid = $this->makeRandomID(NC_TABLE_NETWORKS, 'network_id', 'W', NC_ID_LEN);
+        $netid = $this->makeRandomID(NC_TABLE_NETWORKS, 'network_id', NC_PREFIX_NETWORK, NC_ID_LEN);
 
         // 2/6, create a directory on the server for the network        
         $networkdir = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/networks/" . $netid;
         if (!mkdir($networkdir, 0777, true)) {
             throw new Exception("Failed creating network data space: " . $networkdir);
         }
-        chmod ($networkdir, 0777);
+        chmod($networkdir, 0777);
 
         // 3/6, insert a new row into the networks table and annotations       
         $sql = "INSERT INTO " . NC_TABLE_NETWORKS . "
                    (network_id, owner_id) VALUES (?, ?)";
         $this->qPE($sql, [$netid, $this->_uid]);
-                
+
         // 4/6, create a starting log entry for creation of the network        
         $this->logActivity($this->_uid, $netid, "created network", $params['network_name'], $params['network_title']);
 
-        // 5/6, create starting annotations for the title, abstract, contents
-        // insert annotation for network name   
-        $this->insertNewAnnoSet($netid, $this->_uid, $netid, $params['network_name'], $params['network_title'], $params['network_desc']);
 
         // 6/6, create permissions for admin and guest
         $sql = "INSERT INTO " . NC_TABLE_PERMISSIONS . "
@@ -112,6 +109,12 @@ class NCNetworks extends NCLogger {
         $stmt = $this->_db->prepare($sql);
         $stmt->execute(['admin', $netid, NC_PERM_SUPER]);
         $stmt->execute(['guest', $netid, NC_PERM_NONE]);
+
+        $this->dbunlock();
+
+        // 5/6, create starting annotations for the title, abstract, contents
+        // insert annotation for network name   
+        $this->insertNewAnnoSet($netid, $this->_uid, $netid, $params['network_name'], $params['network_title'], $params['network_desc']);
 
         return true;
     }
@@ -154,7 +157,7 @@ class NCNetworks extends NCLogger {
         $uid = $this->_uid;
         $tp = "" . NC_TABLE_PERMISSIONS;
         $ta = "" . NC_TABLE_ANNOTEXT;
-        $tac = $ta . ".anno_level";
+        $tac = $ta . ".anno_type";
         $tat = $ta . ".anno_text";
         $tai = $ta . ".anno_id";
         $ni = "network_id";
@@ -174,12 +177,12 @@ FROM $ta JOIN $tp ON $ta.$ni = $tp.$ni
     WHERE BINARY $tp.user_id = '$uid' AND $tp.permissions>" . NC_PERM_NONE . "
     AND $ta.root_id LIKE 'W%'
     AND $ta.anno_status = 1 AND $tac <=" . NC_ABSTRACT . "
-GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
+GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";                     
         $stmt = $this->_db->query($sql);
         $result = array();
         while ($row = $stmt->fetch()) {
             $result[] = $row;
-        }
+        }               
         return $result;
     }
 
@@ -238,14 +241,14 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         $tp = "" . NC_TABLE_PERMISSIONS;
 
         // find the title, abstract, etc
-        $sql = "SELECT network_id, anno_id, anno_level, anno_text FROM $tat 
+        $sql = "SELECT network_id, anno_id, anno_type, anno_text FROM $tat 
               WHERE BINARY network_id = ? AND root_id = ?
-                AND anno_status = " . NC_ACTIVE . " AND anno_level <= " . NC_CONTENT;
+                AND anno_status = " . NC_ACTIVE . " AND anno_type <= " . NC_CONTENT;
         $stmt = $this->qPE($sql, [$netid, $netid]);
         // record the results into an array that will eventually be output
         $result = array('network_id' => $netid);
         while ($row = $stmt->fetch()) {
-            switch ($row['anno_level']) {
+            switch ($row['anno_type']) {
                 case NC_NAME:
                     $result['network_name'] = $row['anno_text'];
                     $result['network_name_id'] = $row['anno_id'];
@@ -316,7 +319,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         // find the title, abstract, etc
         $sql = "SELECT anno_text FROM $ta 
               WHERE BINARY network_id = ? AND root_id = ?
-                AND anno_status = " . NC_ACTIVE . " AND anno_level = " . NC_TITLE;
+                AND anno_status = " . NC_ACTIVE . " AND anno_type = " . NC_TITLE;
         $stmt = $this->qPE($sql, [$netid, $netid]);
         $result = $stmt->fetch();
         if (!$result) {

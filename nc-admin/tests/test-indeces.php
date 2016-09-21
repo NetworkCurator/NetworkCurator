@@ -23,9 +23,9 @@ echo "A1";
 $db->prepare($sql)->execute();
 echo "A2";
 try {
-$db->prepare($sql)->execute();
-} catch(Exception $ex) {
-echo "twice not good ";    
+    $db->prepare($sql)->execute();
+} catch (Exception $ex) {
+    echo "twice not good ";
 }
 echo "A3\n";
 
@@ -34,11 +34,9 @@ $db->prepare($sql)->execute();
 echo "A4";
 try {
     $db->prepare($sql)->execute();
-} catch(Exception $ex) {
+} catch (Exception $ex) {
     echo "twice not good";
 }
 
 echo "A5";
-
-
 ?>

@@ -18,7 +18,7 @@ nc.ontology = {};
 /**
  * Invoked when user wants to create a new class for a node or link
  */
-nc.ontology.createClass = function(parentid, classname, islink, isdirectional) {
+nc.ontology.createClass = function(classname, islink, isdirectional) {
     
     // check the class name string     
     if (nc.utils.checkString(classname, 1)<1) {
@@ -31,7 +31,7 @@ nc.ontology.createClass = function(parentid, classname, islink, isdirectional) {
         action: "createNewClass", 
         network_name: nc.network,
         class_name: classname,
-        parent_id: parentid,  
+        parent_name: '',  
         connector: +islink,
         directional: +isdirectional        
     }, function(data) {
@@ -43,7 +43,7 @@ nc.ontology.createClass = function(parentid, classname, islink, isdirectional) {
             // insert was successful, so append the tree            
             var newrow = {
                 class_id:data['data'], 
-                parent_id:parentid, 
+                parent_id:'', 
                 connector:+islink,
                 directional:+isdirectional, 
                 class_name:classname,
@@ -57,22 +57,29 @@ nc.ontology.createClass = function(parentid, classname, islink, isdirectional) {
 /**
  * Send a request to update a class name or parent structure
  */
-nc.ontology.updateClassProperties = function(classid, classname, parentid, 
-    islink, isdirectional) {
+nc.ontology.updateClassProperties = function(classid, classname, parentid, islink, isdirectional) {
         
     if (nc.utils.checkString(classname, 1)<1) {
         nc.msg("Hey!", "Invalid class name");
         exit();
     }
         
+    // must translate between classid and targetname 
+    // also between parentid and parentname
+    var targetname = $('div.nc-classdisplay[val="'+classid+'"] span[val="nc-classname"]]').html();
+    var parentname = parentid;
+    if (parentid!='') {
+        parentname = $('div.nc-classdisplay[val="'+parentid+'"] span[val="nc-classname"]]').html();
+    }
+        
     $.post(nc.api, {
         controller: "NCOntology", 
         action: "updateClass", 
         network_name: nc.network,
-        class_id: classid,
+        target_name: targetname,
         class_name: classname,
         class_status: 1,
-        parent_id: parentid,  
+        parent_name: parentname,  
         connector: +islink,
         directional: +isdirectional        
     }, function(data) {
@@ -83,12 +90,12 @@ nc.ontology.updateClassProperties = function(classid, classname, parentid,
         } else {   
             // update the tree display
             var targetdisplay = $('div.nc-classdisplay[val="'+classid+'"]');            
-            targetdisplay.find('span.nc-comment[val="class_name"]').html(classname);
+            targetdisplay.find('span.nc-comment[val="nc-classname"]').html(classname);
             var dirtext = '';
             if (isdirectional) {
                 dirtext = ' (directional)';
             } 
-            targetdisplay.find('span.nc-comment[val="directional"]').html(dirtext);
+            targetdisplay.find('span.nc-comment[val="nc-directional"]').html(dirtext);
         }
     });  
 }
@@ -98,8 +105,8 @@ nc.ontology.updateClassProperties = function(classid, classname, parentid,
  * As this is an important step, this function shows a modal to confirm
  * The action is only performed upon confirmation
  */ 
-nc.ontology.askConfirmation = function(classid, action) {               
-    var classname = $('li[val="'+classid+'"] span[val="class_name"]').html();
+nc.ontology.askConfirmation = function(classid, action) {   
+    var classname = $('li[val="'+classid+'"] span[val="nc-classname"]').html();
     var modal = $('#nc-deprecateconfirm-modal');
     modal.find('#nc-deprecateconfirm-action').html(action);
     modal.find('#nc-deprecateconfirm-class').html(classname).attr("val", classid);        
@@ -123,19 +130,21 @@ nc.ontology.askConfirmation = function(classid, action) {
  */
 nc.ontology.confirmActivate = function() {
     // get the classid from the modal that called this function
-    var classid = $('#nc-deprecateconfirm-modal #nc-deprecateconfirm-class').attr("val");            
+    var infoobj = $('#nc-deprecateconfirm-modal #nc-deprecateconfirm-class');
+    var classid = infoobj.attr("val");            
+    var classname = infoobj.html();            
     $.post(nc.api, {
         controller: "NCOntology", 
         action: "activateClass", 
         network_name: nc.network,
-        class_id: classid
+        class_name: classname
     }, function(data) {
         nc.utils.alert(data);              
         data = JSON.parse(data);
         if (data['success']==false) {              
             nc.msg('Error', data['errormsg']);                
         } else {            
-            if (data['data']==true) {
+            if (data['data']==true) {                
                 nc.ui.toggleClassDisplay($('li[val="'+classid+'"]'));
             } else {
                 nc.msg("That's strange", data['data']);                
@@ -149,19 +158,21 @@ nc.ontology.confirmActivate = function() {
  */
 nc.ontology.confirmDeprecate = function() {
     // fetch the confirmed class id from the modal that callled this function
-    var classid = $('#nc-deprecateconfirm-modal #nc-deprecateconfirm-class').attr("val");        
-        
+    var infoobj = $('#nc-deprecateconfirm-modal #nc-deprecateconfirm-class');
+    var classid = infoobj.attr("val");            
+    var classname = infoobj.html();  
+               
     $.post(nc.api, {
         controller: "NCOntology", 
         action: "removeClass", 
         network_name: nc.network,
-        class_id: classid
+        class_name: classname
     }, function(data) {
         nc.utils.alert(data);              
         data = JSON.parse(data);
         if (data['success']==false) {              
             nc.msg('Error', data['errormsg']);                
-        } else {
+        } else {            
             var thisrow = $('li[val="'+classid+'"]');            
             if (data['data']==true) {
                 // the class has been truly removed

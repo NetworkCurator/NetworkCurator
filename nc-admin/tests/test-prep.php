@@ -30,5 +30,21 @@ $upw = $row['user_extpwd'];
 $NCapi = new GeneralApiCaller(NC_APP_ID, NC_APP_KEY, NC_API_PATH);
 
 
+// helper function to attempt api requests and provide feedback
+function tryreport($api, $params, $return = false) {
+    $result = null;
+    try {
+        $result = $api->sendRequest($params);
+        echo "\tok\n";
+    } catch (Exception $ex) {
+        echo "\tErr: ".$ex->getMessage()."\n";
+    }
+    
+    if ($result) {
+        return $result;
+    } else {
+        return null;
+    }
+}
 
 ?>

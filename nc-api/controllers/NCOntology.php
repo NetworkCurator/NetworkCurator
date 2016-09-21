@@ -12,9 +12,9 @@ class NCOntology extends NCLogger {
 
     // db connection and array of parameters are inherited from NCLogger        
     // some variables extracted from $_params, for convenience
-    private $_network;
-    private $_netid;
-    private $_uperm;
+    protected $_network;
+    protected $_netid;
+    protected $_uperm;
 
     /**
      * Constructor 
@@ -29,13 +29,14 @@ class NCOntology extends NCLogger {
      */
     public function __construct($db, $params) {
 
-        parent::__construct($db, $params);
-
         if (isset($params['network_name'])) {
-            $this->_network = $this->_params['network_name'];
+            $this->_network = $params['network_name'];
         } else {
             throw new Exception("Missing required parameter network_name");
         }
+        unset($params['network_name']);
+
+        parent::__construct($db, $params);
 
         // all functions will need to know the network id code
         $this->_netid = $this->getNetworkId($this->_network, true);
@@ -64,6 +65,28 @@ class NCOntology extends NCLogger {
     }
 
     /**
+     * Get a mapping between class_name and class_id
+     *      
+     */
+    public function getOntologyDictionary() {
+        $tc = "" . NC_TABLE_CLASSES;
+        $ta = "" . NC_TABLE_ANNOTEXT;
+
+        $sql = "SELECT class_id, anno_text as class_name 
+           FROM $tc JOIN $ta ON $tc.class_id = $ta.root_id AND $tc.network_id = $ta.network_id
+             WHERE $tc.network_id = ? AND $ta.network_id = ? 
+                   AND anno_type = " . NC_NAME . " AND anno_status = " . NC_ACTIVE;
+        $stmt = $this->qPE($sql, [$this->_netid, $this->_netid]);
+
+        $result = [];
+        while ($row = $stmt->fetch()) {
+            $result[$row['class_id']] = $row['class_name'];
+        }
+
+        return $result;
+    }
+
+    /**
      * Looks all the classes associated with nodes or links in a network
      * 
      * @param logical idkeys
@@ -78,29 +101,56 @@ class NCOntology extends NCLogger {
     public function getOntology($idkeys = true) {
 
         // check that required parameters are defined
-        $params = $this->subsetArray($this->_params, ["ontology"]);
-
-        $tc = "" . NC_TABLE_CLASSES;
-        $tat = "" . NC_TABLE_ANNOTEXT;
-
-        // query the classes table for this network
-        $sql = "SELECT class_id, $tc.parent_id AS parent_id, connector, directional, class_status,
-            anno_text AS class_name
-            FROM $tc 
-              JOIN $tat 
-                  ON $tc.class_id=$tat.root_id AND $tc.network_id=$tat.network_id              
-                WHERE $tc.network_id = ? 
-                  AND $tat.anno_status = " . NC_ACTIVE . "
-                  AND $tat.anno_level = " . NC_NAME;
-        if ($params['ontology'] === "links") {
-            $sql .= " AND connector=1";
-        } else if ($params['ontology'] === "nodes") {
-            $sql .= " AND connector=0";
+        $onto = $this->subsetArray($this->_params, ["ontology"])["ontology"];
+        if ($onto == "links") {
+            $onto = " AND connector=1 ";
+        } else if ($onto == "nodes") {
+            $onto = " AND connector=0 ";
         } else {
-            throw new Exception("Unrecognized ontology");
+            $onto = "";
         }
-        $sql .= " ORDER BY parent_id, class_name";
+
+        // tables used
+        $tc = "" . NC_TABLE_CLASSES;
+        $ta = "" . NC_TABLE_ANNOTEXT;
+        // columns used
+        $tac = $ta . ".anno_type";
+        $tat = $ta . ".anno_text";
+        $tai = $ta . ".anno_id";
+        $tad = $ta . ".datetime";
+        $tao = $ta . ".owner_id";
+
+        // prepare some helper sql bits
+        $sqlcase = [];
+        $sqlgroup = [];
+        $carray = ['name' => NC_NAME, 'title' => NC_TITLE, 'abstract' => NC_ABSTRACT, 'content' => NC_CONTENT];         
+        foreach (['name', 'title', 'abstract', 'content'] AS $what) {
+            $sqlcase[] = "(CASE WHEN $tac = $carray[$what] THEN $tat ELSE '' END) AS $what";
+            $sqlcase[] = "(CASE WHEN $tac = $carray[$what] THEN $tai ELSE '' END) AS " . $what . "_anno_id";
+            $sqlcase[] = "(CASE WHEN $tac = $carray[$what] THEN $tad ELSE '' END) AS " . $what . "_datetime";
+            $sqlcase[] = "(CASE WHEN $tac = $carray[$what] THEN $tao ELSE '' END) AS " . $what . "_owner_id";
+            $sqlgroup[] = "GROUP_CONCAT($what SEPARATOR '') AS class_" . $what . "";
+            $sqlgroup[] = "GROUP_CONCAT($what" . "_anno_id SEPARATOR '') AS " . $what . "_anno_id";
+            $sqlgroup[] = "GROUP_CONCAT($what" . "_datetime SEPARATOR '') AS " . $what . "_datetime";
+            $sqlgroup[] = "GROUP_CONCAT($what" . "_owner_id SEPARATOR '') AS " . $what . "_owner_id";
+        }
+        $sqlcase = implode(", ", $sqlcase);
+        $sqlgroup = implode(", ", $sqlgroup);
+
+        // query the classes table for this network:
+        // pivot annotation types to get rows with names, titles, abstracts, and content
+        $innersql = "SELECT class_id, $tc.parent_id AS parent_id, connector, 
+            directional, class_status, $sqlcase 
+            FROM $tc JOIN $ta ON $tc.class_id=$ta.root_id AND $tc.network_id=$ta.network_id              
+                WHERE $tc.network_id = ? 
+                  AND $ta.anno_status = " . NC_ACTIVE . "
+                  AND $ta.root_id LIKE '" . NC_PREFIX_CLASS . "%' 
+                  AND $tac <=" . NC_CONTENT . " $onto GROUP BY $ta.root_id, $tac";
+        $sql = "SELECT class_id, parent_id, connector, directional, class_status, $sqlgroup            
+            FROM ($innersql) AS T GROUP BY class_id ORDER BY parent_id, class_name";
+        
         $stmt = $this->qPE($sql, [$this->_netid]);
+
         $result = array();
         if ($idkeys == true) {
             while ($row = $stmt->fetch()) {
@@ -115,79 +165,42 @@ class NCOntology extends NCLogger {
     }
 
     /**
-     * Define a new class. The function inserts a new entry into the 
-     * classes table and accompanying annotations in anno_text
+     * Fetches information about one class given its NAME annotation
      * 
-     * @return type
+     * @param string $classname     
+     * @param boolean $throw
+     * 
+     * determines if an exception is thrown when the classname does not produce hits
+     * 
+     * @return array
+     * 
+     * an array with several bits of data describing the ontology class
+     * If the class name is not found, returns null.
+     * 
      * @throws Exception
      */
-    public function createNewClass() {
-
-        // check that required parameters are defined
-        $params = $this->subsetArray($this->_params, ["parent_id",
-            "connector", "directional", "class_name"]);
-
-        if (strlen($params['class_name']) < 2) {
-            throw new Exception("Class name too short");
-        }
-
-        $this->dblock([NC_TABLE_ANNOTEXT, NC_TABLE_CLASSES]);
-        
-        // check if the requested class name and parent_id exist        
-        $sql = "SELECT anno_text, anno_status FROM " . NC_TABLE_ANNOTEXT . " 
-             WHERE network_id = ? AND anno_text = ? AND anno_level = " . NC_NAME;
-        $stmt = $this->qPE($sql, [$this->_netid, $params['class_name']]);
-        $result = $stmt->fetch();
-        if ($result) {
-            if ($result['anno_status'] != NC_ACTIVE) {
-                throw new Exception("Class name already exists, but is inactive");
+    protected function getClassInfoFromName($classname, $throw = true) {
+        $tc = "" . NC_TABLE_CLASSES;
+        $tat = "" . NC_TABLE_ANNOTEXT;
+        $sql = "SELECT class_id, $tc.parent_id AS parent_id, connector, 
+            directional, class_status, anno_text AS class_name, anno_id,  
+            datetime, owner_id
+            FROM $tc JOIN $tat 
+                ON $tc.class_id=$tat.root_id AND $tc.network_id=$tat.network_id
+              WHERE $tc.network_id = ? 
+                  AND $tat.anno_text = ?
+                  AND $tat.anno_type= " . NC_NAME . "
+                  AND $tat.anno_status=" . NC_ACTIVE;
+        $stmt = $this->qPE($sql, [$this->_netid, $classname]);
+        $classinfo = $stmt->fetch();
+        if (!$classinfo) {
+            if ($throw) {
+                throw new Exception("Class '$classname' does not exist");
             } else {
-                throw new Exception("Class name already exists");
+                return null;
             }
         }
-        if ($params['parent_id'] != '') {
-            $sql = "SELECT class_id, connector, directional FROM " .
-                    NC_TABLE_CLASSES . " WHERE class_id = ?";
-            $stmt = $this->qPE($sql, [$params['parent_id']]);
-            $result = $stmt->fetch();
-            if (!$result) {
-                throw new Exception("Parent id does not exist");
-            } else {
-                if ($params['directional'] < $result['directional']) {
-                    throw new Exception("Incompatible directional settings");
-                }
-                if ($params['connector'] != $result['connector']) {
-                    throw new Exception("Incompatible connector settings");
-                }
-            }
-        }
-
-        // if reached here, the class is ok to be inserted
-        $newid = $this->makeRandomID(NC_TABLE_CLASSES, "class_id", "C", NC_ID_LEN);
-
-        // create/insert the new class into the classes table
-        $sql = "INSERT INTO " . NC_TABLE_CLASSES . "
-                   (network_id, class_id, parent_id, connector, directional) 
-                   VALUES 
-                   (:network_id, :class_id, :parent_id, :connector, :directional)";        
-        $pp = ['network_id' => $this->_netid, 'class_id' => $newid,
-            'parent_id' => $params['parent_id'],
-            'connector' => $params['connector'], 'directional' => $params['directional']];
-        $stmt = $this->qPE($sql, $pp);
-        
-        // create an annotation entry (registers the name of the class)         
-        $pp = ['network_id' => $this->_netid,
-            'owner_id' => $this->_uid, 'user_id' => $this->_uid,
-            'root_id' => $newid, 'parent_id' => $newid,
-            'anno_text' => $params['class_name'], 'anno_level' => NC_NAME];
-        $this->insertAnnoText($pp);
-
-        $this->dbunlock();
-        
-        // log the activity
-        $this->logActivity($this->_params['user_id'], $this->_netid, "created new class", $params['class_name'], $newid);
-
-        return $newid;
+        return $classinfo;
     }
 
     /**
@@ -206,22 +219,187 @@ class NCOntology extends NCLogger {
      * when the classid does not match db records
      * 
      */
-    private function getClassInfo($classid) {
-        $tc = "" . NC_TABLE_CLASSES;
-        $tat = "" . NC_TABLE_ANNOTEXT;
-        $sql = "SELECT class_id, $tc.parent_id AS parent_id, connector, 
-            directional, class_status, anno_text AS class_name, anno_id, owner_id
-            FROM $tc JOIN $tat 
-                ON $tc.class_id=$tat.root_id AND $tc.network_id=$tat.network_id
-              WHERE $tc.network_id = ? AND $tc.class_id = ? 
-                  AND $tat.anno_level= " . NC_NAME . "
-                  AND $tat.anno_status=" . NC_ACTIVE;
+    private function getClassRecord($classid) {
+        $sql = "SELECT class_id, parent_id, connector, directional, class_status
+            FROM " . NC_TABLE_CLASSES . "
+                WHERE $tc.network_id = ? AND $tc.class_id = ? ";
         $stmt = $this->qPE($sql, [$this->_netid, $classid]);
         $classinfo = $stmt->fetch();
         if (!$classinfo) {
             throw new Exception("Class $classid does not exist");
         }
         return $classinfo;
+    }
+
+    /**
+     * Helper function performs all db operations associated with creating new ontology class
+     * 
+     * @param array $params
+     * 
+     * array prepared as in createNewClass()
+     * 
+     * @return string
+     * 
+     * string holding the new class id
+     * 
+     * @throws Exception
+     */
+    protected function createNewClassWork($params) {
+
+        if (strlen($params['class_name']) < 2) {
+            throw new Exception("Class name too short");
+        }
+
+        // check if class name is alredy taken
+        $classinfo = $this->getClassInfoFromName($params['class_name'], false);
+        if ($classinfo != null) {
+            throw new Exception("Class name " . $params['class_name'] . " already exists");
+        }
+        // check properties of the parent
+        if ($params['parent_name'] != '') {
+            $parentinfo = $this->getClassInfoFromName($params['parent_name']);
+            if ($params['connector'] != $parentinfo['connector']) {
+                throw new Exception("Incompatible connector settings");
+            }
+            if ($params['directional'] < $parentinfo['directional']) {
+                throw new Exception("Incompatible directional settings");
+            }
+            $parentid = $parentinfo['class_id'];
+        } else {
+            $parentid = '';
+        }
+
+        // if reached here, the class is ok to be inserted
+        $newid = $this->makeRandomID(NC_TABLE_CLASSES, "class_id", NC_PREFIX_CLASS, NC_ID_LEN);
+
+        // create/insert the new class into the classes table
+        $sql = "INSERT INTO " . NC_TABLE_CLASSES . "
+                   (network_id, class_id, parent_id, connector, directional) 
+                   VALUES (?, ?, ?, ?, ?)";
+        $this->qPE($sql, [$this->_netid, $newid, $parentid, $params['connector'], $params['directional']]);
+
+        // create an annotation set (registers the name of the class)          
+        $this->insertNewAnnoSet($this->_netid, $this->_uid, $newid, $params['class_name'], $params['class_name'], $params['class_name'], $params['class_name']);
+
+        return $newid;
+    }
+
+    /**
+     * Define a new class. The function inserts a new entry into the 
+     * classes table and accompanying annotations in anno_text
+     * 
+     * @return type
+     * @throws Exception
+     */
+    public function createNewClass() {
+
+        // check that required parameters are defined
+        $params = $this->subsetArray($this->_params, ["parent_name",
+            "connector", "directional", "class_name"]);
+
+        // perform the db actions
+        $this->dblock([NC_TABLE_ANNOTEXT, NC_TABLE_CLASSES]);
+        $newid = $this->createNewClassWork($params);
+        $this->dbunlock();
+
+        // log the activity
+        $this->logActivity($this->_uid, $this->_netid, "created new class", $params['class_name'], $newid);
+
+        return $newid;
+    }
+
+    /**
+     * 
+     * Helper function applies db transformations on an ontology class
+     * 
+     * @param type $params
+     * @throws Exception
+     */
+    protected function updateClassWork($params) {
+
+        if (strlen($params['class_name']) < 2) {
+            throw new Exception("Class name too short");
+        }
+
+        // fetch the current information about this class
+        $oldinfo = $this->getClassInfoFromName($params['target_name']);
+        $parentid = '';
+        if ($params['parent_name'] != '') {
+            $parentinfo = $this->getClassInfoFromName($params['parent_name']);
+            $parentid = $parentinfo['class_id'];
+        }
+
+        // check that new data is different from existing data
+        $Q1 = $parentid == $oldinfo['parent_id'];
+        $Q2 = $params['class_name'] == $params['target_name'];
+        $Q3 = $params['directional'] == $oldinfo['directional'];
+        $Q4 = $params['connector'] == $oldinfo['connector'];
+        $Q5 = $params['class_status'] == $oldinfo['class_status'];
+        if ($Q1 && $Q2 && $Q3 && $Q4 && $Q5) {
+            throw new Exception("Update is consistent with existing data");
+        }
+        if (!$Q4) {
+            throw new Exception("Cannot toggle connector status");
+        }
+        if (!$Q5) {
+            throw new Exception("Cannot toggle status (use another function for that)");
+        }
+
+        // if the parent is non-trivial, further compatibility checks
+        if ($params['parent_name'] != "") {
+            // connector status must match
+            if ($parentinfo['connector'] != $params['connector']) {
+                throw new Exception("Incompatible class/parent connector status");
+            }
+
+            // for links that are non-directional, make sure the parent is also 
+            if (!$params['directional'] && $params['connector']) {
+                if ($parentinfo['directional'] > $params['directional']) {
+                    throw new Exception("Incompatible directional status (parent is a directional link)");
+                }
+            }
+        }
+
+        // if here, the class needs updating.
+        $result = 0;
+        if (!$Q2) {
+            // here, the class name needs updating, but is it available?
+            $sql = "SELECT anno_id FROM " . NC_TABLE_ANNOTEXT . " WHERE
+                        network_id = ? AND anno_type=" . NC_NAME . " 
+                    AND root_id LIKE 'C%' AND anno_text = ? AND anno_status=" . NC_ACTIVE;
+            $stmt = $this->qPE($sql, [$this->_netid, $params['class_name']]);
+            if ($stmt->fetch()) {
+                throw new Exception("Class name already exists");
+            }
+
+            // update the class name and log the activity
+            $pp = $this->subsetArray($oldinfo, ['owner_id', 'datetime', 'anno_id']);
+            $pp = array_merge($pp, ['network_id' => $this->_netid,
+                'parent_id' => $parentid, 'root_id' => $oldinfo['class_id'],
+                'anno_text' => $params['class_name'], 'anno_type' => NC_NAME]);
+            $this->updateAnnoText($pp);
+            $result += 1;
+        }
+
+        if (!$Q1 || !$Q3) {
+            // update the class structure and log the activity
+            $this->updateClassStructure($oldinfo['class_id'], $parentid, $params['directional'], $params['class_status']);
+            $result +=2;
+        }
+    }
+
+    /**
+     * Helper function applies an update transformation on a 
+     * 
+     * @param type $parentid
+     * @param type $directional
+     * @param type $classstatus
+     * @param type $classid
+     */
+    protected function updateClassStructure($classid, $parentid, $directional, $status) {
+        $sql = "UPDATE " . NC_TABLE_CLASSES . "  SET 
+            parent_id= ? , directional= ?, class_status= ? WHERE class_id = ?";
+        $this->qPE($sql, [$parentid, $directional, $status, $classid]);
     }
 
     /**
@@ -234,122 +412,50 @@ class NCOntology extends NCLogger {
     public function updateClass() {
 
         // check that required inputs are defined
-        $params = $this->subsetArray($this->_params, ["class_id", "parent_id", 
-            "connector", "directional", "class_name", "class_status"]);
+        $params = $this->subsetArray($this->_params, ["target_name", "class_name",
+            "parent_name", "connector", "directional", "class_status"]);
 
-        $tc = "" . NC_TABLE_CLASSES;
-        $tat = "" . NC_TABLE_ANNOTEXT;
+        // make sure the asking user is allowed to curate
+        if ($this->_uperm < NC_PERM_CURATE) {
+            throw new Exception("Insufficient permissions");
+        }
 
         if ($params["class_status"] != 1) {
             throw new Exception("Use a different function to change class status");
         }
 
         $this->dblock([NC_TABLE_ANNOTEXT, NC_TABLE_CLASSES]);
-        
-        // fetch the current information about this class
-        $olddata = $this->getClassInfo($params['class_id']);
-
-        // check that new data is different from existing data
-        $Q1 = $params['parent_id'] == $olddata['parent_id'];
-        $Q2 = $params['class_name'] == $olddata['class_name'];
-        $Q3 = $params['directional'] == $olddata['directional'];
-        $Q4 = $params['connector'] == $olddata['connector'];
-        $Q5 = $params['class_status'] == $olddata['class_status'];
-        if ($Q1 && $Q2 && $Q3 && $Q4 && $Q5) {
-            $this->dbunlock();
-            throw new Exception("Update is consistent with existing data");
-        }
-        // check that the new connector and old connector information matches
-        if (!$Q4) {
-            $this->dbunlock();
-            throw new Exception("Cannot toggle connector status");
-        }
-        if (!$Q5) {
-            $this->dbunlock();
-            throw new Exception("Cannot toggle status (use another function for that)");
-        }
-
-        // if the parent is non-trivial, collect its data
-        if ($params['parent_id'] !== "") {
-            $sql = "SELECT class_id, connector, directional FROM $tc 
-            WHERE class_id = ?";
-            $stmt = $this->qPE($sql, [$params['parent_id']]);
-            $parentdata = $stmt->fetch();
-            if (!$parentdata) {
-                $this->dbunlock();
-                throw new Exception("Could not retrieve parent data");
-            }
-
-            // connector status must match
-            if ($parentdata['connector'] != $params['connector']) {
-                $this->dbunlock();
-                throw new Exception("Incompatible class/parent connector status");
-            }
-
-            // for links that are non-directional, make sure the parent is also 
-            if (!$params['directional'] && $params['connector']) {
-                if ($parentdata['directional'] > $params['directional']) {
-                    $this->dbunlock();
-                    throw new Exception("Incompatible directional status (parent is a directional link)");
-                }
-            }
-        }
-
-        // if here, the class needs updating. 
-        if (!$Q2) {
-            // here, the class name needs updating, but is it available
-            $sql = "SELECT anno_id FROM $tat WHERE
-                     network_id = ? AND anno_level=" . NC_NAME . " AND
-                         root_id LIKE 'C%' AND anno_text = ? AND anno_status=" . NC_ACTIVE;
-            $stmt = $this->qPE($sql, [$this->_netid, $params['class_name']]);
-            if ($stmt->fetch()) {
-                $this->dbunlock();
-                throw new Exception("Class name already exists");
-            }
-
-            // update the class name and log the activity
-            $pp = ['network_id' => $this->_netid, 'user_id' => $this->_uid,
-                'owner_id' => $olddata['owner_id'],
-                'root_id' => $params['class_id'],
-                'parent_id' => $params['class_id'],
-                'anno_text' => $params['class_name'],
-                'anno_id' => $olddata['anno_id'],
-                'anno_level' => NC_NAME];
-            $this->updateAnnoText($pp);
-            $this->logActivity($this->_uid, $this->_netid, "updated class name", $pp['anno_text'], $pp['parent_id']);
-        }
-        if (!$Q1 || !$Q3) {
-            // update the class structure and log the activity
-            $sql = "UPDATE $tc SET
-                      parent_id= :parent_id , directional= :directional,
-                      class_status= :class_status
-                    WHERE network_id = :network_id AND class_id = :class_id";
-            $pp = ['parent_id' => $params['parent_id'],
-                'directional' => $params['directional'],
-                'class_status' => $params['class_status'],
-                'network_id' => $this->_netid,
-                'class_id' => $params['class_id']];
-            $this->qPE($sql, $pp);
-
-            $value = $pp['parent_id'] . "," . $pp['directional'] . "," . $pp['class_status'];
-            $this->logActivity($this->_uid, $this->_netid, "updated class properties for class", $params['class_name'], $value);
-        }
-        
+        $action = $this->updateClassWork($params);
         $this->dbunlock();
-        
+
+        // perform logging based on what actions were performed
+        if ($action % 2 == 1) {
+            $this->logActivity($this->_uid, $this->_netid, "updated class name", $params['target_name'], $params['class_name']);
+        }
+        if ($action > 1) {
+            $value = $params['parent_name'] . "," . $params['directional'] . "," . $params['class_status'];
+            $this->logActivity($this->_uid, $this->_netid, "updated class properties for class", $params['target_name'], $value);
+        }
+
         return 1;
     }
 
     /**
-     * Either deletes or inactivates a given class
+     * Helper function performs DB actions associated with deprecating/deleting an ontology class
+     * 
+     * @param string $classname
+     * @return boolean
+     * 
+     * true if the action results in full deletion of the class
+     * false if the action results in deprecating the class
+     * 
+     * @throws Exception
      */
-    public function removeClass() {
-
-        // check that required inputs are defined
-        $classid = $this->subsetArray($this->_params, ["class_id"])['class_id'];
+    protected function removeClassWork($classname) {
 
         // fetch information about the class
-        $olddata = $this->getClassInfo($classid);
+        $oldinfo = $this->getClassInfoFromName($classname);
+        $classid = $oldinfo['class_id'];
 
         // class exists in db. Check if it has been used already in a nontrivial way
         $tc = "" . NC_TABLE_CLASSES;
@@ -366,7 +472,7 @@ class NCOntology extends NCLogger {
 
         // are there nodes or links that use this class?
         $sql = "SELECT COUNT(*) AS count FROM ";
-        if ($olddata['connector']) {
+        if ($oldinfo['connector']) {
             $sql .= NC_TABLE_LINKS;
         } else {
             $sql .= NC_TABLE_NODES;
@@ -377,6 +483,7 @@ class NCOntology extends NCLogger {
         if (!$result) {
             throw new Exception("Error fetching class usage");
         }
+
         if ($result['count'] == 0) {
             // class is not used - remove it permanently from all tables            
             $sql = "DELETE FROM $tc WHERE network_id = ? AND class_id = ?";
@@ -385,21 +492,70 @@ class NCOntology extends NCLogger {
             $this->qPE($sql, [$this->_netid, $classid]);
             $sql = "DELETE FROM $tan WHERE network_id = ? AND root_id = ?";
             $this->qPE($sql, [$this->_netid, $classid]);
-            // log the event
-            $this->logActivity($this->_uid, $this->_netid, "deleted class", $olddata['class_name'], $classid);
-
-            return true; //"Class has been removed entirely";
+            return true; //"Class has been removed entirely";            
         } else {
             // class is used - set as inactive
             $sql = "UPDATE $tc SET class_status = " . NC_DEPRECATED . " WHERE 
                      network_id = ? AND class_id = ? ";
             $this->qPE($sql, [$this->_netid, $classid]);
-
-            // log the event
-            $this->logActivity($this->_uid, $this->_netid, "deprecated class", $olddata['class_name'], $classid);
-
-            return false; //"Class id has already been used";
+            return false; //"Class id has already been used";            
         }
+    }
+
+    /**
+     * Either deletes or inactivates a given class
+     */
+    public function removeClass() {
+
+        // check that required inputs are defined
+        $classname = $this->subsetArray($this->_params, ["class_name"])['class_name'];
+
+        // make sure the asking user is allowed to curate
+        if ($this->_uperm < NC_PERM_CURATE) {
+            throw new Exception("Insufficient permissions");
+        }
+
+        // perform the removal action
+        $this->dblock([NC_TABLE_CLASSES, NC_TABLE_ANNOTEXT, NC_TABLE_ANNONUM,
+            NC_TABLE_ACTIVITY, NC_TABLE_LINKS, NC_TABLE_NODES]);
+        $action = $this->removeClassWork($classname);
+        $this->dbunlock();
+
+        // log the action
+        if ($action) {
+            $this->logActivity($this->_uid, $this->_netid, "deleted class", $classname, $classname);
+        } else {
+            $this->logActivity($this->_uid, $this->_netid, "deprecated class", $classname, $classname);
+        }
+
+        return $action;
+    }
+
+    /**
+     * Helper function performs DB actions associating with activating a previously deprecated class
+     * 
+     * @param string $classname
+     */
+    protected function activateClassWork($classname) {
+
+        // check class actually needs activating
+        $classinfo = $this->getClassInfoFromName($classname);
+        if ($classinfo['class_status'] != NC_DEPRECATED) {
+            throw new Exception("Class is not deprecated");
+        }
+
+        // parent class must be active
+        if ($classinfo['parent_id'] != '') {
+            $parentinfo = $this->getClassRecord($classinfo['parent_id']);
+            if ($parentinfo['class_status'] != NC_ACTIVE) {
+                throw new Exception("Class cannot be activated because parent is deprecated");
+            }
+        }
+
+        // finally just set new status 
+        $sql = "UPDATE " . NC_TABLE_CLASSES . " SET class_status = " . NC_ACTIVE . "
+            WHERE network_id = ? AND class_id = ? ";
+        $this->qPE($sql, [$this->_netid, $classinfo['class_id']]);
     }
 
     /**
@@ -417,34 +573,19 @@ class NCOntology extends NCLogger {
     public function activateClass() {
 
         // check that required inputs are defined
-        $params = $this->subsetArray($this->_params, ["class_id"]);
+        $classname = $this->subsetArray($this->_params, ["class_name"])['class_name'];
 
         // make sure the asking user is allowed to curate
         if ($this->_uperm < NC_PERM_CURATE) {
             throw new Exception("Insufficient permissions");
         }
 
-        // check class actually needs activating
-        $classinfo = $this->getClassInfo($params['class_id']);
-        if ($classinfo['class_status'] != NC_DEPRECATED) {
-            throw new Exception("Class is not deprecated");
-        }
-
-        // parent class must be active
-        if ($classinfo['parent_id'] != '') {
-            $parentinfo = $this->getClassInfo($classinfo['parent_id']);
-            if ($parentinfo['class_status'] != NC_ACTIVE) {
-                throw new Exception("Class cannot be activated because parent is deprecated");
-            }
-        }
-
-        // finally just set new status 
-        $sql = "UPDATE " . NC_TABLE_CLASSES . " SET class_status = " . NC_ACTIVE . "
-            WHERE network_id = ? AND class_id = ? ";
-        $this->qPE($sql, [$this->_netid, $params['class_id']]);
+        $this->dblock([NC_TABLE_ANNOTEXT, NC_TABLE_CLASSES]);
+        $this->activateClassWork($classname);
+        $this->dbunlock();
 
         // log the activity
-        $this->logActivity($this->_uid, $this->_netid, "re-activated class", $classinfo['class_name'], $params['class_id']);
+        $this->logActivity($this->_uid, $this->_netid, "re-activated class", $classname, $classname);
 
         return true;
     }

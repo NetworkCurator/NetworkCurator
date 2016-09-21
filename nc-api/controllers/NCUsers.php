@@ -183,7 +183,7 @@ class NCUsers extends NCLogger {
             "target_id", "network_name", "permissions"]);
 
         if ($params['target_id'] == "admin") {
-            throw new Exception("Cannot change permissions for admin, haha, nice try.");
+            throw new Exception("Cannot change permissions for admin");
         }
 
         $targetid = $params['target_id'];

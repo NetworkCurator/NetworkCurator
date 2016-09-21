@@ -161,17 +161,16 @@ nc.ui.ClassTreeWidget = function(classdata, islink) {
                 
     // create functions that respond to events on the tree
     // submitting a new class
-    root.delegate("form.nc-classcreate", "submit", function() {
-        var parentid=$(this).attr('val');        
+    root.delegate("form.nc-classcreate", "submit", function() {                
         var newclassname = $(this).find("input").val();            
         var isdirectional = +$(this).find("input.form-check-input").is(":checked");        
-        nc.ontology.createClass(parentid, newclassname, islink, isdirectional); 
+        nc.ontology.createClass(newclassname, islink, isdirectional); 
     });  
     // clicking to edit an existing class
     root.delegate("div.nc-classdisplay button[val='edit']", "click", function() {                        
         var classid = $(this).parent().attr('val');
         // make sure input box shows current classname
-        var classname = $(this).parent().find('span.nc-comment[val="class_name"]').html();        
+        var classname = $(this).parent().find('span.nc-comment[val="nc-classname"]').html();        
         var thisform = root.find("form.nc-classupdate[val='"+classid+"']");
         thisform.find('input').val(classname);
         // toggle visibility of display/form
@@ -249,7 +248,7 @@ nc.ui.ClassTreeRowWidget = function(classrow) {
 nc.ui.toggleClassDisplay = function(obj) {     
     obj.find('> div.nc-classdisplay')
     .toggleClass("nc-deprecated")
-    .find('button,span.nc-comment[val="deprecated"]').toggle();            
+    .find('button,span.nc-comment[val="nc-deprecated"]').toggle();            
     return obj;
 }
 
@@ -263,13 +262,13 @@ nc.ui.ClassDisplay = function(classrow) {
     
     // create a div with one label (possible a directional comment) and one button
     var fg = '<div val="'+classrow['class_id']+'" class="nc-classdisplay">'; 
-    fg+='<span class="nc-comment" val="class_name">'+classrow['class_name']+'</span>';
+    fg+='<span class="nc-comment" val="nc-classname">'+classrow['class_name']+'</span>';
     // forms for links include a checkbox for directional links    
-    fg += '<span class="nc-comment" val="directional">';
+    fg += '<span class="nc-comment" val="nc-directional">';
     if (+classrow['directional']) {
         fg+= ' (directional)';
     }
-    fg += '</span><span class="nc-comment" val="deprecated" style="display: none">[deprecated]</span>';    
+    fg += '</span><span class="nc-comment" val="nc-deprecated" style="display: none">[deprecated]</span>';    
     if (nc.curator) {        
         fg += '<button val="remove" class="pull-right btn btn-primary btn-sm nc-mw-sm nc-hm-3">Remove</button>';
         fg += '<button val="activate" class="pull-right btn btn-primary btn-sm nc-mw-sm nc-hm-3" style="display: none">Activate</button>';                       
@@ -357,8 +356,8 @@ nc.ui.addClassTreeRow = function(classrow) {
         return true;
     }
        
-    // find the target div where to insert the node
-    var parentid = classrow['parent_id'];    
+    // find the target div where to insert the node    
+    var parentid = classrow['parent_id'];        
     var targetdiv = root.find('ol.nc-classtree-children[val="'+parentid+'"]');            
     if (targetdiv.length==0) {
         return false;

@@ -2,7 +2,6 @@
 
 include_once "NCGraphs.php";
 include_once "NCOntology.php";
-include_once "../helpers/NCTimer.php";
 
 /**
  * Class handling requests for data import and export
@@ -12,6 +11,7 @@ include_once "../helpers/NCTimer.php";
  * 
  */
 class NCData extends NCGraphs {
+    // db connection and array of parameters are inherited from NCLogger and NCGraphs
 
     /**
      * Constructor 
@@ -38,20 +38,19 @@ class NCData extends NCGraphs {
 
         $timer = new NCTimer();
         $timer->recordTime("import start");
-        echo "ID1 ";
+        //echo "ID1 ";
         // check that required inputs are defined
         $params = $this->subsetArray($this->_params, ["file_name", "file_desc", "file_content"]);
-//echo "ID2 ";
+        //echo "ID2 ";
         // make sure the asking user is allowed to curate
         if ($this->_uperm < NC_PERM_EDIT) {
             throw new Exception("Insufficient permissions " . $this->_uperm);
         }
-        echo "ID3 ";
+        //echo "ID3 ";
         $filedata = json_decode($params['file_content'], true);
         $filestring = json_encode($filedata, JSON_PRETTY_PRINT);
         unset($params['file_content']);
-
-        echo "ID4 ";
+        //echo "ID4 ";
         // check if the file data matches the requested network
         if (!array_key_exists('network', $filedata)) {
             throw new Exception('Input file must specify network');
@@ -62,92 +61,94 @@ class NCData extends NCGraphs {
         if ($this->_network != $filedata['network'][0]['name']) {
             throw new Exception('Input file does not match network');
         }
-        echo "ID5 ";
 
         $this->dblock([NC_TABLE_FILES, NC_TABLE_NODES, NC_TABLE_LINKS,
             NC_TABLE_CLASSES, NC_TABLE_ANNOTEXT, NC_TABLE_ACTIVITY,
-            NC_TABLE_ANNOTEXT . " AS nodenameT", NC_TABLE_ANNOTEXT . " AS classnameT",
-            NC_TABLE_ANNOTEXT . " AS linknameT"]);
-
-        // store the file on disk
-        $networkdir = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/networks/" . $this->_netid;
-        $fileid = $this->makeRandomID(NC_TABLE_FILES, 'file_id', NC_PREFIX_FILE, NC_ID_LEN);
-        $filepath = $networkdir . "/" . $fileid . ".json";
-        file_put_contents($filepath, $filestring);
-        chmod($filepath, 0777);
-//echo "ID6 ";
+            NC_TABLE_ANNOTEXT." AS nodenameT", NC_TABLE_ANNOTEXT." AS classnameT",
+            NC_TABLE_ANNOTEXT." AS linknameT"]);
+        
+        //echo "ID5 ";
         // store a record of the file in the db        
         $sql = "INSERT INTO " . NC_TABLE_FILES . "
-                   (datetime, file_id, user_id, network_id, file_name, 
+                   (datetime, user_id, network_id, file_name, 
                    file_type, file_desc, file_size) VALUES 
-                   (UTC_TIMESTAMP(), :file_id, :user_id, :network_id, :file_name,
+                   (UTC_TIMESTAMP(), :user_id, :network_id, :file_name,
                    :file_type, :file_desc, :file_size)";
-        $pp = array_merge(['user_id' => $this->_uid, 'file_id' => $fileid, 'network_id' => $this->_netid,
+        $pp = array_merge(['network_id' => $this->_netid, 'user_id' => $this->_uid,
             'file_type' => 'json', 'file_size' => strlen($filestring)], $params);
         $this->qPE($sql, $pp);
-        echo "ID7 ";
+        $fileid = $this->lID();
+        //echo "ID6 ";
+        // store the file on disk
+        $networkdir = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/networks/W" . $this->_netid;
+        $filepath = $networkdir . "/F" . $fileid . ".json";
+        file_put_contents($filepath, $filestring);
+        chmod($filepath, 0777);
+
+        //echo "ID7 ";
         // log the upload
-        $this->logActivity($this->_uid, $this->_netid, "uploaded data file", $params['file_name'], $params['file_desc']);
-//echo "ID8 ";
-        // drop certain indexes on the annotation table        
-
-        echo "ID9 ";
-        // it will be useful to have access to the ontology        
-        $nodeontology = $this->getNodeOntology(false);
-        $linkontology = $this->getLinkOntology(false);
-        echo "ID9.5 ";
-
-        $timer->recordTime("dropINDEX");
-        try {
-            $sql = "ALTER TABLE " . NC_TABLE_ANNOTEXT . " DROP INDEX root_id, DROP INDEX anno_type ";
-            echo "\n".$sql."\n";
-            $this->q($sql);
-        } catch (Exception $ex) {
-            echo "could not drop indexes: ". $ex->getMessage()."\n";
-        }
-        echo "ID10 ";
+        $this->logActivity($this->_uname, $this->_netid, "uploaded data file", $params['file_name'], $params['file_desc']);
+       // echo "ID8 ";
+        // it will be useful to have access to the ontology                
+        $nodeontology = $this->getNodeOntology();
+        $linkontology = $this->getLinkOntology();
+        //echo "ID9 ";
         $status = "";
+        $this->setLogging(false);
+
         // import ontology, nodes, links
         $timer->recordTime("importSummary");
         if ($this->_uperm >= NC_PERM_CURATE) {
             $status .= $this->importSummary($filedata['network'][0], $params["file_name"]);
         }
-        echo "ID 20 ";
+        //echo "ID 20 ";
         $timer->recordTime("importOntology");
         if ($this->_uperm >= NC_PERM_CURATE && array_key_exists('ontology', $filedata)) {
-            $status .= $this->importOntology($nodeontology, $linkontology, $filedata['ontology'], $params["file_name"]);
+            $status .= $this->importOntology($nodeontology, $linkontology, $filedata['ontology'], $params['file_name']);            
+        }
+
+        // avoid further costly work if not necessary
+        if (!array_key_exists('nodes', $filedata) && array_key_exists('links', $filedata)) {
+            return $status;
         }
 
         // re-get the node and link ontology after the adjustments
-        $nodeontology = $this->getNodeOntology(false);
-        $linkontology = $this->getLinkOntology(false);
+        $nodeontology = $this->getNodeOntology();
+        $linkontology = $this->getLinkOntology();
 
-        echo "ID 30 ";
-        $timer->recordTime("importNodes");
-        if ($this->_uperm >= NC_PERM_EDIT && array_key_exists('nodes', $filedata)) {
-            $status .= $this->importNodes($nodeontology, $filedata['nodes'], $params["file_name"]);
-        }
-//echo "ID 40 ";
-        $timer->recordTime("importLinks");
-        if ($this->_uperm >= NC_PERM_EDIT && array_key_exists('links', $filedata)) {
-            $status .= $this->importLinks($nodeontology, $linkontology, $filedata['links'], $params["file_name"]);
-        }
-        echo "ID 50 ";
-        // recreate indexes on annotation table
-        $timer->recordTime("indexing");
+        // drop certain indexes on the annotation table 
         try {
-            $sql = "ALTER TABLE " . NC_TABLE_ANNOTEXT . " ADD INDEX root_id (network_id, root_id),
-                ADD INDEX anno_type (network_id, anno_type)";
+            $sql = "ALTER TABLE " . NC_TABLE_ANNOTEXT . " DROP INDEX root_id, DROP INDEX anno_type ";
             $this->q($sql);
         } catch (Exception $ex) {
-            echo "error creating index: ".$ex->getMessage();
+            echo "could not drop indexes?\n";
         }
 
-        $this->dbunlock();
-        echo "ID 60 ";
+        //echo "ID 30 ";
+        $timer->recordTime("importNodes");
+        if (array_key_exists('nodes', $filedata)) {
+            $status .= $this->importNodes($nodeontology, $filedata['nodes'], $params["file_name"]);
+        }
+        //echo "ID 40 ";
+        $timer->recordTime("importLinks");
+        if (array_key_exists('links', $filedata)) {
+            //$status .= $this->importLinks($nodeontology, $linkontology, $filedata['links'], $params["file_name"]);
+        }
+        //echo "ID 50 ";
+        // recreate indexes on annotation table
+        $timer->recordTime("indexing");
+        try {            
+            $sql = "ALTER TABLE ".NC_TABLE_ANNOTEXT ." ADD INDEX root_id (network_id, root_id),
+                ADD INDEX anno_type (network_id, anno_type)";
+            $this->q($sql);            
+        } catch (Exception $ex) {
+            echo "error creating index: ".$ex->getMessage()."\n";
+        }
+        //echo "ID 60 ";
         $timer->recordTime("import end");
-//echo "importData end\n";
-        return "$status\n" . $timer->showTimes();
+
+        echo $timer->showTimes();
+        return "$status\n";
     }
 
     /**
@@ -159,40 +160,27 @@ class NCData extends NCGraphs {
      */
     private function importSummary($netdata, $filename) {
 
-        // first get the existing summary information
-        $sql = "SELECT datetime, owner_id, anno_text, anno_id, anno_type,
-                    network_id, root_id, parent_id FROM " . NC_TABLE_ANNOTEXT . "
-            WHERE network_id = ? AND anno_type <= " . NC_CONTENT . " 
-                AND root_id = ? AND parent_id = ? AND anno_status = " . NC_ACTIVE;
-        $stmt = $this->qPE($sql, [$this->_netid, $this->_netid, $this->_netid]);
-
-        // copy the results into a local array
-        $info = ['name' => [], 'title' => [], 'abstract' => [], 'content' => []];
-        while ($row = $stmt->fetch()) {
-            $row['user_id'] = $this->_uid;
-            if ($row['anno_type'] == NC_TITLE) {
-                $info['title'] = $row;
-            } else if ($row['anno_type'] == NC_ABSTRACT) {
-                $info['abstract'] = $row;
-            } else if ($row['anno_type'] == NC_CONTENT) {
-                $info['content'] = $row;
-            }
+        $corep = ['network_id' => $this->_netid, 'root_id' => $this->_netid,
+            'root_type' => NC_GRAPH,
+            'parent_id' => $this->_netid, 'user_id' => $this->_uid];
+        if (array_key_exists('title', $netdata)) {
+            $nowinfo = $this->getAnnoInfo($this->_netid, $this->_netid, NC_GRAPH, NC_TITLE);
+            $nowp = array_merge($corep, $nowinfo, ['anno_text' => $netdata['title'], 'anno_type' => NC_TITLE]);           
+            $changecounter += ($this->updateAnnoText($nowp)) > 0;
         }
-
-        // for each defined element, check if it needs updating, and update
-        $changecounter = 0;
-        foreach (['title', 'abstract', 'content'] as $type) {
-            if (array_key_exists($type, $netdata)) {
-                if ($netdata[$type] != $info[$type]['anno_text']) {
-                    $this->updateAnnoText($info[$type]);
-                    $changecounter++;
-                }
-            }
+        if (array_key_exists('abstract', $netdata)) {
+            $nowinfo = $this->getAnnoInfo($this->_netid, $this->_netid, NC_GRAPH, NC_ABSTRACT);
+            $nowp = array_merge($corep, $nowinfo, ['anno_text' => $netdata['abstract'], 'anno_type' => NC_ABSTRACT]);
+            $changecounter += ($this->updateAnnoText($nowp)) > 0;
+        }
+        if (array_key_exists('content', $netdata)) {
+            $nowinfo = $this->getAnnoInfo($this->_netid, $this->_netid, NC_GRAPH, NC_CONTENT);
+            $nowp = array_merge($corep, $nowinfo, ['anno_text' => $netdata['content'], 'anno_type' => NC_CONTENT]);
+            $changecounter += ($this->updateAnnoText($nowp)) > 0;
         }
         if ($changecounter > 0) {
-            $this->logActivity($this->_uid, $this->_netid, "applied annotation changes from file", $filename, $changecounter);
+            $this->logActivity($this->_uname, $this->_netid, "applied annotation changes from file", $filename, $changecounter);
         }
-
         return " -- summary: changed: $changecounter\n";
     }
 
@@ -217,6 +205,8 @@ class NCData extends NCGraphs {
 
     /**
      * 
+     * @param NContology $NConto
+     * controller class instance
      * @param array $nodeonto
      * 
      * array with existing node ontology
@@ -225,7 +215,7 @@ class NCData extends NCGraphs {
      * 
      * array with existing link ontology
      * 
-     * @param array $ontodata
+     * @param array $newdata
      * 
      * array with new ontology data
      * 
@@ -238,18 +228,8 @@ class NCData extends NCGraphs {
     private function importOntology($nodeonto, $linkonto, $newdata, $filename) {
 
         // consider node and link ontology types together
-        $ontos = array_merge($nodeonto, $linkonto);
-        // update the ontology by replacing parent_ids with parent_name
-        $ontodict = $this->getOntologyDictionary();
-        foreach (array_keys($ontos) as $key) {
-            $nowpid = $ontos[$key]['parent_id'];
-            if ($nowpid != '') {
-                $ontos[$key]['parent_name'] = $ontodict[$nowpid];
-            } else {
-                $ontos[$key]['parent_name'] = '';
-            }
-        }
-
+        $onto = array_merge($nodeonto, $linkonto);
+     
         // track number of ontology operations and error messages
         $numadded = 0;
         $numskipped = 0;
@@ -258,10 +238,10 @@ class NCData extends NCGraphs {
 
         for ($i = 0; $i < count($newdata); $i++) {
             if (array_key_exists('name', $newdata[$i])) {
-                $nowname = $newdata[$i]['name'];
+                $nowname = $newdata[$i]['name'];    
                 //echo $nowname." ";
                 try {
-                    $nowresult = $this->processOneOntoEntry($newdata[$i], $ontos);
+                    $nowresult = $this->processOneOntoEntry($newdata[$i], $onto);
                     if ($nowresult == "update") {
                         $numupdated++;
                     } else if ($nowresult == "add") {
@@ -276,7 +256,6 @@ class NCData extends NCGraphs {
             }
         }
 
-        echo "after loop ";
         if ($numadded > 0) {
             $this->logActivity($this->_uid, $this->_netid, "added ontology classes from file", $filename, $numadded);
         }
@@ -289,15 +268,14 @@ class NCData extends NCGraphs {
 
     /**
      * 
-     * @param type $newentry
-     * @param type $ontology
+     * @param array $newentry
+     * @param array $ontology
      */
     private function processOneOntoEntry($newentry, $ontology) {
 
-        // normalize the entry 
-        // i.e. change from fields for user-perspective ("parent") to 
-        // fields for developer-perspective ("parent_id", "parent_name")
+        // normalize the entry
         $classname = $newentry['name'];
+        $newentry['class_name'] = $newentry['name'];
         if (!array_key_exists("connector", $newentry)) {
             $newentry['connector'] = 0;
         }
@@ -309,10 +287,10 @@ class NCData extends NCGraphs {
         } else {
             $newentry['class_status'] = 1;
         }
-        foreach (['name', 'title', 'abstract', 'content'] as $type) {
-            if (array_key_exists($type, $newentry)) {
-                $newentry['class_' . $type] = $newentry[$type];
-            }
+        if (array_key_exists("title", $newentry)) {
+            $newentry['class_title'] = $newentry['title'];
+        } else {
+            $newentry['class_title'] = $newentry['name'];
         }
         if (array_key_exists("parent", $newentry)) {
             $newentry['parent_name'] = $newentry['parent'];
@@ -322,37 +300,30 @@ class NCData extends NCGraphs {
 
         $updated = false;
 
-        if (array_key_exists($classname, $ontology)) {
+        if (array_key_exists($classname, $onto)) {
             if ($newentry['class_status'] == 1) {
                 // perhaps adjust the status
-                if ($ontology[$classname]['class_status'] == 0) {
+                if ($onto[$classname]['class_status'] == 0) {
                     // requires activation
                     // echo "activating " . $classname."\n";
                     $this->activateClassWork($classname);
                     // manually update the ontology here
-                    $ontology[$classname]['class_status'] = 1;
+                    $onto[$classname]['class_status'] = 1;
                     $updated = true;
                 }
-                // perhaps adjust other class structure properties
-                if (!$this->equalOntoData($newentry, $ontology[$classname])) {
+                // perhaps adjust other properties
+                if (!$this->equalOntoData($newentry, $onto[$classname])) {
                     //echo "updating " . $nowdata['class_name']."\n"; 
-                    $newentry['target_name'] = $newentry['name'];                    
+                    $newentry['class_newname'] = $newentry['name'];
+
+                    // call updateClassWork, but it needs: "class_name", "parent_name", 
+                    // "connector", "directional", "class_newname", "class_status"                  
                     $this->updateClassWork($newentry);
                     $updated = true;
                 }
-                // perhaps adjust title abstract content
-                foreach (['class_title', 'class_abstract', 'class_content'] as $type) {
-                    if (array_key_exists($type, $newentry)) {
-                        if ($newentry[$type] != $ontology[$classname][$type]) {
-                            throw new Exception("TODO: implement updates on title, abstract, content");
-                            //$this->updateAnnoText($info[$type]);
-                            //$changecounter++;
-                        }
-                    }
-                }
             } else {
                 // here new entry has 0 status
-                if ($ontology[$nowname]['class_status'] == 1) {
+                if ($onto[$nowname]['class_status'] == 1) {
                     // requires de-activation
                     //echo "removing " . $nowdata['class_name']."\n";
                     $this->removeClassWork($classname);
@@ -362,8 +333,8 @@ class NCData extends NCGraphs {
         } else {
             // class does not exists, so create from scratch            
             //echo "creating class " . $classname."\n";
-            if ($newentry['class_status'] > 0) {               
-                $this->createNewClassWork($newentry);
+            if ($newentry['class_status'] > 0) {
+                $this->createNewClassWork($newentry);              
                 return "add";
             } else {
                 return "skip";
@@ -375,99 +346,6 @@ class NCData extends NCGraphs {
         } else {
             return "skip";
         }
-    }
-
-    /**
-     * 
-     * @param type $newentry
-     * @param type $ontology
-     * @return type
-     */
-    private function processOneOntoEntryOld($newentry, $ontology) {
-        // ***
-        // all procedures require: user_id, network_name
-        // ontology procedures require        
-        // "class_id", "parent_id", "connector", "directional", "class_name", "class_status"        
-        $defaults = ["parent_id" => '', "connector" => 0, "directional" => 0,
-            "class_name" => '', "class_id" => '', "class_status" => 1];
-
-        // loop throw ontodata and make sure all entries have all fields        
-        for ($i = 0; $i < count($ontodata); $i++) {
-            if (array_key_exists('name', $ontodata[$i])) {
-                $ontodata[$i]['class_name'] = $ontodata[$i]['name'];
-                foreach ($defaults as $key => $value) {
-                    if (!array_key_exists($key, $ontodata[$i])) {
-                        $ontodata[$i][$key] = $value;
-                    }
-                }
-            }
-        }
-
-        // track number of ontology operations
-        $numadded = 0;
-        $numskipped = 0;
-        $numupdated = 0;
-
-        for ($i = 0; $i < count($ontodata); $i++) {
-            if (array_key_exists('name', $ontodata[$i])) {
-                $nowdata = $ontodata[$i];
-                $nowname = $nowdata['name'];
-                $NConto->resetParams($nowdata);
-
-                try {
-                    if (array_key_exists($nowname, $onto)) {
-                        $NConto->_params['class_id'] = $onto[$nowname]['class_id'];
-                        if ($nowdata['class_status'] == 1) {
-                            if ($onto[$nowname]['class_status'] == 1) {
-                                // requires update, or nothing
-                                if (!$this->equalOntoData($nowdata, $onto[$nowname])) {
-                                    //echo "updating " . $nowdata['class_name']."\n";                                                                        
-                                    $NConto->updateClass();
-                                    $numupdated++;
-                                } else {
-                                    //echo "skipping equal\n";
-                                    $numskipped++;
-                                }
-                            } else {
-                                // requires activation
-                                //echo "activating " . $nowdata['class_name']."\n";
-                                $NConto->activateClass();
-                                $numupdated++;
-                            }
-                        } else {
-                            if ($onto[$nowname]['class_status'] == 1) {
-                                // requires de-activation
-                                //echo "removing " . $nowdata['class_name']."\n";
-                                $NConto->removeClass();
-                                $numupdated++;
-                            } else {
-                                // no updates on inactive components
-                                //echo "skipping inactive\n";
-                                $numskipped++;
-                            }
-                        }
-                    } else {
-                        // create this new ontology
-                        //echo "creating class " . $nowdata['class_name']."\n";
-                        $NConto->createNewClass();
-                        $numadded++;
-                    }
-                } catch (Exception $ex) {
-                    //print_r($NConto->_params);
-                    $ans .= $ex->getMessage() . "\n";
-                }
-            }
-        }
-
-        if ($numadded > 0) {
-            $this->logActivity($this->_uid, $this->_netid, "added ontology classes from file", $filename, $numadded);
-        }
-        if ($numupdated > 0) {
-            $this->logActivity($this->_uid, $this->_netid, "updated ontology classes from file", $filename, $numupdated);
-        }
-
-
-        return $ans . " -- ontology: added $numadded / updated $numupdated / skipped $numskipped\n";
     }
 
     /**
