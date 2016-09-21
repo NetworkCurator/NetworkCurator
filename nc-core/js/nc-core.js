@@ -17,7 +17,7 @@
  */  
 var nc = {
     // initialize the object with the current username
-    userid: '',
+    username: '',
     firstname: '',
     middlename: '',
     lastname: '',
@@ -95,6 +95,7 @@ nc.init.all = function() {
     nc.init.initMarkdown();
     //alert("going to initComments");
     nc.init.initComments();    
+    //alert("going to ontology");
     nc.init.initOntology();    
     nc.init.initGraph();       
     
@@ -185,7 +186,7 @@ nc.init.initComments = function() {
     if (cbox.length==0) {
         return;
     }
-        
+                  
     // fetch all comments    
     $.post(nc.api, 
     {
@@ -210,7 +211,7 @@ nc.init.initComments = function() {
     }
     
     var rootid = $('#nc-newcomment').attr('val');
-    $('#nc-newcomment').html(nc.ui.CommentBox(nc.userid, rootid, rootid, '', ''));
+    $('#nc-newcomment').html(nc.ui.CommentBox(nc.username, rootid, rootid, '', ''));
 }
 
 /**
@@ -395,7 +396,7 @@ nc.createComment = function(annomd, rootid, parentid) {
         }, this.timeout);         
         // add the comment to the page       
         var comdata = {datetime: 'just now', modified: null, 
-            user_id: nc.userid, owner_id: nc.userid, root_id: rootid,
+            user_name: nc.username, owner_id: nc.username, root_id: rootid,
         parent_id: parentid, anno_id: data['data'], anno_text: annomd};        
         nc.ui.addCommentBox(comdata);
         if (rootid!=parentid) {

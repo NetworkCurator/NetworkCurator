@@ -10,14 +10,14 @@
  * Assumes verification is already performed
  * Encodes data into the session and cookies
  * 
- * @param type $uid
+ * @param type $uname
  * @param type $upw
  * @param type $ufirst
  * @param type $ulast
  * @param type $remember
  */
-function ncSignin($uid, $upw, $ufirst, $ulast, $remember) {
-    $_SESSION['uid'] = $uid;
+function ncSignin($uname, $upw, $ufirst, $ulast, $remember) {
+    $_SESSION['uname'] = $uname;
     $_SESSION['upw'] = $upw;
     $_SESSION['firstname'] = $ufirst;
     $_SESSION['lastname'] = $ulast;
@@ -25,7 +25,7 @@ function ncSignin($uid, $upw, $ufirst, $ulast, $remember) {
     
     // for expiry, use 7 days
     $tim = time() + (7 * 24 * 3600);
-    setcookie("nc_uid", $_SESSION['uid'], $tim, "/");
+    setcookie("nc_uname", $_SESSION['uname'], $tim, "/");
     setcookie("nc_firstname", $_SESSION['firstname'], $tim, "/");
     setcookie("nc_lastname", $_SESSION['lastname'], $tim, "/");
     if ($remember === true) {
@@ -46,13 +46,13 @@ function ncSignout() {
 
     // start a new session as a guest
     session_start();
-    $_SESSION['uid'] = "guest";
+    $_SESSION['uname'] = "guest";
     $_SESSION['upw'] = "guest";
     $_SESSION['firstname'] = "guest";
     $_SESSION['lastname'] = "";
 
     // remove the site cookies
-    $cookies = array("nc_uid", "nc_upw", "nc_firstname", "nc_lastname", "nc_remember");
+    $cookies = array("nc_uname", "nc_upw", "nc_firstname", "nc_lastname", "nc_remember");
     foreach ($cookies as $nowcookie) {
         if (isset($_COOKIE[$nowcookie])) {
             setcookie($nowcookie, "", time() - 1000000, "/");
@@ -94,8 +94,8 @@ function ncSiteName() {
  * 
  */
 function ncIsUserSignedIn() {
-    if (isset($_SESSION['uid'])) {
-        if ($_SESSION['uid'] !== "guest") {
+    if (isset($_SESSION['uname'])) {
+        if ($_SESSION['uname'] !== "guest") {
             return true;
         }
     }

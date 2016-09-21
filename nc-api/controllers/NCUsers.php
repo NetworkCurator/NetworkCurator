@@ -37,55 +37,50 @@ class NCUsers extends NCLogger {
     public function createNewUser() {
 
         // check that required parameters are defined
-        $params = $this->subsetArray($this->_params, ["user_id",
-            "target_firstname", "target_middlename", "target_lastname",
-            "target_email", "target_id", "target_password"]);
+        $params = $this->subsetArray($this->_params, ["target_name", "target_firstname",
+            "target_middlename", "target_lastname", "target_email", "target_password"]);
 
         // create a hashes for the user password
         $targetpwd = password_hash($params['target_password'], PASSWORD_BCRYPT);
         $params['target_password'] = $targetpwd;
 
-        // perform tests on whether this user can create new user?
-        if ($this->_uid !== "admin") {
+        // tests whether this user can create new user?        
+        if ($this->_uid !== NC_USER_ADMIN) {
             throw new Exception("Insufficient permissions to create a user");
         }
 
         $this->dblock([NC_TABLE_USERS]);
-        
-        // check that the network does not already exist?                  
-        $sql = "SELECT user_id FROM " . NC_TABLE_USERS . " WHERE user_id = ? ";
-        //ncInterpolateQuery($sql, $params)
-        $stmt = $this->qPE($sql, [$params['target_id']]);
+
+        // check that the user does not already exist?                  
+        $sql = "SELECT user_id FROM " . NC_TABLE_USERS . " WHERE user_name = ? ";
+        $stmt = $this->qPE($sql, [$params['target_name']]);
         if ($stmt->fetchAll()) {
-            throw new Exception("Target user id exists");
+            throw new Exception("Target user exists");
         }
 
         // if reached here, create the new user  
         // create a new external password code (for cookies)        
         $params['target_extpwd'] = md5(makeRandomHexString(32));
-        
+
         // write the target user into the database        
         $sql = "INSERT INTO " . NC_TABLE_USERS . "
-                   (datetime, user_id, user_firstname, user_middlename, user_lastname, 
+                   (datetime, user_name, user_firstname, user_middlename, user_lastname, 
                    user_email, user_pwd, user_extpwd, user_status) VALUES 
-                   (UTC_TIMESTAMP(), :target_id, :target_firstname,
+                   (UTC_TIMESTAMP(), :target_name, :target_firstname,
                   :target_middlename, :target_lastname, :target_email, 
                   :target_password, :target_extpwd, 1)";
-        $pp = $this->subsetArray($params, ['target_id',
-            'target_firstname', 'target_middlename', 'target_lastname',
-            'target_email', 'target_password', 'target_extpwd']);
-        $stmt = $this->qPE($sql, $pp);
-        
+        $stmt = $this->qPE($sql, $params);
+
         $this->dbunlock();
-        
+
         // create a user identicon        
         $userimg = new NCIdenticons();
-        $imgfile = dirname(__FILE__) . "/../../nc-data/users/" . $pp['target_id'] . ".png";
+        $imgfile = dirname(__FILE__) . "/../../nc-data/users/" . $pp['target_name'] . ".png";
         imagepng($userimg->getIdenticon(), $imgfile);
 
         // log the activity        
         $fullname = ncFullname($this->_params, $prefix = "target_");
-        $this->logActivity($this->_uid, '', "created user account", $this->_params['target_id'], $fullname);
+        $this->logActivity($this->_uid, '', "created user account", $this->_params['target_name'], $fullname);
 
         return true;
     }
@@ -107,19 +102,19 @@ class NCUsers extends NCLogger {
     public function verify() {
 
         // check that required parameters are defined
-        $params = $this->subsetArray($this->_params, ["target_id", "target_password"]);
+        $params = $this->subsetArray($this->_params, ["target_name", "target_password"]);
 
         // look up the user in the database
-        $sql = "SELECT user_id, user_pwd, user_extpwd, user_firstname, 
+        $sql = "SELECT user_name, user_pwd, user_extpwd, user_firstname, 
             user_middlename, user_lastname 
-            FROM " . NC_TABLE_USERS . " WHERE BINARY user_id = ? ";
-        $stmt = $this->qPE($sql, [$params['target_id']]);
+            FROM " . NC_TABLE_USERS . " WHERE BINARY user_name = ? ";
+        $stmt = $this->qPE($sql, [$params['target_name']]);
         $result = $stmt->fetch();
         if (!$result) {
             throw new Exception("Invalid user id or password");
         }
         if (!password_verify($params['target_password'], $result['user_pwd'])) {
-            throw new Exception("Invalid user id or password");
+            throw new Exception("Invalid user name or password");
         }
         // erase the password hash from the output
         $result['user_pwd'] = '';
@@ -143,24 +138,19 @@ class NCUsers extends NCLogger {
     public function confirm() {
 
         // check that required parameters are defined
-        $params = $this->subsetArray($this->_params, ["user_id", "user_extpwd"]);
+        $params = $this->subsetArray($this->_params, ["user_extpwd"]);
 
-        // first check if the user is a guest
-        if ($this->_uid === "guest" && $params['user_extpwd'] === "guest") {
-            return true;
+        // first check if the user is a guest        
+        if ($this->_uid === NC_USER_GUEST) {
+            if ($params['user_extpwd'] === $this->_upw) {
+                return true;
+            } else {
+                throw new Exception("Invalid user confirmation");
+            }
         }
-
-        // Verify that user is in database         
-        $sql = "SELECT user_extpwd FROM " . NC_TABLE_USERS . " 
-            WHERE BINARY user_id = ?";
-        $stmt = $this->qPE($sql, [$this->_uid]);
-        $result = $stmt->fetch();
-        if (!$result) {
-            throw new Exception("Invalid user_id");
-        }
-
+       
         // Retrieve password from result. Validate if correct        
-        if ($params['user_extpwd'] === $result['user_extpwd']) {
+        if ($params['user_extpwd'] === $this->_upw) {
             return true;
         } else {
             throw new Exception("Incorrect confirmation code");
@@ -179,14 +169,14 @@ class NCUsers extends NCLogger {
     public function updatePermissions() {
 
         // check that required parameters are defined
-        $params = $this->subsetArray($this->_params, ["user_id",
-            "target_id", "network_name", "permissions"]);
+        $params = $this->subsetArray($this->_params, ["target_name", 
+            "network_name", "permissions"]);
 
-        if ($params['target_id'] == "admin") {
-            throw new Exception("Cannot change permissions for admin, haha, nice try.");
+        if ($params['target_name'] == "admin") {
+            throw new Exception("Cannot change permissions for admin");
         }
 
-        $targetid = $params['target_id'];
+        $targetname = $params['target_name'];
         $newperm = (int) $params['permissions'];
 
         // get the netid that matches the network name
@@ -203,19 +193,21 @@ class NCUsers extends NCLogger {
         if ($newperm < NC_PERM_NONE || $newperm > NC_PERM_CURATE) {
             throw new Exception("Invalid permission code $newperm");
         }
-        if ($targetid == "guest" && $newperm > NC_PERM_VIEW) {
+        if ($targetname == "guest" && $newperm > NC_PERM_VIEW) {
             throw new Exception("Guest user cannot have high permissions");
         }
         $sql = "SELECT user_id, user_firstname, user_middlename, user_lastname 
-            FROM " . NC_TABLE_USERS . " WHERE BINARY user_id = ?";
-        $stmt = $this->qPE($sql, [$targetid]);
+            FROM " . NC_TABLE_USERS . " WHERE BINARY user_name = ?";
+        $stmt = $this->qPE($sql, [$targetname]);
         $result = $stmt->fetch();
         if (!$result) {
             throw new Exception("Target user does not exist");
         }
+        $targetid = $result['user_id'];
+        unset($result['user_id']);
         $userinfo = array();
-        $userinfo[$targetid] = $result;
-        $userinfo[$targetid]['permissions'] = $newperm;
+        $userinfo[$targetname] = $result;
+        $userinfo[$targetname]['permissions'] = $newperm;
 
         // make sure the new permission is different from the existing value
         $targetperm = $this->getUserPermissionsNetID($netid, $targetid);
@@ -230,7 +222,7 @@ class NCUsers extends NCLogger {
         $stmt = $this->qPE($sql, [$targetid, $netid, $newperm, $newperm]);
 
         // log the activity           
-        $this->logActivity($this->_uid, $netid, "updated permissions for user", $targetid, $newperm);
+        $this->logActivity($this->_uname, $netid, "updated permissions for ", $targetname, $newperm);
 
         return $userinfo;
     }
@@ -245,35 +237,28 @@ class NCUsers extends NCLogger {
     public function queryPermissions() {
 
         // check that required parameters are defined
-        $params = $this->subsetArray($this->_params, ["user_id",
-            "target_id", "network_name"]);
+        $params = $this->subsetArray($this->_params, ["target_name", "network_name"]);
 
         // get network id
         $netid = $this->getNetworkId($params['network_name']);
 
         // the asking user should be the site administrator
         // a user asking for their own permissions, or curator on a network
-        if ($this->_uid != $params['target_id']) {
+        if ($this->_uname != $params['target_name']) {
             $uperm = $this->getUserPermissionsNetID($netid, $this->_uid);
             if ($uperm < NC_PERM_CURATE) {
                 throw new Exception("Insufficient permissions");
             }
         }
 
-        // make sure the target user exist
-        $sql = "SELECT user_id FROM " . NC_TABLE_USERS . "
-            WHERE BINARY user_id = ?";
-        $stmt = $this->qPE($sql, [$params['target_id']]);
-        if (!$stmt->fetch()) {
-            throw new Exception("Target user does not exist");
-        }
+        $targetinfo = $this->getUserData($params['target_name']);        
 
-        if ($netid === "") {
-            throw new Exception("Target network does not exist");
+        if ($netid < 0) {
+            throw new Exception("Network does not exist");
         }
 
         // if reached here, all is well. Get the permission level
-        $targetperm = $this->getUserPermissionsNetID($netid, $params['target_id']);
+        $targetperm = $this->getUserPermissionsNetID($netid, (int) $targetinfo['user_id']);
         return $targetperm;
     }
 

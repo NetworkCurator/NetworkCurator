@@ -40,7 +40,7 @@ $md = [];
     <div class="container">
         <div class="col-sm-12">
             <?php
-            if ($uid === "admin") {
+            if ($uname === "admin") {
                 echo "<h4>Admin links</h4>";
                 echo "<div class='btn-toolbar'>";
                 echo "<a class='btn btn-success' role='button' href='?page=admin&new=network'>Create New Network</a>";

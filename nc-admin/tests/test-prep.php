@@ -20,7 +20,7 @@ $sql = "SELECT user_id, user_pwd, user_extpwd FROM " . NC_TABLE_USERS . "
           WHERE BINARY user_id='admin'";
 $stmt = $db->query($sql);
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
-$uid = 'admin';
+$uname = 'admin';
 $upw = $row['user_extpwd'];
 
 
@@ -29,6 +29,23 @@ $upw = $row['user_extpwd'];
 // echo "\n\n";
 $NCapi = new GeneralApiCaller(NC_APP_ID, NC_APP_KEY, NC_API_PATH);
 
+
+// helper function to attempt api requests and provide feedback
+function tryreport($api, $params, $return = false) {
+    $result = null;
+    try {
+        $result = $api->sendRequest($params);
+        echo "\tok\n";
+    } catch (Exception $ex) {
+        echo "\tErr: ".$ex->getMessage()."\n";
+    }
+    
+    if ($result) {
+        return $result;
+    } else {
+        return null;
+    }
+}
 
 
 ?>

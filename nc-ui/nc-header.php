@@ -21,7 +21,7 @@
 $firstname = $_SESSION['user_firstname'];
 $middlename = $_SESSION['user_middlename'];
 $lastname = $_SESSION['user_lastname'];
-echo "nc.userid='$uid', 
+echo "nc.username='$uname', 
           nc.firstname='$firstname', 
           nc.middlename='$middlename', 
           nc.lastname='$lastname',

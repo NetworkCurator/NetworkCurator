@@ -3,7 +3,7 @@
  * Entry point page for an individual network
  * 
  * Assumes some variables are already set by index.php
- * $uid, $network, $NCApi
+ * $network, $NCApi
  * 
  */
 

@@ -6,6 +6,7 @@
 echo "\n";
 echo "NetworkCurator installation\n\n";
 include "../../nc-api/helpers/nc-generic.php";
+include "../config/nc-constants.php";
 
 // load the settings (also local settings)
 $localfile = "install-settings-local.php";
@@ -40,6 +41,9 @@ $textcol = " TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
 $statuscol = " TINYINT NOT NULL DEFAULT 1";
 $dblcol = " DOUBLE NOT NULL DEFAULT 0.0";
 $datecol = " DATETIME NOT NULL";
+$intcol = " INT NOT NULL ";
+$intauto = " INT NOT NULL AUTO_INCREMENT ";
+
 
 $engine = " ENGINE = InnoDB ";
 //$engine = " ENGINE = MyISAM ";
@@ -92,8 +96,9 @@ sqlreport($db, $sql);
 $tabname = $tp . "users";
 echo "Creating table $tabname:";
 $sql = "CREATE TABLE $tabname (
-  datetime $datecol,
-  user_id $vc32col,
+  user_id $intauto,  
+  datetime $datecol,  
+  user_name $vc64col,    
   user_firstname $vc64col,
   user_middlename $vc64col, 
   user_lastname $vc64col,
@@ -113,8 +118,8 @@ sqlreport($db, $sql);
 $tabname = $tp . "permissions";
 echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (
-  user_id $vc32col,
-  network_id $vc32col,    
+  user_id $intcol,
+  network_id $intcol,    
   permissions INT NOT NULL DEFAULT 0,
   UNIQUE KEY user_network (user_id, network_id),
   KEY network_id (network_id)
@@ -128,8 +133,8 @@ sqlreport($db, $sql);
 $tabname = $tp . "networks";
 echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (  
-  network_id $vc32col,       
-  owner_id $vc32col,  
+  network_id $intauto,       
+  owner_id $intcol,  
   PRIMARY KEY (network_id)  
 ) $engine COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
@@ -141,9 +146,9 @@ sqlreport($db, $sql);
 $tabname = $tp . "nodes";
 echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (  
-  network_id $vc32col,
-  node_id $vc32col,
-  class_id $vc32col,    
+  node_id $intauto,
+  network_id $intcol,  
+  class_id $intcol,    
   node_status $statuscol,
   PRIMARY KEY (node_id),
   KEY network_id (network_id)
@@ -157,11 +162,11 @@ sqlreport($db, $sql);
 $tabname = $tp . "links";
 echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (  
-  network_id $vc32col,
-  link_id $vc32col,
-  source_id $vc32col,
-  target_id $vc32col,
-  class_id $vc32col,  
+  link_id $intauto,
+  network_id $intcol,  
+  source_id $intcol,
+  target_id $intcol,
+  class_id $intcol,  
   link_status $statuscol,
   PRIMARY KEY (link_id),
   KEY source_id (source_id),
@@ -178,12 +183,11 @@ sqlreport($db, $sql);
 $tabname = $tp . "classes";
 echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (  
-  network_id $vc32col,
-  class_id $vc32col,       
-  parent_id $vc32col,
+  class_id $intauto, 
+  network_id $intcol,        
+  parent_id $intcol,
   connector TINYINT NOT NULL DEFAULT 0,
-  directional TINYINT NOT NULL DEFAULT 0,
-  class_score $dblcol,
+  directional TINYINT NOT NULL DEFAULT 0,  
   class_status $statuscol,
   PRIMARY KEY (class_id)    
 ) $engine COLLATE utf8_unicode_ci";
@@ -197,19 +201,21 @@ sqlreport($db, $sql);
 $tabname = $tp . "anno_text";
 echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (    
+  anno_id $intauto,
   datetime DATETIME NOT NULL,
+  owner_id $intcol,
   modified DATETIME,
-  anno_id $vc32col,
-  anno_level INT NOT NULL DEFAULT 0,
-  owner_id $vc32col,
-  user_id $vc32col,  
-  network_id $vc32col,  
-  root_id $vc32col,
-  parent_id $vc32col,  
+  user_id $intcol, 
+  anno_type $intcol,
+  network_id $intcol,  
+  root_id $intcol,
+  root_type $intcol,
+  parent_id $intcol,  
+  anno_name $vc32col,    
   anno_text $textcol,  
   anno_status $statuscol,  
-  KEY level (network_id, anno_level), 
-  KEY anno_id (anno_id),
+  PRIMARY KEY anno_id (anno_id),
+  KEY anno_type (network_id, anno_type),   
   KEY root_id (network_id, root_id)  
 ) $engine COLLATE utf8_unicode_ci";
 sqlreport($db, $sql);
@@ -220,17 +226,18 @@ echo "Creating table $tabname:";
 $sql = "CREATE TABLE $tabname (  
   datetime DATETIME NOT NULL,
   modified DATETIME,
-  anno_id $vc32col,
-  anno_level INT NOT NULL DEFAULT 0,
-  owner_id $vc32col,
-  user_id $vc32col,  
-  network_id $vc32col,  
-  root_id $vc32col,
-  parent_id $vc32col,      
+  anno_id $intauto,
+  anno_type INT NOT NULL DEFAULT 0,
+  owner_id $intcol,
+  user_id $intcol,  
+  network_id $intcol,  
+  root_id $intcol,
+  root_type $intcol,
+  parent_id $intcol,      
   anno_value $dblcol,
   anno_valueunit $vc24col,  
   anno_status $statuscol,
-  KEY level (network_id, anno_level),
+  KEY anno_type (network_id, anno_type),
   KEY anno_id (anno_id),
   KEY root_id (network_id, root_id)
 ) $engine COLLATE utf8_unicode_ci";
@@ -244,10 +251,10 @@ sqlreport($db, $sql);
 $tabname = $tp . "datafiles";
 echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (  
-  datetime DATETIME NOT NULL,
-  file_id $vc32col,
-  user_id $vc32col,  
-  network_id $vc32col,    
+  file_id $intauto,
+  datetime DATETIME NOT NULL,  
+  user_id $intcol,  
+  network_id $intcol,    
   file_name $vc256col,  
   file_type $vc24col,
   file_desc $vc256col,
@@ -266,8 +273,8 @@ $tabname = $tp . "activity";
 echo "Creating table $tabname: ";
 $sql = "CREATE TABLE $tabname (
   datetime $datecol,
-  user_id $vc32col,
-  network_id $vc32col,    
+  user_name $vc32col,
+  network_id $intcol,    
   action $vc64col,
   target_name $vc32col,  
   value $textcol, 
@@ -284,7 +291,7 @@ $tabname = $tp . "log";
 echo "Creating table $tabname:\t";
 $sql = "CREATE TABLE $tabname (
   datetime $datecol,
-  user_id $vc32col,
+  user_id $intcol,
   user_ip $vc128col,
   controller $vc64col,
   action $vc64col,
@@ -298,6 +305,9 @@ sqlreport($db, $sql);
  * Create required users
  * -------------------------------------------------------------------------- */
 
+// set mode to allow the guest user to have user_id=0
+$db->query("SET SQL_MODE=NO_AUTO_VALUE_ON_ZERO");
+               
 // Creating users here - exceptionally "manually" through a direct table insert
 // On the web app, all other users should be inserted via the NCUsers class
 echo "\nCreating users:\t\t";
@@ -305,12 +315,12 @@ $userstable = $tp . "users";
 $adminpass = password_hash(NC_SITE_ADMIN_PASSWORD, PASSWORD_BCRYPT);
 $adminextp = md5(makeRandomHexString(60));
 $sql = "INSERT INTO $userstable 
-            (datetime, user_id, user_pwd, user_extpwd, 
+            (user_id, datetime, user_name, user_pwd, user_extpwd, 
             user_firstname, user_middlename, user_lastname,
             user_email, user_status) VALUES 
-            (UTC_TIMESTAMP(), 'admin',  '$adminpass', '$adminextp', 
+            (".NC_USER_ADMIN.", UTC_TIMESTAMP(), 'admin',  '$adminpass', '$adminextp', 
                 'Administrator', '', '', '', 1) , 
-            (UTC_TIMESTAMP(), 'guest',  '', 'guest', 
+            (".NC_USER_GUEST.", UTC_TIMESTAMP(), 'guest',  '', 'guest', 
             'Guest', '', '', '', 1)";
 sqlreport($db, $sql);
 
@@ -336,7 +346,7 @@ imagepng($img, $imgfile);
 echo "\nLogging installation (1/2):";
 $logtable = $tp . "activity";
 $sql = "INSERT INTO $logtable 
-          (datetime, user_id, network_id, target_name, action, value) VALUES 
+          (datetime, user_name, network_id, target_name, action, value) VALUES 
           (UTC_TIMESTAMP(), 'admin', '', '',
           'installed the NetworkCurator database', '')";
 sqlreport($db, $sql);
@@ -346,7 +356,7 @@ echo "Logging installation (2/2):";
 $logtable = $tp . "log";
 $sql = "INSERT INTO $logtable 
           (datetime, user_id, action, value) VALUES 
-          (UTC_TIMESTAMP(), 'admin', 'install', '')";
+          (UTC_TIMESTAMP(), -1, 'install', '')";
 sqlreport($db, $sql);
 
 // close the connection

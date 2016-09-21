@@ -6,10 +6,10 @@
 ?>
 
 <h1>Login</h1>
-<form role="form" onsubmit="nc.users.sendLogin('fg-userid', 'fg-password', 'fg-remember'); return false;">    
-    <div id="fg-userid" class="form-group">
-        <label for="email">User id:</label>
-        <input type="text" class="form-control" placeholder="User id">
+<form role="form" onsubmit="nc.users.sendLogin('fg-username', 'fg-password', 'fg-remember'); return false;">    
+    <div id="fg-username" class="form-group">
+        <label for="email">Username (id):</label>
+        <input type="text" class="form-control" placeholder="Username">
     </div>    
     <div id="fg-password" class="form-group">
         <label for="pwd">Password:</label>

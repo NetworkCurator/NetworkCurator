@@ -40,7 +40,7 @@ nc.users.sendLogin = function(fgid, fgpwd, fgremember) {
     {
         controller: "NCUsers", 
         action: "verify",        
-        target_id: $('#'+fgid+' input').val(),
+        target_name: $('#'+fgid+' input').val(),
         target_password: $('#'+fgpwd+' input').val(),
         remember: $('#'+fgremember+' input').is(':checked')
     }, function(data) {         
@@ -48,9 +48,9 @@ nc.users.sendLogin = function(fgid, fgpwd, fgremember) {
         data = JSON.parse(data);
         if (nc.utils.checkAPIresult(data)) {
             if (data['success']==false) {
-                $('#fg-userid,#fg-password').addClass('has-error has-feedback');                
-                $('#fg-userid label').html("Please verify the username is correct:");
-                $('#fg-password label').html("Please verify the password is correct:");
+                $('#'+fgid+',#'+fgpwd).addClass('has-error has-feedback');                
+                $('#'+fgid+' label').html("Please verify the username is correct:");
+                $('#'+fgpwd+' label').html("Please verify the password is correct:");
             } else {
                 window.location.replace("?page=front");
             }
@@ -75,14 +75,14 @@ nc.users.sendLogin = function(fgid, fgpwd, fgremember) {
 nc.users.lookup = function() {
         
     // find the value associated with the selected permission level
-    var idfield = $("#nc-form-permissions input");    
-    var targetid = idfield.val();
+    var namefield = $("#nc-form-permissions input");    
+    var targetname = namefield.val();
 
     var btn = $("#nc-permissions-lookup");    
         
     // if reached here, still trying to lookup the user, check if is is well-formed              
-    if (nc.utils.checkString(targetid, 1)==0) { 
-        nc.msg('Hey!', 'Invalid user id');  
+    if (nc.utils.checkString(targetname, 1)==0) { 
+        nc.msg('Hey!', 'Invalid username');  
         return false;
     }
         
@@ -94,7 +94,7 @@ nc.users.lookup = function() {
         controller: "NCUsers", 
         action: "queryPermissions", 
         network_name: nc.network,
-        target_id: targetid        
+        target_name: targetname        
     }, function(data) {        
         nc.utils.alert(data);        
         data = JSON.parse(data);
@@ -106,7 +106,7 @@ nc.users.lookup = function() {
                 if (data['data']==0) {                    
                     // the target user exists and indeed cannot view the network
                     // offer to grant permissions
-                    $('#nc-grantconfirm-user').html(targetid);                    
+                    $('#nc-grantconfirm-user').html(targetname);                    
                     $('#nc-grantconfirm-network').html(nc.network);                    
                     $('#nc-grantconfirm-modal').modal('show');                    
                 } else {
@@ -114,7 +114,7 @@ nc.users.lookup = function() {
                 }                
             }
         }
-        idfield.prop("disabled", false);
+        namefield.prop("disabled", false);
     });
     return false;
 }
@@ -182,18 +182,18 @@ nc.users.grantView = function() {
 /**
  * Sends an api request to update permissions on a network
  * 
- * @param targetid - target user id
+ * @param targetname - target user_name
  * @param perm - integer, new permission level
  * @param f - function invoked to process api response
  * 
  */
-nc.users.updatePermissionsGeneric = function(targetid, perm, f) {
+nc.users.updatePermissionsGeneric = function(targetname, perm, f) {
     $.post(nc.api, 
     {
         controller: "NCUsers", 
         action: "updatePermissions", 
         network_name: nc.network,
-        target_id: targetid,
+        target_name: targetname,
         permissions: perm
     }, f );   
 }

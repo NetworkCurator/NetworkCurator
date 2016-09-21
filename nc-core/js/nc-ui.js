@@ -37,10 +37,10 @@ nc.ui.PermissionsWidget = function(udata) {
             
     // internal function for making a button
     // val - 0-3 determines label on the button
-    // uid - the user id (used to disactivate some buttons for the guest user)
+    // uname - the user id (used to disactivate some buttons for the guest user)
     // perm - 0-3 permission level for this user
     // returns an <label></label> object
-    function ncuiPB(val, uid, perm) {
+    function ncuiPB(val, uname, perm) {
         // convert a numeric value into a label        
         var vl = ["None", "View", "Comment", "Edit", "Curate"];
         var lab = vl[val];       
@@ -49,7 +49,7 @@ nc.ui.PermissionsWidget = function(udata) {
         } else {
             perm = "";
         }
-        if (uid=="guest" && val>1) perm = " disabled";            
+        if (uname=="guest" && val>1) perm = " disabled";            
                 
         // create a <label> html 
         var html = '<label class="btn btn-default btn-sm nc-mw-sm'+perm+'">';
@@ -61,27 +61,27 @@ nc.ui.PermissionsWidget = function(udata) {
     var ans = $('<div></div>');
     $.each(udata, function(key, val){ 
         
-        var uid = val['user_id'];        
+        var uname = val['user_name'];        
         var up = val['permissions'];        
-        var nowlab = uid;                
-        if (uid != "guest") {            
+        var nowlab = uname;                
+        if (uname != "guest") {            
             nowlab += " ("+val['user_firstname']+" "+val['user_middlename']+" "+val['user_lastname']+")";
         }
         
         // structure will be form > form-group with (label, btn-group, btn)
-        var html = '<form class="form-inline nc-form-permissions" val="'+uid+'" onsubmit="return false;">';        
+        var html = '<form class="form-inline nc-form-permissions" val="'+uname+'" onsubmit="return false;">';        
         html += '<div class="form-group" style="width:100%">';
         html += '<label class="col-form-label nc-fg-name">'+nowlab+'</label>';
         html += '<span><div class="btn-group" data-toggle="buttons">';                
         for (var pp=0; pp<5; pp++) 
-            html += ncuiPB(pp, uid, up);   
+            html += ncuiPB(pp, uname, up);   
         html += '</div>'; // closes the btn-group
-        html += '<button class="btn btn-success btn-sm" val="'+uid+'">Update</button></span>';        
+        html += '<button class="btn btn-success btn-sm" val="'+uname+'">Update</button></span>';        
         html += '</div></form>';                
         
         html = $(html);
         html.find('button').click(function() { 
-            nc.users.updatePermissions(uid); 
+            nc.users.updatePermissions(uname); 
         });
         
         // append to the main answer
@@ -419,7 +419,7 @@ nc.ui.populateActivityArea = function(data) {
 nc.ui.OneLogEntry = function(data) {
     var html = '<div class="media nc-log-entry">';    
     html += '<span class="nc-log-entry-date">'+data['datetime']+' </span>';
-    html+= '<span class="nc-log-entry-user">'+data['user_id']+' </span>';
+    html+= '<span class="nc-log-entry-user">'+data['user_name']+' </span>';
     html += '<span class="nc-log-entry-action">'+data['action']+' </span>';
     html += '<span class="nc-log-entry-target">'+data['target_name']+' </span>';
     if (data['value'].length>0) {
@@ -585,7 +585,7 @@ nc.ui.AnnoEditBox = function() {
 /**
  * Creates a box to display a comment or type in a comment
  */
-nc.ui.CommentBox = function(uid, rootid, parentid, annoid, annomd) {
+nc.ui.CommentBox = function(uname, rootid, parentid, annoid, annomd) {
     
     // determine if this is a primary comment or a response to a previous comment
     var commentclass = "nc-comment-response";
@@ -595,7 +595,7 @@ nc.ui.CommentBox = function(uid, rootid, parentid, annoid, annomd) {
     
     var html = '<div class="media" val="'+annoid+'">';    
     html += '<a class="media-left">';
-    html += '<img class="media-object '+commentclass+'" src="nc-data/users/'+uid+'.png"></a>';  
+    html += '<img class="media-object '+commentclass+'" src="nc-data/users/'+uname+'.png"></a>';  
     html += '<div class="media-body" val="'+annoid+'"></div></div>';
     
     var commentbox = $(html);
@@ -621,7 +621,7 @@ nc.ui.CommentBox = function(uid, rootid, parentid, annoid, annomd) {
         var rhtml = '<a val="'+annoid+'" class="nc-comment-response">Respond to the comment</a>';
         rhtml = $(rhtml);
         rhtml.click(function() {            
-            var responsebox = nc.ui.CommentBox(nc.userid, rootid, annoid, '', '');            
+            var responsebox = nc.ui.CommentBox(nc.username, rootid, annoid, '', '');            
             $(this).hide().parent().append(responsebox);
             responsebox.find('a.nc-save').off("click").show()
             .click(function() {                
@@ -657,7 +657,7 @@ nc.ui.addCommentBox = function(comdata) { //datetime, ownerid, rootid, parentid,
     var html = '<div class="nc-mb-5"><span class="nc-log-entry-date">'+comdata.datetime+'</span>';    
     html += '<span class="nc-log-entry-user">'+comdata.owner_id+'</span>';     
     if (comdata.modified !=null) {
-        html += '<span class="nc-log-entry-date"> (edited '+comdata.modified+' by <span class="nc-log-entry-user">'+comdata.user_id+'</span>)</span>';        
+        html += '<span class="nc-log-entry-date"> (edited '+comdata.modified+' by <span class="nc-log-entry-user">'+comdata.user_name+'</span>)</span>';        
     }
     html+='</div>';        
     var commentbox = nc.ui.CommentBox(comdata.owner_id, comdata.root_id, 

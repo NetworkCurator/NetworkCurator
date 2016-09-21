@@ -23,19 +23,19 @@ try {
     session_start();
     
     // the session is likely to be set if the request comes from the website
-    // in any case, make sure the uid and upw are set
-    if (!isset($_SESSION['uid']) || !isset($_SESSION['upw'])) {
+    // in any case, make sure the uname and upw are set
+    if (!isset($_SESSION['uname']) || !isset($_SESSION['upw'])) {
         throw new Exception("Session has not been initialized");
     }
     
     // small checks on the request (more checks within nc-api.php)
     $params = (array) $_REQUEST;
-    if (isset($params['user_id'])) {
-        if ($params['user_id'] != $_SESSION['uid']) {
-            throw new Exception("Inconsistent user_id / session combination");
+    if (isset($params['user_name'])) {
+        if ($params['user_name'] != $_SESSION['uname']) {
+            throw new Exception("Inconsistent user name / session combination");
         }
     } else {
-        $params['user_id'] = $_SESSION['uid'];
+        $params['user_name'] = $_SESSION['uname'];
     }
     $params['user_extpwd'] = $_SESSION['upw'];
     $params['source_ip'] = $_SERVER['REMOTE_ADDR'];
@@ -45,7 +45,7 @@ try {
 
     // perform a first check on user identity
     $apiparams = array('user_extpwd' => $_SESSION['upw']);
-    $userconfirmed = $NCapi->sendReq($_SESSION['uid'], "NCUsers", "confirm", $apiparams);        
+    $userconfirmed = $NCapi->sendReq($_SESSION['uname'], "NCUsers", "confirm", $apiparams);        
     if (!$userconfirmed) {
         throw new Exception("Failed user confirmation");
     }
@@ -58,7 +58,7 @@ try {
         if ($result) {
             // user login was successful, so here update the session info
             include_once "php/nc-sessions.php";
-            ncSignin($result['user_id'], $result['user_extpwd'], $result['user_firstname'], $result['user_lastname'], $params['remember']);
+            ncSignin($result['user_name'], $result['user_extpwd'], $result['user_firstname'], $result['user_lastname'], $params['remember']);
             $result['user_extpwd'] = '';
         }
     }

@@ -22,10 +22,11 @@ class NCDB {
         $this->_db = $db;
     }
 
-    protected function dblock($tables) {
-        $this->_db->beginTransaction();        
+    protected function dblock($tables) {        
+        //$this->_db->beginTransaction();        
         $sql = "LOCK TABLES " . implode(" WRITE, ", $tables)." WRITE ";        
         $this->_db->exec($sql);                
+        $this->_db->beginTransaction();        
     }
     
     protected function dbunlock() {
@@ -49,5 +50,19 @@ class NCDB {
         return $stmt;
     }
        
+    protected function q($sql) {
+        $stmt = $this->_db->query($sql);
+        return $stmt;
+    }
+    
+    /**
+     * get the last inserted id
+     * 
+     * @return type
+     */
+    protected function lID() {
+        return $this->_db->lastInsertId();
+    }
+    
 }
 ?>

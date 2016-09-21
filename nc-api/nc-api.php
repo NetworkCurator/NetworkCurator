@@ -45,8 +45,8 @@ try {
     if (isset($params->controller) == false || isset($params->action) == false) {
         throw new Exception('Invalid request - missing controller or action');
     }
-    if (isset($params->user_id) == false) {
-        throw new Exception('Invalid request - missing userid');
+    if (isset($params->user_name) == false) {
+        throw new Exception('Invalid request - missing user_name');
     }
     $params = (array) $params;
     
@@ -84,14 +84,14 @@ try {
     $ans['data'] = $nowcontroller->$action();
 
     // log most actions, except user confirmation    
-    if ($action == "verify") {
-        if (isset($params['target_password'])) {
-            $params['target_password'] = 'password';
-        }
-
-        $logger = new NCLogger($db, ["user_id"=> $params['user_id']]);
-        $logger->logAction($params['user_id'], $sourceaddr, $controller, $action, json_encode($params));
-    }
+    //if ($action == "verify") {
+    //    if (isset($params['target_password'])) {
+    //        $params['target_password'] = 'password';
+    //    }
+    //
+    //    $logger = new NCLogger($db, ["user_id"=> $params['user_id']]);
+    //    $logger->logAction($params['user_id'], $sourceaddr, $controller, $action, json_encode($params));
+    //}
 
     // if reached here, presumably the controlled finished correctly
     $ans['success'] = true;

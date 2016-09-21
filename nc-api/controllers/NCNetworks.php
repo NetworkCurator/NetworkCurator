@@ -26,20 +26,15 @@ class NCNetworks extends NCLogger {
      */
     public function __construct($db, $params) {
 
-        $this->_db = $db;
-        $this->_params = $params;
-
-        // check for required parameters
+        // remember the network name
         if (isset($params['network_name'])) {
-            $this->_network = $this->_params['network_name'];
+            $this->_network = $params['network_name'];
         } else {
             $this->_network = "";
         }
-        if (isset($params['user_id'])) {
-            $this->_uid = $this->_params['user_id'];
-        } else {
-            throw new Exception("NCNetworks requires parameter user_id");
-        }
+        unset($params['network_name']);
+
+        parent::__construct($db, $params);
     }
 
     /**
@@ -63,55 +58,53 @@ class NCNetworks extends NCLogger {
      *       
      */
     public function createNewNetwork() {
-        
+
         $this->dblock([NC_TABLE_NETWORKS, NC_TABLE_ANNOTEXT, NC_TABLE_ACTIVITY, NC_TABLE_PERMISSIONS]);
 
         // check that required parameters are defined
-        $params = $this->subsetArray($this->_params, ["user_id",
-            "network_name", "network_title", "network_desc"]);
+        $params = $this->subsetArray($this->_params, ["network_title", "network_abstract"]);
 
-        // shorthand variables        
-        $network = $this->_network;
-
-        // perform tests on whether this user can create new network?
-        if ($this->_uid !== "admin") {
+        // tests whether this user can create new network?
+        if ($this->_uid !== NC_USER_ADMIN) {
             throw new Exception("Insufficient permissions to create a network");
         }
-
+//echo "CNN 1 ";
         // check that the network does not already exist? 
-        if ($this->getNetworkId($network) !== "") {
+        if ($this->getNetworkId($this->_network) >= 0) {
             throw new Exception("Network name exists");
         }
-
-        // if reached here, create the new network in 6 steps
-        // 1/6, find a new ids for the network and annotations                 
-        $netid = $this->makeRandomID(NC_TABLE_NETWORKS, 'network_id', 'W', NC_ID_LEN);
-
-        // 2/6, create a directory on the server for the network        
-        $networkdir = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/networks/" . $netid;
+//echo "CNN 2 ";
+        // if reached here, create the new network
+//echo "CNN 3 ";                
+        // insert a new row into the networks table and annotations       
+        $sql = "INSERT INTO " . NC_TABLE_NETWORKS . " (owner_id) VALUES (?)";
+        $this->qPE($sql, [$this->_uid]);
+        // fetch the network code        
+        $netid = $this->_db->lastInsertId();
+        $netcode = "W$netid";
+//echo "CNN 4 ";                        
+        // create a directory on the server for the network        
+        $networkdir = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/networks/" . $netcode;
         if (!mkdir($networkdir, 0777, true)) {
             throw new Exception("Failed creating network data space: " . $networkdir);
         }
-        chmod ($networkdir, 0777);
-
-        // 3/6, insert a new row into the networks table and annotations       
-        $sql = "INSERT INTO " . NC_TABLE_NETWORKS . "
-                   (network_id, owner_id) VALUES (?, ?)";
-        $this->qPE($sql, [$netid, $this->_uid]);
-                
-        // 4/6, create a starting log entry for creation of the network        
-        $this->logActivity($this->_uid, $netid, "created network", $params['network_name'], $params['network_title']);
-
-        // 5/6, create starting annotations for the title, abstract, contents
+        chmod($networkdir, 0777);
+//echo "CNN 5 ";                
+        // create a starting log entry for creation of the network        
+        $this->logActivity($this->_uname, $netid, "created network", $this->_network, $netid);
+//echo "CNN 6 ";
+        // create starting annotations for the title, abstract, contents
         // insert annotation for network name   
-        $this->insertNewAnnoSet($netid, $this->_uid, $netid, $params['network_name'], $params['network_title'], $params['network_desc']);
-
-        // 6/6, create permissions for admin and guest
+        $this->insertNewAnnoSet($netid, $this->_uid, $netid, NC_NETWORK, $this->_network, $params['network_title'], $params['network_abstract']);
+//echo "CNN 7 ";
+        // create permissions for admin and guest
         $sql = "INSERT INTO " . NC_TABLE_PERMISSIONS . "
                    (user_id, network_id, permissions) VALUES (?, ?, ?)";
         $stmt = $this->_db->prepare($sql);
-        $stmt->execute(['admin', $netid, NC_PERM_SUPER]);
-        $stmt->execute(['guest', $netid, NC_PERM_NONE]);
+        $stmt->execute([NC_USER_ADMIN, $netid, NC_PERM_SUPER]);
+        $stmt->execute([NC_USER_GUEST, $netid, NC_PERM_NONE]);
+//echo "CNN 8 ";
+        $this->dbunlock();
 
         return true;
     }
@@ -129,7 +122,7 @@ class NCNetworks extends NCLogger {
      */
     public function isPublic() {
         $netid = $this->getNetworkId($this->_network);
-        $guestperm = (int) $this->getUserPermissionsNetID($netid, "guest");
+        $guestperm = (int) $this->getUserPermissionsNetID($netid, NC_USER_GUEST);
         return $guestperm > NC_PERM_NONE;
     }
 
@@ -154,9 +147,9 @@ class NCNetworks extends NCLogger {
         $uid = $this->_uid;
         $tp = "" . NC_TABLE_PERMISSIONS;
         $ta = "" . NC_TABLE_ANNOTEXT;
-        $tac = $ta . ".anno_level";
+        $tac = $ta . ".anno_type";
         $tat = $ta . ".anno_text";
-        $tai = $ta . ".anno_id";
+        $tai = $ta . ".anno_name";
         $ni = "network_id";
 
         $sql = "
@@ -171,8 +164,8 @@ FROM (SELECT $tp.$ni AS $ni,
     (CASE WHEN $tac = " . NC_ABSTRACT . " THEN $tat ELSE '' END) AS 'abstract',
     (CASE WHEN $tac = " . NC_ABSTRACT . " THEN $tai ELSE '' END) AS 'abstract_id'    
 FROM $ta JOIN $tp ON $ta.$ni = $tp.$ni
-    WHERE BINARY $tp.user_id = '$uid' AND $tp.permissions>" . NC_PERM_NONE . "
-    AND $ta.root_id LIKE 'W%'
+    WHERE $tp.user_id = '$uid' AND $tp.permissions>" . NC_PERM_NONE . "
+    AND $ta.root_type = " . NC_NETWORK . " 
     AND $ta.anno_status = 1 AND $tac <=" . NC_ABSTRACT . "
 GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         $stmt = $this->_db->query($sql);
@@ -195,6 +188,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         $tp = "" . NC_TABLE_PERMISSIONS;
 
         $netid = $this->getNetworkId($this->_network);
+
         // check that requesting user can view this network       
         $uperm = $this->getUserPermissionsNetID($netid, $this->_uid);
         if ($uperm < NC_PERM_VIEW) {
@@ -203,15 +197,15 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
 
         // get the users participating in this network       
         $sql = "SELECT user_firstname, user_middlename, user_lastname,
-               $tu.user_id AS user_id, permissions
+               $tu.user_name AS user_name, permissions
                   FROM $tp JOIN $tu ON $tp.user_id = $tu.user_id
-                  WHERE BINARY $tp.user_id!='admin' AND $tp.user_id!='guest'
+                  WHERE $tp.user_id!=" . NC_USER_ADMIN . " AND $tp.user_id!= " . NC_USER_GUEST . "
                      AND $tp.network_id = ? AND $tp.permissions>" . NC_PERM_NONE . "
                      ORDER BY $tu.user_id";
         $stmt = $this->qPE($sql, [$netid]);
         $result = array();
         while ($row = $stmt->fetch()) {
-            $result[$row['user_id']] = $row;
+            $result[$row['user_name']] = $row;
         }
         return $result;
     }
@@ -224,7 +218,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
      * @throws Exception
      */
     public function getNetworkMetadata() {
-
+        
         // find the network id that corresponds to the name
         $netid = $this->getNetworkId($this->_network, true);
 
@@ -238,43 +232,43 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         $tp = "" . NC_TABLE_PERMISSIONS;
 
         // find the title, abstract, etc
-        $sql = "SELECT network_id, anno_id, anno_level, anno_text FROM $tat 
-              WHERE BINARY network_id = ? AND root_id = ?
-                AND anno_status = " . NC_ACTIVE . " AND anno_level <= " . NC_CONTENT;
+        $sql = "SELECT network_id, anno_name, anno_type, anno_text FROM $tat 
+              WHERE network_id = ? AND root_id = ? AND root_type = " . NC_NETWORK . "
+                AND anno_status = " . NC_ACTIVE . " AND anno_type <= " . NC_CONTENT;
         $stmt = $this->qPE($sql, [$netid, $netid]);
         // record the results into an array that will eventually be output
         $result = array('network_id' => $netid);
         while ($row = $stmt->fetch()) {
-            switch ($row['anno_level']) {
+            switch ($row['anno_type']) {
                 case NC_NAME:
                     $result['network_name'] = $row['anno_text'];
-                    $result['network_name_id'] = $row['anno_id'];
+                    $result['network_name_anno'] = $row['anno_name'];
                     break;
                 case NC_TITLE:
                     $result['network_title'] = $row['anno_text'];
-                    $result['network_title_id'] = $row['anno_id'];
+                    $result['network_title_anno'] = $row['anno_name'];
                     break;
                 case NC_ABSTRACT:
                     $result['network_abstract'] = $row['anno_text'];
-                    $result['network_abstract_id'] = $row['anno_id'];
+                    $result['network_abstract_anno'] = $row['anno_name'];
                     break;
                 case NC_CONTENT:
                     $result['network_content'] = $row['anno_text'];
-                    $result['network_content_id'] = $row['anno_id'];
+                    $result['network_content_anno'] = $row['anno_name'];
                     break;
                 default:
                     break;
             }
         }
 
-        // find the users who are curators on the network
-        $sql = "SELECT user_firstname, user_middlename, user_lastname,
+        // find the users who are participating in the network
+        $sql = "SELECT user_firstname, user_middlename, user_lastname, user_name,
                 $tp.user_id, permissions
                 FROM $tp JOIN $tu ON $tp.user_id = $tu.user_id
                 WHERE $tp.network_id = ? AND $tp.permissions>" . NC_PERM_VIEW . "
                     AND $tp.permissions<=" . NC_PERM_CURATE . "
                 ORDER BY $tu.user_lastname, $tu.user_firstname, $tu.user_middlename";
-        $stmt = $this->qPE($sql, [$netid]);
+        $stmt = $this->qPE($sql, [$netid]);        
         // move information from sql result into three new arrays by permission level
         $curators = array();
         $authors = array();
@@ -292,7 +286,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         $result['curators'] = $curators;
         $result['authors'] = $authors;
         $result['commentators'] = $commentators;
-
+        
         return $result;
     }
 
@@ -315,8 +309,8 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         $ta = "" . NC_TABLE_ANNOTEXT;
         // find the title, abstract, etc
         $sql = "SELECT anno_text FROM $ta 
-              WHERE BINARY network_id = ? AND root_id = ?
-                AND anno_status = " . NC_ACTIVE . " AND anno_level = " . NC_TITLE;
+              WHERE network_id = ? AND root_id = ? AND root_type = " . NC_NETWORK . "
+                AND anno_status = " . NC_ACTIVE . " AND anno_type = " . NC_TITLE;
         $stmt = $this->qPE($sql, [$netid, $netid]);
         $result = $stmt->fetch();
         if (!$result) {
@@ -363,7 +357,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         }
 
         // query the activity log table
-        $sql = "SELECT datetime, user_id, action, target_name, value FROM " .
+        $sql = "SELECT datetime, user_name, action, target_name, value FROM " .
                 NC_TABLE_ACTIVITY . " WHERE network_id = ? ";
         $sqlorder = "ORDER BY datetime DESC ";
         if (is_null($startdate)) {
@@ -393,6 +387,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
      * 
      */
     public function getActivityLogSize() {
+        
         $netid = $this->getNetworkId($this->_network, true);
 
         $sql = "SELECT COUNT(*) AS logsize FROM " .

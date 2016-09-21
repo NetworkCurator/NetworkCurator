@@ -8,18 +8,18 @@
 class NCApiCaller {
 
     private $_caller;
-    private $_uid;
+    private $_uname;
     private $_upw;
     // _p will be initialized as array with userid and userextpwd pre-filled
     private $_p;
 
     // constructor; creates an instance of the GeneralApiCaller 
     // with the app id, key, and path defined in the config
-    public function __construct($uid, $upw) {
+    public function __construct($uname, $upw) {
         $this->_caller = new GeneralApiCaller(NC_APP_ID, NC_APP_KEY, NC_API_PATH);
-        $this->_uid = $uid;
+        $this->_uname = $uname;
         $this->_upw = $upw;
-        $this->_p = array('user_id' => $uid, 'user_extpwd' => $upw);
+        $this->_p = array('user_name' => $uname, 'user_extpwd' => $upw);
     }
 
     /**
@@ -81,47 +81,47 @@ class NCApiCaller {
         // default state is "guest"
         $g = "guest";
         $tim = time() + (3600 * 24 * 7);
-        $firstname = $uid = $upw = $g;
+        $firstname = $uname = $upw = $g;
         $lastname = $middlename = "";
 
         // check if a user has already been remembered
-        if (isset($_SESSION['uid']) && isset($_SESSION['upw'])) {
+        if (isset($_SESSION['uname']) && isset($_SESSION['upw'])) {
             // Username and password have been set.        
-            $uid = $_SESSION['uid'];
+            $uname = $_SESSION['uname'];
             $upw = $_SESSION['upw'];
             $firstname = $_SESSION['firstname'];
             $middlename = $_SESSION['middlename'];
             $lastname = $_SESSION['lastname'];
         } else {
-            if (isset($_COOKIE['nc_uid']) && isset($_COOKIE['nc_upw'])) {
-                $uid = $_COOKIE['nc_uid'];
+            if (isset($_COOKIE['nc_uname']) && isset($_COOKIE['nc_upw'])) {
+                $uname = $_COOKIE['nc_uname'];
                 $upw = $_COOKIE['nc_upw'];
                 $firstname = $_COOKIE['nc_firstname'];
                 $middlename = $_COOKIE['nc_middlename'];
                 $lastname = $_COOKIE['nc_lastname'];
             } else {
-                $_SESSION['uid'] = $g;
+                $_SESSION['uname'] = $g;
                 $_SESSION['upw'] = $g;
                 $_SESSION['firstname'] = $g;
                 $_SESSION['middlename'] = "";
                 $_SESSION['lastname'] = "";
-                $uid = $upw = $g;
+                $uname = $upw = $g;
                 return false;
             }
         }
         
         // confirm the existence of the user using an API call        
         $apiparams = array('user_extpwd' => $upw);
-        $userconfirmed = $this->_caller->sendReq($uid, "NCUsers", "confirm", $apiparams);        
+        $userconfirmed = $this->_caller->sendReq($uname, "NCUsers", "confirm", $apiparams);        
 
         // update the cookies for logged-in users
         if ($userconfirmed) {
-            $_SESSION['uid'] = $uid;
+            $_SESSION['uname'] = $uname;
             $_SESSION['upw'] = $upw;
             $_SESSION['firstname'] = $firstname;
             $_SESSION['middlename'] = $middlename;
             $_SESSION['lastname'] = $lastname;
-            setcookie("nc_uid", $uid, $tim, "/");
+            setcookie("nc_uname", $uname, $tim, "/");
             setcookie("nc_firstname", $firstname, $tim, "/");
             setcookie("nc_middlename", $middlename, $tim, "/");
             setcookie("nc_lastname", $lastname, $tim, "/");
@@ -146,7 +146,7 @@ class NCApiCaller {
         $params['controller'] = 'NCUsers';
         $params['action'] = 'queryPermissions';
         $params['network_name'] = $network;
-        $params['target_id'] = $this->_uid;
+        $params['target_name'] = $this->_uname;
         return $this->_caller->sendRequest($params);
     }
 

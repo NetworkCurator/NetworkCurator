@@ -2,8 +2,6 @@
 /*
  * Page with data import/export functions
  * 
- * Assumes some variables are already set by index.php
- * $uid, $network, $NCApi, $upermissions
  * 
  */
 

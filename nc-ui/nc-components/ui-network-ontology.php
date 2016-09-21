@@ -3,7 +3,7 @@
  * Page showing/editing ontology for the network
  * 
  * Assumes some variables are already set by index.php
- * $uid, $network, $NCApi, $upermissions
+ * $network, $NCApi, $upermissions
  * 
  */
 
