@@ -11,7 +11,6 @@
 $nodeclasses = $NCapi->getNodeClasses($network);
 $linkclasses = $NCapi->getLinkClasses($network);
 
-
 ?>
 
 <div class="row">

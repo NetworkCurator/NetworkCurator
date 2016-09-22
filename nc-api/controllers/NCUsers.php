@@ -245,15 +245,14 @@ class NCUsers extends NCLogger {
     public function queryPermissions() {
 
         // check that required parameters are defined
-        $params = $this->subsetArray($this->_params, ["user_id",
-            "target_id", "network_name"]);
+        $params = $this->subsetArray($this->_params, ["target", "network"]);
 
         // get network id
-        $netid = $this->getNetworkId($params['network_name']);
+        $netid = $this->getNetworkId($params['network']);
 
         // the asking user should be the site administrator
         // a user asking for their own permissions, or curator on a network
-        if ($this->_uid != $params['target_id']) {
+        if ($this->_uid != $params['target']) {
             $uperm = $this->getUserPermissionsNetID($netid, $this->_uid);
             if ($uperm < NC_PERM_CURATE) {
                 throw new Exception("Insufficient permissions");
@@ -261,9 +260,8 @@ class NCUsers extends NCLogger {
         }
 
         // make sure the target user exist
-        $sql = "SELECT user_id FROM " . NC_TABLE_USERS . "
-            WHERE BINARY user_id = ?";
-        $stmt = $this->qPE($sql, [$params['target_id']]);
+        $sql = "SELECT user_id FROM " . NC_TABLE_USERS . " WHERE BINARY user_id = ?";
+        $stmt = $this->qPE($sql, [$params['target']]);
         if (!$stmt->fetch()) {
             throw new Exception("Target user does not exist");
         }
@@ -273,7 +271,7 @@ class NCUsers extends NCLogger {
         }
 
         // if reached here, all is well. Get the permission level
-        $targetperm = $this->getUserPermissionsNetID($netid, $params['target_id']);
+        $targetperm = $this->getUserPermissionsNetID($netid, $params['target']);
         return $targetperm;
     }
 

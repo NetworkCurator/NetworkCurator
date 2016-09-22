@@ -37,13 +37,13 @@ foreach ($newusers as $nu) {
 }
 
 
-$newnetworks = array('net-zulu', 'net-yankee', 'xray');
+$newnetworks = array('net-zulu', 'net-yankee', 'xray', 'A');
 foreach ($newnetworks as $nn) {
     echo "Creating network $nn";
     $params = array('controller' => 'NCNetworks', 'action' => 'createNewNetwork',
         'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
-        'network_name' => $nn, 'network_title' => 'ABC ' . $nn . ' title',
-        'network_desc' => 'XYZ ' . $nn . ' description');
+        'name' => $nn, 'title' => 'ABC ' . $nn . ' title', 
+        'abstract'=>'XYZ ' . $nn . ' description', 'content'=>'');        
     tryreport($NCapi, $params);
 }
 

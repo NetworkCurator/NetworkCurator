@@ -9,6 +9,8 @@ if (typeof nc == "undefined") {
     throw new Error("nc is undefined");
 }
 nc.ontology = {};
+nc.ontology.nodes = {};
+nc.ontology.links = {};
 
 
 /* ==========================================================================
@@ -29,9 +31,12 @@ nc.ontology.createClass = function(classname, islink, isdirectional) {
     $.post(nc.api, {
         controller: "NCOntology", 
         action: "createNewClass", 
-        network_name: nc.network,
-        class_name: classname,
-        parent_name: '',  
+        network: nc.network,
+        name: classname,
+        title: classname,
+        'abstract': '',
+        content: '',
+        parent: '',  
         connector: +islink,
         directional: +isdirectional        
     }, function(data) {
@@ -46,8 +51,8 @@ nc.ontology.createClass = function(classname, islink, isdirectional) {
                 parent_id:'', 
                 connector:+islink,
                 directional:+isdirectional, 
-                class_name:classname,
-                class_status: 1
+                name:classname,
+                status: 1
             };
             nc.ui.addClassTreeRow(newrow, 1);                
         }
@@ -58,31 +63,36 @@ nc.ontology.createClass = function(classname, islink, isdirectional) {
  * Send a request to update a class name or parent structure
  */
 nc.ontology.updateClassProperties = function(classid, classname, parentid, islink, isdirectional) {
-        
+                
     if (nc.utils.checkString(classname, 1)<1) {
         nc.msg("Hey!", "Invalid class name");
         exit();
     }
-        
+                
     // must translate between classid and targetname 
     // also between parentid and parentname
-    var targetname = $('div.nc-classdisplay[val="'+classid+'"] span[val="nc-classname"]]').html();
+    var targetname = $('div.nc-classdisplay[val="'+classid+'"] span[val="nc-classname"]').html();
+    alert("targetname "+targetname);
     var parentname = parentid;
     if (parentid!='') {
-        parentname = $('div.nc-classdisplay[val="'+parentid+'"] span[val="nc-classname"]]').html();
+        parentname = $('div.nc-classdisplay[val="'+parentid+'"] span[val="nc-classname"]').html();
     }
         
+        alert("got "+targetname+" "+parentname+" "+parentid);
     $.post(nc.api, {
         controller: "NCOntology", 
         action: "updateClass", 
-        network_name: nc.network,
-        target_name: targetname,
-        class_name: classname,
-        class_status: 1,
-        parent_name: parentname,  
+        network: nc.network,
+        target: targetname,
+        name: classname,
+        title: classname,
+        'abstract': '',
+        content: '',
+        status: 1,
+        parent: parentname,  
         connector: +islink,
         directional: +isdirectional        
-    }, function(data) {
+    }, function(data) {             
         nc.utils.alert(data);      
         data = JSON.parse(data);
         if (data['success']==false) {              
@@ -132,12 +142,12 @@ nc.ontology.confirmActivate = function() {
     // get the classid from the modal that called this function
     var infoobj = $('#nc-deprecateconfirm-modal #nc-deprecateconfirm-class');
     var classid = infoobj.attr("val");            
-    var classname = infoobj.html();            
+    var classname = infoobj.html();      
     $.post(nc.api, {
         controller: "NCOntology", 
         action: "activateClass", 
-        network_name: nc.network,
-        class_name: classname
+        network: nc.network,
+        name: classname
     }, function(data) {
         nc.utils.alert(data);              
         data = JSON.parse(data);
@@ -165,8 +175,8 @@ nc.ontology.confirmDeprecate = function() {
     $.post(nc.api, {
         controller: "NCOntology", 
         action: "removeClass", 
-        network_name: nc.network,
-        class_name: classname
+        network: nc.network,
+        name: classname
     }, function(data) {
         nc.utils.alert(data);              
         data = JSON.parse(data);
@@ -196,7 +206,7 @@ nc.ontology.confirmDeprecate = function() {
  * 
  */
 nc.ontology.addLongnames = function(ontolist) {
-    
+     
     var tree = $('<div><div val="" text=""></div></div>');
     
     var counter = 0;
@@ -205,7 +215,7 @@ nc.ontology.addLongnames = function(ontolist) {
         counter=0;
         $.each(ontolist, function(key, val){        
             var thisid = val['class_id'],
-            thisname = val['class_name'],
+            thisname = val['name'],
             thisparent = val['parent_id'],
             longname = thisname;
         
@@ -218,12 +228,12 @@ nc.ontology.addLongnames = function(ontolist) {
                         longname = parentdiv.attr('text')+":"+thisname;
                     }
                     parentdiv.append('<div val="'+thisid+'" text="'+longname+'"></div>');
-                    ontolist[thisid].class_longname = longname;
+                    ontolist[thisid].longname = longname;
                     counter++;
                 } 
             }
         });       
     }
-    
+
     return ontolist;            
 }

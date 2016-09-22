@@ -67,6 +67,7 @@ nc.mdconverter = new showdown.Converter({
 * Show a message in a modal window
 */
 nc.msg = function(h, b) {
+    
     $('#nc-msg-header').html(h);
     $('#nc-msg-body').html(b);
     $('#nc-msg-modal').modal('show');
@@ -82,7 +83,7 @@ nc.msg = function(h, b) {
  * is relevant for the current page and either returns quickly or performs its
  * startup duties.
  */
-nc.init.all = function() {    
+nc.init.all = function() {        
     var speed = nc.ui.speed;
     nc.ui.speed = 0;
     
@@ -104,7 +105,7 @@ nc.init.all = function() {
 /**
  * Invoked at page startup - builds widgets for managing guest and user permissions 
  */
-nc.init.initPermissions = function() {       
+nc.init.initPermissions = function() {        
     // check if this is the permissions page
     var guestperms = $('#nc-permissions-guest');
     var usersperms = $('#nc-permissions-users');
@@ -124,17 +125,17 @@ nc.init.initPermissions = function() {
  * Invoked at startup to generate ontology trees
  * 
  */
-nc.init.initOntology = function() {
+nc.init.initOntology = function() {        
     // compute long names for classes that include hierarchy structure
     nc.ontology.nodes = nc.ontology.addLongnames(nc.ontology.nodes);
-    nc.ontology.links = nc.ontology.addLongnames(nc.ontology.links);
+    nc.ontology.links = nc.ontology.addLongnames(nc.ontology.links);    
     
     // check if this function applies on the page
     var ontnodes = $('#nc-ontology-nodes');
-    var ontlinks = $('#nc-ontology-links');    
+    var ontlinks = $('#nc-ontology-links');        
     if (ontnodes.length==0 || ontlinks.length==0) {
         return;
-    }
+    }    
     // add ontology trees     
     ontnodes.html(nc.ui.ClassTreeWidget(nc.ontology.nodes, false));                    
     ontlinks.html(nc.ui.ClassTreeWidget(nc.ontology.links, true));               
@@ -144,19 +145,17 @@ nc.init.initOntology = function() {
  * Run at page startup to create a log widget with buttons and log content
  * 
  */
-nc.init.initLog = function() {  
+nc.init.initLog = function() {      
     // check if the log div is present 
     var logdiv = $('#nc-activity-log');
-    if (logdiv.length==0) {
-        return;
-    }
+    if (logdiv.length==0) return;        
       
     // fetch the total number of rows and a first set of log data
     $.post(nc.api, 
     {
         controller: "NCNetworks", 
         action: "getActivityLogSize", 
-        network_name: nc.network        
+        network: nc.network        
     }, function(data) {  
         data = JSON.parse(data);
         var logsize = +data['data'];
@@ -191,17 +190,18 @@ nc.init.initComments = function() {
     {
         controller: "NCAnnotations", 
         action: "getComments", 
-        network_name: nc.network, 
+        network: nc.network, 
         root_id: cbox.attr("val")
     }, function(data) {        
-        nc.utils.alert(data);  
+        //nc.utils.alert(data);  
         data = JSON.parse(data);
         if (!data['success']) {  
             nc.msg("Hey!", "Got error response from server: "+data['data']);  
             return;
-        }        
-        // populate the comments box with the 
-        nc.ui.populateCommentsBox(data['data']);        
+        } else {       
+            // populate the comments box with the new comment
+            nc.ui.populateCommentsBox(data['data']);        
+        }
     });
     
     // for users allowed to generate comments, add a comment box    
@@ -248,12 +248,21 @@ nc.init.initCuration = function() {
 * run at startup to convert data in a global object nc_md into html
 * within page elements
 */
-nc.init.initMarkdown = function() {                 
-    // convert the nc_md content into html, assign to a target div
-    $.each(nc.md, function(key, val) {          
-        var temp = $('div .nc-md[val="'+key+'"]');
-        temp.find('textarea.nc-curation-content').html(val);
-        temp.find('div.nc-curation-content').html(nc.mdconverter.makeHtml(val));
+nc.init.initMarkdown = function() {
+    
+    // convert the md content into html
+    $.each(nc.md, function(key, val) {           
+        var temp = $('.nc-md[val="'+key+'"]');
+        var nowarea = temp.find('textarea.nc-curation-content');
+        if (nowarea.length>0) {
+            // this element is marked as editable and thus should have a textarea 
+            // and content div
+            temp.find('textarea.nc-curation-content').html(val);            
+            temp.find('div.nc-curation-content').html(nc.mdconverter.makeHtml(val));
+        } else {
+            // element is not marked as editable. Convert and show into this element only
+            temp.html(nc.mdconverter.makeHtml(val));
+        }            
     });        
 }
 
@@ -261,7 +270,8 @@ nc.init.initMarkdown = function() {
 /**
  * When page holds a specific network title, it displays the title in the navbar
  */
-nc.init.initNetwork = function() {       
+nc.init.initNetwork = function() {   
+    
     if (nc.networktitle!='') {
         $('#nc-nav-network-title').html(nc.networktitle);        
         $('body').addClass('nc-body2');
@@ -302,7 +312,7 @@ nc.loadActivity = function(pagenum, pagelen) {
     {
         controller: "NCNetworks", 
         action: "getNetworkActivity", 
-        network_name: nc.network,
+        network: nc.network,
         offset: pagenum*pagelen,
         limit: pagelen
     }, function(data) {                 
@@ -341,7 +351,7 @@ nc.updateAnnotationText = function(annoid, annomd) {
     {
         controller: "NCAnnotations", 
         action: "updateAnnotationText", 
-        network_name: nc.network,
+        network: nc.network,
         anno_id: annoid,
         anno_text: annomd
     }, function(data) {        
@@ -378,7 +388,7 @@ nc.createComment = function(annomd, rootid, parentid) {
     {
         controller: "NCAnnotations", 
         action: "createNewComment", 
-        network_name: nc.network, 
+        network: nc.network, 
         root_id: rootid,
         parent_id: parentid,
         anno_text: annomd
@@ -386,7 +396,8 @@ nc.createComment = function(annomd, rootid, parentid) {
         nc.utils.alert(data);  
         data = JSON.parse(data);
         if (!data['success']) {  
-            nc.msg("Hey!", "Got error response from server: "+data['data']);            
+            nc.msg("Hey!", "Got error response from server: "+data['data']);      
+            return;
         }
         // provide feedback in the button
         $('#nc-newcomment a.nc-submit').html('Done');        
@@ -394,9 +405,16 @@ nc.createComment = function(annomd, rootid, parentid) {
             $('#nc-newcomment a.nc-submit').addClass('btn-success').removeClass('btn-default').html('Submit');
         }, this.timeout);         
         // add the comment to the page       
-        var comdata = {datetime: 'just now', modified: null, 
-            user_id: nc.userid, owner_id: nc.userid, root_id: rootid,
-        parent_id: parentid, anno_id: data['data'], anno_text: annomd};        
+        var comdata = {
+            datetime: 'just now', 
+            modified: null, 
+            user_id: nc.userid, 
+            owner_id: nc.userid, 
+            root_id: rootid,
+            parent_id: parentid, 
+            anno_id: data['data'], 
+            anno_text: annomd
+        };        
         nc.ui.addCommentBox(comdata);
         if (rootid!=parentid) {
             $('.media-body .media[val=""]').hide();    
@@ -417,4 +435,5 @@ nc.createComment = function(annomd, rootid, parentid) {
 $(document).ready(
     function () {
         nc.init.all();      
-    });
+    });   
+   

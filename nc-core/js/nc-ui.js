@@ -117,7 +117,7 @@ nc.ui.ClassTreeWidget = function(classdata, islink) {
     var rootrow = {
         parent_id:'',
         class_id:'',
-        class_name:'', 
+        name:'', 
         connector:+islink, 
         directional:0
     };
@@ -230,7 +230,7 @@ nc.ui.ClassTreeRowWidget = function(classrow) {
     var obj= $('<li val="'+classrow['class_id']+'">'+adisplay + aform + achildren+'</li>');                
 
     // modify the object if class is inactive
-    if (classrow['class_status']!=1) {
+    if (classrow['status']!=1) {
         obj = nc.ui.toggleClassDisplay(obj);
     }
     
@@ -262,7 +262,7 @@ nc.ui.ClassDisplay = function(classrow) {
     
     // create a div with one label (possible a directional comment) and one button
     var fg = '<div val="'+classrow['class_id']+'" class="nc-classdisplay">'; 
-    fg+='<span class="nc-comment" val="nc-classname">'+classrow['class_name']+'</span>';
+    fg+='<span class="nc-comment" val="nc-classname">'+classrow['name']+'</span>';
     // forms for links include a checkbox for directional links    
     fg += '<span class="nc-comment" val="nc-directional">';
     if (+classrow['directional']) {
@@ -294,7 +294,7 @@ nc.ui.ClassForm = function(classrow) {
     }
     
     var classid = classrow['class_id'];    
-    var classname = classrow['class_name'];
+    var classname = classrow['name'];
     var islink = +classrow['connector'];
     var directional = +classrow['directional'];
         
@@ -330,7 +330,7 @@ nc.ui.ClassForm = function(classrow) {
         fg += '</div>';                           
     }
     var ff2 = '</div></form>';
-       
+              
     return ff+fg+ff2;    
 }
 
@@ -653,10 +653,10 @@ nc.ui.CommentBox = function(uid, rootid, parentid, annoid, annomd) {
 nc.ui.addCommentBox = function(comdata) { //datetime, ownerid, rootid, parentid, annoid, annotext) {
     
     var cbox = $('#nc-comments');       
-    var html = '<div class="nc-mb-5"><span class="nc-log-entry-date">'+comdata.datetime+'</span>';    
-    html += '<span class="nc-log-entry-user">'+comdata.owner_id+'</span>';     
+    var html = '<div class="nc-mb-5 nc-comment-head"><span class="nc-comment-date">'+comdata.datetime+'</span>';    
+    html += '<span class="nc-comment-user">'+comdata.owner_id+'</span>';     
     if (comdata.modified !=null) {
-        html += '<span class="nc-log-entry-date"> (edited '+comdata.modified+' by <span class="nc-log-entry-user">'+comdata.user_id+'</span>)</span>';        
+        html += '<span class="nc-comment-date"> (edited '+comdata.modified+' by <span class="nc-comment-user">'+comdata.user_id+'</span>)</span>';        
     }
     html+='</div>';        
     var commentbox = nc.ui.CommentBox(comdata.owner_id, comdata.root_id, 

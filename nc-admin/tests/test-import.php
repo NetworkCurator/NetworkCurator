@@ -30,7 +30,7 @@ for ($i = 0; $i < count($filenames); $i++) {
 
     $params = array('controller' => 'NCData', 'action' => 'importData',
         'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
-        'network_name' => $nownetwork, 'file_name' => $nowfile,
+        'network' => $nownetwork, 'file_name' => $nowfile,
         'file_content' => $nowdata, 'file_desc' => 'just testing');
     $result = tryreport($NCapi, $params, true);    
     echo $result."\n";

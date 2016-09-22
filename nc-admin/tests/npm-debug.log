@@ -1,0 +1,1833 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/bin/nodejs', '/usr/bin/npm', 'install', 'minifier' ]
+2 info using npm@1.3.10
+3 info using node@v0.10.25
+4 verbose cache add [ 'minifier', null ]
+5 verbose cache add name=undefined spec="minifier" args=["minifier",null]
+6 verbose parsed url { protocol: null,
+6 verbose parsed url   slashes: null,
+6 verbose parsed url   auth: null,
+6 verbose parsed url   host: null,
+6 verbose parsed url   port: null,
+6 verbose parsed url   hostname: null,
+6 verbose parsed url   hash: null,
+6 verbose parsed url   search: null,
+6 verbose parsed url   query: null,
+6 verbose parsed url   pathname: 'minifier',
+6 verbose parsed url   path: 'minifier',
+6 verbose parsed url   href: 'minifier' }
+7 silly lockFile 59c8589d-minifier minifier
+8 verbose lock minifier /home/tomasz/.npm/59c8589d-minifier.lock
+9 silly lockFile 59c8589d-minifier minifier
+10 silly lockFile 59c8589d-minifier minifier
+11 verbose addNamed [ 'minifier', '' ]
+12 verbose addNamed [ null, '*' ]
+13 silly lockFile 690faf1f-minifier minifier@
+14 verbose lock minifier@ /home/tomasz/.npm/690faf1f-minifier.lock
+15 silly addNameRange { name: 'minifier', range: '*', hasData: false }
+16 verbose url raw minifier
+17 verbose url resolving [ 'https://registry.npmjs.org/', './minifier' ]
+18 verbose url resolved https://registry.npmjs.org/minifier
+19 info trying registry request attempt 1 at 19:52:43
+20 http GET https://registry.npmjs.org/minifier
+21 http 200 https://registry.npmjs.org/minifier
+22 silly registry.get cb [ 200,
+22 silly registry.get   { server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+22 silly registry.get     etag: '"3I65HJKE7ZB7YHY1EC8L30GD4"',
+22 silly registry.get     'content-type': 'application/json',
+22 silly registry.get     'cache-control': 'max-age=300',
+22 silly registry.get     'content-length': '22480',
+22 silly registry.get     'accept-ranges': 'bytes',
+22 silly registry.get     date: 'Thu, 22 Sep 2016 17:52:45 GMT',
+22 silly registry.get     via: '1.1 varnish',
+22 silly registry.get     age: '0',
+22 silly registry.get     connection: 'keep-alive',
+22 silly registry.get     'x-served-by': 'cache-lcy1131-LCY',
+22 silly registry.get     'x-cache': 'MISS',
+22 silly registry.get     'x-cache-hits': '0',
+22 silly registry.get     'x-timer': 'S1474566763.803645,VS0,VE1279',
+22 silly registry.get     vary: 'Accept-Encoding' } ]
+23 silly addNameRange number 2 { name: 'minifier', range: '*', hasData: true }
+24 silly addNameRange versions [ 'minifier',
+24 silly addNameRange   [ '0.4.1',
+24 silly addNameRange     '0.4.2',
+24 silly addNameRange     '0.4.3',
+24 silly addNameRange     '0.4.4',
+24 silly addNameRange     '0.4.5',
+24 silly addNameRange     '0.4.6',
+24 silly addNameRange     '0.5.0',
+24 silly addNameRange     '0.6.0',
+24 silly addNameRange     '0.6.1',
+24 silly addNameRange     '0.6.2',
+24 silly addNameRange     '0.7.0',
+24 silly addNameRange     '0.7.1',
+24 silly addNameRange     '0.8.0' ] ]
+25 verbose addNamed [ 'minifier', '0.8.0' ]
+26 verbose addNamed [ '0.8.0', '0.8.0' ]
+27 silly lockFile 1541c5bb-minifier-0-8-0 minifier@0.8.0
+28 verbose lock minifier@0.8.0 /home/tomasz/.npm/1541c5bb-minifier-0-8-0.lock
+29 silly lockFile f7b30dc4--org-minifier-minifier-0-8-0-tgz https://registry.npmjs.org/minifier/-/minifier-0.8.0.tgz
+30 verbose lock https://registry.npmjs.org/minifier/-/minifier-0.8.0.tgz /home/tomasz/.npm/f7b30dc4--org-minifier-minifier-0-8-0-tgz.lock
+31 verbose addRemoteTarball [ 'https://registry.npmjs.org/minifier/-/minifier-0.8.0.tgz',
+31 verbose addRemoteTarball   'ad2f4b7ba7ff97c78efa159baa35371996b22353' ]
+32 info retry fetch attempt 1 at 19:52:45
+33 verbose fetch to= /home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765097-0.3041085705626756/tmp.tgz
+34 http GET https://registry.npmjs.org/minifier/-/minifier-0.8.0.tgz
+35 http 200 https://registry.npmjs.org/minifier/-/minifier-0.8.0.tgz
+36 verbose tar unpack /home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765097-0.3041085705626756/tmp.tgz
+37 silly lockFile 59c7a331-65097-0-3041085705626756-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765097-0.3041085705626756/package
+38 verbose lock tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765097-0.3041085705626756/package /home/tomasz/.npm/59c7a331-65097-0-3041085705626756-package.lock
+39 silly lockFile f492643a-65097-0-3041085705626756-tmp-tgz tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765097-0.3041085705626756/tmp.tgz
+40 verbose lock tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765097-0.3041085705626756/tmp.tgz /home/tomasz/.npm/f492643a-65097-0-3041085705626756-tmp-tgz.lock
+41 silly gunzTarPerm modes [ '755', '644' ]
+42 silly gunzTarPerm extractEntry package.json
+43 silly gunzTarPerm extractEntry .npmignore
+44 silly gunzTarPerm extractEntry index.js
+45 silly gunzTarPerm extractEntry src/css.js
+46 silly gunzTarPerm extractEntry src/minify.js
+47 silly gunzTarPerm extractEntry src/utils.js
+48 silly gunzTarPerm extractEntry .gitattributes
+49 silly gunzTarPerm extractEntry readme.md
+50 silly lockFile 59c7a331-65097-0-3041085705626756-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765097-0.3041085705626756/package
+51 silly lockFile 59c7a331-65097-0-3041085705626756-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765097-0.3041085705626756/package
+52 silly lockFile f492643a-65097-0-3041085705626756-tmp-tgz tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765097-0.3041085705626756/tmp.tgz
+53 silly lockFile f492643a-65097-0-3041085705626756-tmp-tgz tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765097-0.3041085705626756/tmp.tgz
+54 verbose tar pack [ '/home/tomasz/.npm/minifier/0.8.0/package.tgz',
+54 verbose tar pack   '/home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765097-0.3041085705626756/package' ]
+55 verbose tarball /home/tomasz/.npm/minifier/0.8.0/package.tgz
+56 verbose folder /home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765097-0.3041085705626756/package
+57 silly lockFile 59c7a331-65097-0-3041085705626756-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765097-0.3041085705626756/package
+58 verbose lock tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765097-0.3041085705626756/package /home/tomasz/.npm/59c7a331-65097-0-3041085705626756-package.lock
+59 silly lockFile a991eb97-z-npm-minifier-0-8-0-package-tgz tar:///home/tomasz/.npm/minifier/0.8.0/package.tgz
+60 verbose lock tar:///home/tomasz/.npm/minifier/0.8.0/package.tgz /home/tomasz/.npm/a991eb97-z-npm-minifier-0-8-0-package-tgz.lock
+61 silly lockFile 59c7a331-65097-0-3041085705626756-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765097-0.3041085705626756/package
+62 silly lockFile 59c7a331-65097-0-3041085705626756-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765097-0.3041085705626756/package
+63 silly lockFile a991eb97-z-npm-minifier-0-8-0-package-tgz tar:///home/tomasz/.npm/minifier/0.8.0/package.tgz
+64 silly lockFile a991eb97-z-npm-minifier-0-8-0-package-tgz tar:///home/tomasz/.npm/minifier/0.8.0/package.tgz
+65 silly lockFile c7fc5a88-omasz-npm-minifier-0-8-0-package /home/tomasz/.npm/minifier/0.8.0/package
+66 verbose lock /home/tomasz/.npm/minifier/0.8.0/package /home/tomasz/.npm/c7fc5a88-omasz-npm-minifier-0-8-0-package.lock
+67 silly lockFile c7fc5a88-omasz-npm-minifier-0-8-0-package /home/tomasz/.npm/minifier/0.8.0/package
+68 silly lockFile c7fc5a88-omasz-npm-minifier-0-8-0-package /home/tomasz/.npm/minifier/0.8.0/package
+69 verbose tar unpack /home/tomasz/.npm/minifier/0.8.0/package.tgz
+70 silly lockFile 320daaf8-omasz-npm-minifier-0-8-0-package tar:///home/tomasz/.npm/minifier/0.8.0/package
+71 verbose lock tar:///home/tomasz/.npm/minifier/0.8.0/package /home/tomasz/.npm/320daaf8-omasz-npm-minifier-0-8-0-package.lock
+72 silly lockFile a991eb97-z-npm-minifier-0-8-0-package-tgz tar:///home/tomasz/.npm/minifier/0.8.0/package.tgz
+73 verbose lock tar:///home/tomasz/.npm/minifier/0.8.0/package.tgz /home/tomasz/.npm/a991eb97-z-npm-minifier-0-8-0-package-tgz.lock
+74 silly gunzTarPerm modes [ '755', '644' ]
+75 silly gunzTarPerm extractEntry package.json
+76 silly gunzTarPerm extractEntry .npmignore
+77 silly gunzTarPerm extractEntry index.js
+78 silly gunzTarPerm extractEntry .gitattributes
+79 silly gunzTarPerm extractEntry readme.md
+80 silly gunzTarPerm extractEntry src/css.js
+81 silly gunzTarPerm extractEntry src/minify.js
+82 silly gunzTarPerm extractEntry src/utils.js
+83 silly lockFile 320daaf8-omasz-npm-minifier-0-8-0-package tar:///home/tomasz/.npm/minifier/0.8.0/package
+84 silly lockFile 320daaf8-omasz-npm-minifier-0-8-0-package tar:///home/tomasz/.npm/minifier/0.8.0/package
+85 silly lockFile a991eb97-z-npm-minifier-0-8-0-package-tgz tar:///home/tomasz/.npm/minifier/0.8.0/package.tgz
+86 silly lockFile a991eb97-z-npm-minifier-0-8-0-package-tgz tar:///home/tomasz/.npm/minifier/0.8.0/package.tgz
+87 verbose chmod /home/tomasz/.npm/minifier/0.8.0/package.tgz 644
+88 verbose chown /home/tomasz/.npm/minifier/0.8.0/package.tgz [ 1000, 1000 ]
+89 silly lockFile f7b30dc4--org-minifier-minifier-0-8-0-tgz https://registry.npmjs.org/minifier/-/minifier-0.8.0.tgz
+90 silly lockFile f7b30dc4--org-minifier-minifier-0-8-0-tgz https://registry.npmjs.org/minifier/-/minifier-0.8.0.tgz
+91 silly lockFile 1541c5bb-minifier-0-8-0 minifier@0.8.0
+92 silly lockFile 1541c5bb-minifier-0-8-0 minifier@0.8.0
+93 silly lockFile 690faf1f-minifier minifier@
+94 silly lockFile 690faf1f-minifier minifier@
+95 silly resolved [ { author:
+95 silly resolved      { name: 'Benjamin Horsleben',
+95 silly resolved        email: 'benjamin@fizkerinc.dk',
+95 silly resolved        url: 'http://fizkerinc.dk' },
+95 silly resolved     name: 'minifier',
+95 silly resolved     description: 'A simple tool for minifying CSS/JS without a big setup',
+95 silly resolved     keywords: [ 'javascript js css minify minifier build' ],
+95 silly resolved     version: '0.8.0',
+95 silly resolved     license: 'WTFPL',
+95 silly resolved     main: 'index.js',
+95 silly resolved     repository: { type: 'git', url: 'git://github.com/fizker/minifier.git' },
+95 silly resolved     bugs: { url: 'https://github.com/fizker/minifier/issues' },
+95 silly resolved     dependencies:
+95 silly resolved      { commander: '^2.8.1',
+95 silly resolved        'css-resolve-import': '^0.1.1',
+95 silly resolved        fmerge: '^1.2.0',
+95 silly resolved        glob: '^5.0.14',
+95 silly resolved        'hogan.js': '^3.0.2',
+95 silly resolved        sqwish: '~0.2.2',
+95 silly resolved        'uglify-js': '^2.4.24' },
+95 silly resolved     bin: { minify: 'index.js' },
+95 silly resolved     scripts: { test: 'mocha' },
+95 silly resolved     devDependencies:
+95 silly resolved      { chai: '^3.2.0',
+95 silly resolved        'finc-chai-helpers': '~0.1.0',
+95 silly resolved        fzkes: '^0.14.1',
+95 silly resolved        mocha: '^2.2.5' },
+95 silly resolved     optionalDependencies: {},
+95 silly resolved     engines: { node: '^4.4.7 || ^6.3.0' },
+95 silly resolved     readme: 'minifier\n========\n\nA simple tool for minifying CSS/JS without a big setup.\n\nFeature highlights\n------------------\n\n- It minifies JS and CSS\n- It reworks URLs in CSS from the original location to the output location.\n- It automatically resolves `@import` statements in CSS.\n\n\nHow to install\n--------------\n\nThere are two ways to install it:\n\n1. `npm install [-g] minifier`\n2. Cloning directly from [github](https://github.com/fizker/minifier).\n\nInstalling through `npm` will create a binary (`minify`) in the usual\nlocations. Cloning and installing from `github` will not, but the `index.js`\nfile can be executed either directly or via `node index.js`; this is the file\nthat the binary links to anyway.\n\n\nHow to run from a command-line\n------------------------------\n\nRunning it is simple:\n\n\tminify [--output path/to/put/file] path/to/file\n\nIf the output parameter is not set, it will place a file next to the original,\nwith the suffix `.min`.\n\nFor example, `minifier script.js` will output `script.min.js`, whereas\n`minifier --output out.js script.js` will output `out.js`.\n\nA folder can also be targeted. When that is done, it will minify all css and js\nfile in that folder.\n\nIn that case, `--output` does not make much sense, as all files will be minified\nto the same. If the name still requires a specific pattern such as a timestamp,\n`--template` is the option for you. Note that files named after a template will\nbe left in the same folder as the original file.\n\nThere are various options available:\n\n- `{{filename}}` is the original filename.\n- `{{ext}}` is the extension.\n- `{{sha}}` is a sha-digest of the unminified file contents.\n- `{{md5}}` is a md5-digest of the unminified file contents.\n\nFor example, `{{filename}}-{{md5}}.min.{{ext}}` will make `abc.js` into something\nlike `abc-f90731d65c61af25b149658a120d26cf.min.js`.\n\nTo avoid the minification of previously minified files, there is a `--clean`\noption, which will delete all files that match the output pattern.\n\nThis also means that any real files that match the pattern will be removed as\nwell, so please be careful.\n\n\nRunning from a node-script\n--------------------------\n\nIt is also possible to run the minifier from within another node script:\n\n\tvar minifier = require(\'minifier\')\n\tvar input = \'/some/path\'\n\n\tminifier.on(\'error\', function(err) {\n\t\t// handle any potential error\n\t})\n\tminifier.minify(input, options)\n\nAs with the command-line variant, the input should be a path to either a\njavascript file, a css file or a folder.\n\nThe options-dictionary takes the same parameters as the command-line variant:\n\n- output: A path-string that tells where to put the output.\n- template: A string template for how to build the outputted filenames.\n- clean: A bool for whether other files with names similar to the template\n  should be deleted before minifying the contents of a folder.\n- cleanOnly: A bool for whether to run with `clean` option and then exiting\n  before minifying any files.\n\nThere are one important additional option: `uglify`. This will be passed on to\nuglify, so that the minification can be controlled. See the\n[uglify documentation](https://github.com/mishoo/UglifyJS2#the-simple-way)\nfor more details (the `uglify.minify(path, opts)` function is used internally).\n\n-----\n\nThe method for building the output name from the template is exposed for\nconvenience:\n\n\tvar minifier = require(\'minifier\')\n\tvar file = \'abc.js\'\n\tvar template = \'{{filename}}.{{md5}}.{{ext}}\'\n\tvar content = null; // or the content, if md5 or sha1 should be calculated\n\tvar result = minifier.generateOutputName(file, { template: template, content: content })\n\nIf the input-path includes any folders, they will also be added to the output.\n\nIf `content` is eschewed, the `md5` and `sha` digests cannot be calculated.\n\nBut there is an option for turning them into either `RegExp` or `glob` compatible\nsyntax: Simply add `glob: true` or `regex: true` to the options array:\n\n\tvar result = minifier.generateOutputName(file, { template: template, glob: true })\n\n`glob` will return a string for passing to a `glob` function, whereas `regex`\nwill return a `RegExp` instance for manual comparison.\n\n\nConcatenating multiple javascript files\n---------------------------------------\n\nIt is possible to concatenate multiple javascript files into a single, minified file.\n\nSimply pass multiple in via the CLI interface, or pass an array to the API.\n\nThey will have the same order as the input-parameter.\n\n\nRunning the tests\n-----------------\n\nAfter installing from [github](https://github.com/fizker/minifier), simply run\n`npm test`.\n\nThere is a script called `prepareManualTests.js`, which will run the script\nagainst the css-files inside `test/manual/css/` and provides a real-world\nexample of the CSS minification tools.\n\nThe manual tests can be seen by opening `test/manual/index.html` in a browser\nafter executing `prepareManualTests.js`.\n\n\nCredits\n-------\n\nIn no particular order:\n\n- [duckduckgo](http://duckduckgo.com) for the image used by the manual tests.\n- [sqwish](https://github.com/ded/sqwish) for minifying CSS files.\n- [uglify-js](https://github.com/mishoo/UglifyJS2) for minifying JS files.\n- [commander](https://github.com/visionmedia/commander.js) for command-line\n  interaction.\n- [mocha](https://github.com/visionmedia/mocha) and [chai](http://chaijs.com)\n  for testing home-brewed logic.\n- [glob](https://github.com/isaacs/node-glob) for trawling through the\n  file-system when targetting a folder.\n- [hogan.js](http://twitter.github.com/hogan.js/) for parsing the template\n  string.\n',
+95 silly resolved     readmeFilename: 'readme.md',
+95 silly resolved     _id: 'minifier@0.8.0',
+95 silly resolved     dist: { shasum: '0dea8d4858a5e483c63ee150e98a20c948ca0205' },
+95 silly resolved     _from: 'minifier@',
+95 silly resolved     _resolved: 'https://registry.npmjs.org/minifier/-/minifier-0.8.0.tgz' } ]
+96 info install minifier@0.8.0 into /scripts/NetworkCurator/nc-admin/tests
+97 info installOne minifier@0.8.0
+98 warn engine minifier@0.8.0: wanted: {"node":"^4.4.7 || ^6.3.0"} (current: {"node":"v0.10.25","npm":"1.3.10"})
+99 info /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier unbuild
+100 verbose tar unpack /home/tomasz/.npm/minifier/0.8.0/package.tgz
+101 silly lockFile 704844f9-dmin-tests-node-modules-minifier tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier
+102 verbose lock tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier /home/tomasz/.npm/704844f9-dmin-tests-node-modules-minifier.lock
+103 silly lockFile a991eb97-z-npm-minifier-0-8-0-package-tgz tar:///home/tomasz/.npm/minifier/0.8.0/package.tgz
+104 verbose lock tar:///home/tomasz/.npm/minifier/0.8.0/package.tgz /home/tomasz/.npm/a991eb97-z-npm-minifier-0-8-0-package-tgz.lock
+105 silly gunzTarPerm modes [ '755', '644' ]
+106 silly gunzTarPerm extractEntry package.json
+107 silly gunzTarPerm extractEntry .npmignore
+108 silly gunzTarPerm extractEntry index.js
+109 silly gunzTarPerm extractEntry .gitattributes
+110 silly gunzTarPerm extractEntry readme.md
+111 silly gunzTarPerm extractEntry src/css.js
+112 silly gunzTarPerm extractEntry src/minify.js
+113 silly gunzTarPerm extractEntry src/utils.js
+114 silly lockFile 704844f9-dmin-tests-node-modules-minifier tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier
+115 silly lockFile 704844f9-dmin-tests-node-modules-minifier tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier
+116 silly lockFile a991eb97-z-npm-minifier-0-8-0-package-tgz tar:///home/tomasz/.npm/minifier/0.8.0/package.tgz
+117 silly lockFile a991eb97-z-npm-minifier-0-8-0-package-tgz tar:///home/tomasz/.npm/minifier/0.8.0/package.tgz
+118 info preinstall minifier@0.8.0
+119 verbose readDependencies using package.json deps
+120 verbose readDependencies using package.json deps
+121 verbose cache add [ 'commander@^2.8.1', null ]
+122 verbose cache add name=undefined spec="commander@^2.8.1" args=["commander@^2.8.1",null]
+123 verbose parsed url { protocol: null,
+123 verbose parsed url   slashes: null,
+123 verbose parsed url   auth: null,
+123 verbose parsed url   host: null,
+123 verbose parsed url   port: null,
+123 verbose parsed url   hostname: null,
+123 verbose parsed url   hash: null,
+123 verbose parsed url   search: null,
+123 verbose parsed url   query: null,
+123 verbose parsed url   pathname: 'commander@^2.8.1',
+123 verbose parsed url   path: 'commander@^2.8.1',
+123 verbose parsed url   href: 'commander@^2.8.1' }
+124 verbose cache add name="commander" spec="^2.8.1" args=["commander","^2.8.1"]
+125 verbose parsed url { protocol: null,
+125 verbose parsed url   slashes: null,
+125 verbose parsed url   auth: null,
+125 verbose parsed url   host: null,
+125 verbose parsed url   port: null,
+125 verbose parsed url   hostname: null,
+125 verbose parsed url   hash: null,
+125 verbose parsed url   search: null,
+125 verbose parsed url   query: null,
+125 verbose parsed url   pathname: '^2.8.1',
+125 verbose parsed url   path: '^2.8.1',
+125 verbose parsed url   href: '^2.8.1' }
+126 verbose addNamed [ 'commander', '^2.8.1' ]
+127 verbose addNamed [ null, '>=2.8.1-0 <3.0.0-0' ]
+128 silly lockFile f6e43770-commander-2-8-1 commander@^2.8.1
+129 verbose lock commander@^2.8.1 /home/tomasz/.npm/f6e43770-commander-2-8-1.lock
+130 verbose cache add [ 'css-resolve-import@^0.1.1', null ]
+131 verbose cache add name=undefined spec="css-resolve-import@^0.1.1" args=["css-resolve-import@^0.1.1",null]
+132 verbose parsed url { protocol: null,
+132 verbose parsed url   slashes: null,
+132 verbose parsed url   auth: null,
+132 verbose parsed url   host: null,
+132 verbose parsed url   port: null,
+132 verbose parsed url   hostname: null,
+132 verbose parsed url   hash: null,
+132 verbose parsed url   search: null,
+132 verbose parsed url   query: null,
+132 verbose parsed url   pathname: 'css-resolve-import@^0.1.1',
+132 verbose parsed url   path: 'css-resolve-import@^0.1.1',
+132 verbose parsed url   href: 'css-resolve-import@^0.1.1' }
+133 verbose cache add name="css-resolve-import" spec="^0.1.1" args=["css-resolve-import","^0.1.1"]
+134 verbose parsed url { protocol: null,
+134 verbose parsed url   slashes: null,
+134 verbose parsed url   auth: null,
+134 verbose parsed url   host: null,
+134 verbose parsed url   port: null,
+134 verbose parsed url   hostname: null,
+134 verbose parsed url   hash: null,
+134 verbose parsed url   search: null,
+134 verbose parsed url   query: null,
+134 verbose parsed url   pathname: '^0.1.1',
+134 verbose parsed url   path: '^0.1.1',
+134 verbose parsed url   href: '^0.1.1' }
+135 verbose addNamed [ 'css-resolve-import', '^0.1.1' ]
+136 verbose addNamed [ null, '>=0.1.1-0 <0.2.0-0' ]
+137 silly lockFile 0a86c72c-css-resolve-import-0-1-1 css-resolve-import@^0.1.1
+138 verbose lock css-resolve-import@^0.1.1 /home/tomasz/.npm/0a86c72c-css-resolve-import-0-1-1.lock
+139 verbose cache add [ 'fmerge@^1.2.0', null ]
+140 verbose cache add name=undefined spec="fmerge@^1.2.0" args=["fmerge@^1.2.0",null]
+141 verbose parsed url { protocol: null,
+141 verbose parsed url   slashes: null,
+141 verbose parsed url   auth: null,
+141 verbose parsed url   host: null,
+141 verbose parsed url   port: null,
+141 verbose parsed url   hostname: null,
+141 verbose parsed url   hash: null,
+141 verbose parsed url   search: null,
+141 verbose parsed url   query: null,
+141 verbose parsed url   pathname: 'fmerge@^1.2.0',
+141 verbose parsed url   path: 'fmerge@^1.2.0',
+141 verbose parsed url   href: 'fmerge@^1.2.0' }
+142 verbose cache add name="fmerge" spec="^1.2.0" args=["fmerge","^1.2.0"]
+143 verbose parsed url { protocol: null,
+143 verbose parsed url   slashes: null,
+143 verbose parsed url   auth: null,
+143 verbose parsed url   host: null,
+143 verbose parsed url   port: null,
+143 verbose parsed url   hostname: null,
+143 verbose parsed url   hash: null,
+143 verbose parsed url   search: null,
+143 verbose parsed url   query: null,
+143 verbose parsed url   pathname: '^1.2.0',
+143 verbose parsed url   path: '^1.2.0',
+143 verbose parsed url   href: '^1.2.0' }
+144 verbose addNamed [ 'fmerge', '^1.2.0' ]
+145 verbose addNamed [ null, '>=1.2.0-0 <2.0.0-0' ]
+146 silly lockFile 3b9d73cd-fmerge-1-2-0 fmerge@^1.2.0
+147 verbose lock fmerge@^1.2.0 /home/tomasz/.npm/3b9d73cd-fmerge-1-2-0.lock
+148 verbose cache add [ 'glob@^5.0.14', null ]
+149 verbose cache add name=undefined spec="glob@^5.0.14" args=["glob@^5.0.14",null]
+150 verbose parsed url { protocol: null,
+150 verbose parsed url   slashes: null,
+150 verbose parsed url   auth: null,
+150 verbose parsed url   host: null,
+150 verbose parsed url   port: null,
+150 verbose parsed url   hostname: null,
+150 verbose parsed url   hash: null,
+150 verbose parsed url   search: null,
+150 verbose parsed url   query: null,
+150 verbose parsed url   pathname: 'glob@^5.0.14',
+150 verbose parsed url   path: 'glob@^5.0.14',
+150 verbose parsed url   href: 'glob@^5.0.14' }
+151 verbose cache add name="glob" spec="^5.0.14" args=["glob","^5.0.14"]
+152 verbose parsed url { protocol: null,
+152 verbose parsed url   slashes: null,
+152 verbose parsed url   auth: null,
+152 verbose parsed url   host: null,
+152 verbose parsed url   port: null,
+152 verbose parsed url   hostname: null,
+152 verbose parsed url   hash: null,
+152 verbose parsed url   search: null,
+152 verbose parsed url   query: null,
+152 verbose parsed url   pathname: '^5.0.14',
+152 verbose parsed url   path: '^5.0.14',
+152 verbose parsed url   href: '^5.0.14' }
+153 verbose addNamed [ 'glob', '^5.0.14' ]
+154 verbose addNamed [ null, '>=5.0.14-0 <6.0.0-0' ]
+155 silly lockFile 6285da20-glob-5-0-14 glob@^5.0.14
+156 verbose lock glob@^5.0.14 /home/tomasz/.npm/6285da20-glob-5-0-14.lock
+157 verbose cache add [ 'hogan.js@^3.0.2', null ]
+158 verbose cache add name=undefined spec="hogan.js@^3.0.2" args=["hogan.js@^3.0.2",null]
+159 verbose parsed url { protocol: null,
+159 verbose parsed url   slashes: null,
+159 verbose parsed url   auth: null,
+159 verbose parsed url   host: null,
+159 verbose parsed url   port: null,
+159 verbose parsed url   hostname: null,
+159 verbose parsed url   hash: null,
+159 verbose parsed url   search: null,
+159 verbose parsed url   query: null,
+159 verbose parsed url   pathname: 'hogan.js@^3.0.2',
+159 verbose parsed url   path: 'hogan.js@^3.0.2',
+159 verbose parsed url   href: 'hogan.js@^3.0.2' }
+160 verbose cache add name="hogan.js" spec="^3.0.2" args=["hogan.js","^3.0.2"]
+161 verbose parsed url { protocol: null,
+161 verbose parsed url   slashes: null,
+161 verbose parsed url   auth: null,
+161 verbose parsed url   host: null,
+161 verbose parsed url   port: null,
+161 verbose parsed url   hostname: null,
+161 verbose parsed url   hash: null,
+161 verbose parsed url   search: null,
+161 verbose parsed url   query: null,
+161 verbose parsed url   pathname: '^3.0.2',
+161 verbose parsed url   path: '^3.0.2',
+161 verbose parsed url   href: '^3.0.2' }
+162 verbose addNamed [ 'hogan.js', '^3.0.2' ]
+163 verbose addNamed [ null, '>=3.0.2-0 <4.0.0-0' ]
+164 silly lockFile 3a3adee7-hogan-js-3-0-2 hogan.js@^3.0.2
+165 verbose lock hogan.js@^3.0.2 /home/tomasz/.npm/3a3adee7-hogan-js-3-0-2.lock
+166 verbose cache add [ 'sqwish@~0.2.2', null ]
+167 verbose cache add name=undefined spec="sqwish@~0.2.2" args=["sqwish@~0.2.2",null]
+168 verbose parsed url { protocol: null,
+168 verbose parsed url   slashes: null,
+168 verbose parsed url   auth: null,
+168 verbose parsed url   host: null,
+168 verbose parsed url   port: null,
+168 verbose parsed url   hostname: null,
+168 verbose parsed url   hash: null,
+168 verbose parsed url   search: null,
+168 verbose parsed url   query: null,
+168 verbose parsed url   pathname: 'sqwish@~0.2.2',
+168 verbose parsed url   path: 'sqwish@~0.2.2',
+168 verbose parsed url   href: 'sqwish@~0.2.2' }
+169 verbose cache add name="sqwish" spec="~0.2.2" args=["sqwish","~0.2.2"]
+170 verbose parsed url { protocol: null,
+170 verbose parsed url   slashes: null,
+170 verbose parsed url   auth: null,
+170 verbose parsed url   host: null,
+170 verbose parsed url   port: null,
+170 verbose parsed url   hostname: null,
+170 verbose parsed url   hash: null,
+170 verbose parsed url   search: null,
+170 verbose parsed url   query: null,
+170 verbose parsed url   pathname: '~0.2.2',
+170 verbose parsed url   path: '~0.2.2',
+170 verbose parsed url   href: '~0.2.2' }
+171 verbose addNamed [ 'sqwish', '~0.2.2' ]
+172 verbose addNamed [ null, '>=0.2.2-0 <0.3.0-0' ]
+173 silly lockFile c6870a7d-sqwish-0-2-2 sqwish@~0.2.2
+174 verbose lock sqwish@~0.2.2 /home/tomasz/.npm/c6870a7d-sqwish-0-2-2.lock
+175 silly addNameRange { name: 'commander',
+175 silly addNameRange   range: '>=2.8.1-0 <3.0.0-0',
+175 silly addNameRange   hasData: false }
+176 verbose cache add [ 'uglify-js@^2.4.24', null ]
+177 verbose cache add name=undefined spec="uglify-js@^2.4.24" args=["uglify-js@^2.4.24",null]
+178 verbose parsed url { protocol: null,
+178 verbose parsed url   slashes: null,
+178 verbose parsed url   auth: null,
+178 verbose parsed url   host: null,
+178 verbose parsed url   port: null,
+178 verbose parsed url   hostname: null,
+178 verbose parsed url   hash: null,
+178 verbose parsed url   search: null,
+178 verbose parsed url   query: null,
+178 verbose parsed url   pathname: 'uglify-js@^2.4.24',
+178 verbose parsed url   path: 'uglify-js@^2.4.24',
+178 verbose parsed url   href: 'uglify-js@^2.4.24' }
+179 verbose cache add name="uglify-js" spec="^2.4.24" args=["uglify-js","^2.4.24"]
+180 verbose parsed url { protocol: null,
+180 verbose parsed url   slashes: null,
+180 verbose parsed url   auth: null,
+180 verbose parsed url   host: null,
+180 verbose parsed url   port: null,
+180 verbose parsed url   hostname: null,
+180 verbose parsed url   hash: null,
+180 verbose parsed url   search: null,
+180 verbose parsed url   query: null,
+180 verbose parsed url   pathname: '^2.4.24',
+180 verbose parsed url   path: '^2.4.24',
+180 verbose parsed url   href: '^2.4.24' }
+181 verbose addNamed [ 'uglify-js', '^2.4.24' ]
+182 verbose addNamed [ null, '>=2.4.24-0 <3.0.0-0' ]
+183 silly lockFile 5bc39e92-uglify-js-2-4-24 uglify-js@^2.4.24
+184 verbose lock uglify-js@^2.4.24 /home/tomasz/.npm/5bc39e92-uglify-js-2-4-24.lock
+185 silly addNameRange { name: 'css-resolve-import',
+185 silly addNameRange   range: '>=0.1.1-0 <0.2.0-0',
+185 silly addNameRange   hasData: false }
+186 silly addNameRange { name: 'fmerge', range: '>=1.2.0-0 <2.0.0-0', hasData: false }
+187 silly addNameRange { name: 'glob', range: '>=5.0.14-0 <6.0.0-0', hasData: false }
+188 silly addNameRange { name: 'hogan.js', range: '>=3.0.2-0 <4.0.0-0', hasData: false }
+189 silly addNameRange { name: 'sqwish', range: '>=0.2.2-0 <0.3.0-0', hasData: false }
+190 verbose url raw css-resolve-import
+191 verbose url resolving [ 'https://registry.npmjs.org/', './css-resolve-import' ]
+192 verbose url resolved https://registry.npmjs.org/css-resolve-import
+193 info trying registry request attempt 1 at 19:52:45
+194 http GET https://registry.npmjs.org/css-resolve-import
+195 verbose url raw fmerge
+196 verbose url resolving [ 'https://registry.npmjs.org/', './fmerge' ]
+197 verbose url resolved https://registry.npmjs.org/fmerge
+198 info trying registry request attempt 1 at 19:52:45
+199 http GET https://registry.npmjs.org/fmerge
+200 verbose url raw hogan.js
+201 verbose url resolving [ 'https://registry.npmjs.org/', './hogan.js' ]
+202 verbose url resolved https://registry.npmjs.org/hogan.js
+203 info trying registry request attempt 1 at 19:52:45
+204 http GET https://registry.npmjs.org/hogan.js
+205 verbose url raw sqwish
+206 verbose url resolving [ 'https://registry.npmjs.org/', './sqwish' ]
+207 verbose url resolved https://registry.npmjs.org/sqwish
+208 info trying registry request attempt 1 at 19:52:45
+209 http GET https://registry.npmjs.org/sqwish
+210 silly addNameRange { name: 'uglify-js',
+210 silly addNameRange   range: '>=2.4.24-0 <3.0.0-0',
+210 silly addNameRange   hasData: false }
+211 verbose url raw commander
+212 verbose url resolving [ 'https://registry.npmjs.org/', './commander' ]
+213 verbose url resolved https://registry.npmjs.org/commander
+214 info trying registry request attempt 1 at 19:52:45
+215 verbose etag "DQGSELTNXR9OR1UMDP555YVHL"
+216 http GET https://registry.npmjs.org/commander
+217 verbose url raw glob
+218 verbose url resolving [ 'https://registry.npmjs.org/', './glob' ]
+219 verbose url resolved https://registry.npmjs.org/glob
+220 info trying registry request attempt 1 at 19:52:45
+221 verbose etag "EBSPOCAW65BTD9N8C50TMDGFI"
+222 http GET https://registry.npmjs.org/glob
+223 verbose url raw uglify-js
+224 verbose url resolving [ 'https://registry.npmjs.org/', './uglify-js' ]
+225 verbose url resolved https://registry.npmjs.org/uglify-js
+226 info trying registry request attempt 1 at 19:52:45
+227 verbose etag "7P94G9JK4EMSNJGO5OX1QQFP7"
+228 http GET https://registry.npmjs.org/uglify-js
+229 http 304 https://registry.npmjs.org/commander
+230 silly registry.get cb [ 304,
+230 silly registry.get   { date: 'Thu, 22 Sep 2016 17:52:45 GMT',
+230 silly registry.get     via: '1.1 varnish',
+230 silly registry.get     'cache-control': 'max-age=300',
+230 silly registry.get     etag: '"DQGSELTNXR9OR1UMDP555YVHL"',
+230 silly registry.get     age: '235',
+230 silly registry.get     connection: 'keep-alive',
+230 silly registry.get     'x-served-by': 'cache-lcy1132-LCY',
+230 silly registry.get     'x-cache': 'HIT',
+230 silly registry.get     'x-cache-hits': '1',
+230 silly registry.get     'x-timer': 'S1474566765.522732,VS0,VE0',
+230 silly registry.get     vary: 'Accept-Encoding' } ]
+231 verbose etag commander from cache
+232 silly addNameRange number 2 { name: 'commander', range: '>=2.8.1-0 <3.0.0-0', hasData: true }
+233 silly addNameRange versions [ 'commander',
+233 silly addNameRange   [ '0.0.1',
+233 silly addNameRange     '0.0.3',
+233 silly addNameRange     '0.0.4',
+233 silly addNameRange     '0.0.5',
+233 silly addNameRange     '0.1.0',
+233 silly addNameRange     '0.2.0',
+233 silly addNameRange     '0.2.1',
+233 silly addNameRange     '0.3.0',
+233 silly addNameRange     '0.3.1',
+233 silly addNameRange     '0.3.2',
+233 silly addNameRange     '0.3.3',
+233 silly addNameRange     '0.4.0',
+233 silly addNameRange     '0.4.1',
+233 silly addNameRange     '0.4.2',
+233 silly addNameRange     '0.4.3',
+233 silly addNameRange     '0.5.0',
+233 silly addNameRange     '0.5.1',
+233 silly addNameRange     '0.6.0',
+233 silly addNameRange     '0.6.1',
+233 silly addNameRange     '0.5.2',
+233 silly addNameRange     '1.0.0',
+233 silly addNameRange     '1.0.1',
+233 silly addNameRange     '1.0.2',
+233 silly addNameRange     '1.0.3',
+233 silly addNameRange     '1.0.4',
+233 silly addNameRange     '1.0.5',
+233 silly addNameRange     '1.1.0',
+233 silly addNameRange     '1.1.1',
+233 silly addNameRange     '1.2.0',
+233 silly addNameRange     '1.3.0',
+233 silly addNameRange     '1.3.1',
+233 silly addNameRange     '1.3.2',
+233 silly addNameRange     '2.0.0',
+233 silly addNameRange     '2.1.0',
+233 silly addNameRange     '2.2.0',
+233 silly addNameRange     '2.3.0',
+233 silly addNameRange     '2.4.0',
+233 silly addNameRange     '2.5.0',
+233 silly addNameRange     '2.5.1',
+233 silly addNameRange     '2.6.0',
+233 silly addNameRange     '2.7.0',
+233 silly addNameRange     '2.7.1',
+233 silly addNameRange     '2.8.0',
+233 silly addNameRange     '2.8.1',
+233 silly addNameRange     '2.9.0' ] ]
+234 verbose addNamed [ 'commander', '2.9.0' ]
+235 verbose addNamed [ '2.9.0', '2.9.0' ]
+236 silly lockFile 07267fc6-commander-2-9-0 commander@2.9.0
+237 verbose lock commander@2.9.0 /home/tomasz/.npm/07267fc6-commander-2-9-0.lock
+238 http 304 https://registry.npmjs.org/glob
+239 silly registry.get cb [ 304,
+239 silly registry.get   { date: 'Thu, 22 Sep 2016 17:52:45 GMT',
+239 silly registry.get     via: '1.1 varnish',
+239 silly registry.get     'cache-control': 'max-age=300',
+239 silly registry.get     etag: '"EBSPOCAW65BTD9N8C50TMDGFI"',
+239 silly registry.get     age: '285',
+239 silly registry.get     connection: 'keep-alive',
+239 silly registry.get     'x-served-by': 'cache-lcy1132-LCY',
+239 silly registry.get     'x-cache': 'HIT',
+239 silly registry.get     'x-cache-hits': '3',
+239 silly registry.get     'x-timer': 'S1474566765.545106,VS0,VE0',
+239 silly registry.get     vary: 'Accept-Encoding' } ]
+240 verbose etag glob from cache
+241 silly lockFile fc4c5515-rg-commander-commander-2-9-0-tgz https://registry.npmjs.org/commander/-/commander-2.9.0.tgz
+242 verbose lock https://registry.npmjs.org/commander/-/commander-2.9.0.tgz /home/tomasz/.npm/fc4c5515-rg-commander-commander-2-9-0-tgz.lock
+243 verbose addRemoteTarball [ 'https://registry.npmjs.org/commander/-/commander-2.9.0.tgz',
+243 verbose addRemoteTarball   '9c99094176e12240cb22d6c5146098400fe0f7d4' ]
+244 info retry fetch attempt 1 at 19:52:45
+245 verbose fetch to= /home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765525-0.9360579429194331/tmp.tgz
+246 http GET https://registry.npmjs.org/commander/-/commander-2.9.0.tgz
+247 silly addNameRange number 2 { name: 'glob', range: '>=5.0.14-0 <6.0.0-0', hasData: true }
+248 silly addNameRange versions [ 'glob',
+248 silly addNameRange   [ '1.1.0',
+248 silly addNameRange     '2.0.9',
+248 silly addNameRange     '2.0.8',
+248 silly addNameRange     '2.0.7',
+248 silly addNameRange     '2.1.0',
+248 silly addNameRange     '3.0.0',
+248 silly addNameRange     '3.0.1',
+248 silly addNameRange     '3.1.0',
+248 silly addNameRange     '3.1.1',
+248 silly addNameRange     '3.1.2',
+248 silly addNameRange     '3.1.3',
+248 silly addNameRange     '3.1.4',
+248 silly addNameRange     '3.1.5',
+248 silly addNameRange     '3.1.6',
+248 silly addNameRange     '3.1.7',
+248 silly addNameRange     '3.1.9',
+248 silly addNameRange     '3.1.10',
+248 silly addNameRange     '3.1.11',
+248 silly addNameRange     '3.1.12',
+248 silly addNameRange     '3.1.13',
+248 silly addNameRange     '3.1.14',
+248 silly addNameRange     '3.1.15',
+248 silly addNameRange     '3.1.16',
+248 silly addNameRange     '3.1.17',
+248 silly addNameRange     '3.1.18',
+248 silly addNameRange     '3.1.19',
+248 silly addNameRange     '3.1.20',
+248 silly addNameRange     '3.1.21',
+248 silly addNameRange     '3.2.0',
+248 silly addNameRange     '3.2.1',
+248 silly addNameRange     '3.2.3',
+248 silly addNameRange     '3.2.4',
+248 silly addNameRange     '3.2.5',
+248 silly addNameRange     '3.2.6',
+248 silly addNameRange     '3.2.7',
+248 silly addNameRange     '3.2.8',
+248 silly addNameRange     '3.2.9',
+248 silly addNameRange     '3.2.10',
+248 silly addNameRange     '3.2.11',
+248 silly addNameRange     '4.0.0',
+248 silly addNameRange     '4.0.1',
+248 silly addNameRange     '4.0.2',
+248 silly addNameRange     '4.0.3',
+248 silly addNameRange     '4.0.4',
+248 silly addNameRange     '4.0.5',
+248 silly addNameRange     '4.0.6',
+248 silly addNameRange     '4.1.2-beta',
+248 silly addNameRange     '4.1.2',
+248 silly addNameRange     '4.1.3',
+248 silly addNameRange     '4.1.4',
+248 silly addNameRange     '4.1.5',
+248 silly addNameRange     '4.1.6',
+248 silly addNameRange     '4.2.0',
+248 silly addNameRange     '4.2.1',
+248 silly addNameRange     '4.2.2',
+248 silly addNameRange     '4.3.0',
+248 silly addNameRange     '4.3.1',
+248 silly addNameRange     '4.3.2',
+248 silly addNameRange     '4.3.3',
+248 silly addNameRange     '4.3.4',
+248 silly addNameRange     '4.3.5',
+248 silly addNameRange     '4.4.0',
+248 silly addNameRange     '4.4.2',
+248 silly addNameRange     '4.5.0',
+248 silly addNameRange     '5.0.0',
+248 silly addNameRange     '4.5.1',
+248 silly addNameRange     '5.0.1',
+248 silly addNameRange     '4.5.2',
+248 silly addNameRange     '5.0.2',
+248 silly addNameRange     '4.5.3',
+248 silly addNameRange     '5.0.3',
+248 silly addNameRange     '5.0.4',
+248 silly addNameRange     '5.0.5',
+248 silly addNameRange     '5.0.6',
+248 silly addNameRange     '5.0.7',
+248 silly addNameRange     '5.0.9',
+248 silly addNameRange     '5.0.10',
+248 silly addNameRange     '5.0.11',
+248 silly addNameRange     '5.0.12',
+248 silly addNameRange     '5.0.13',
+248 silly addNameRange     '5.0.14',
+248 silly addNameRange     '5.0.15',
+248 silly addNameRange     '6.0.1',
+248 silly addNameRange     '6.0.2',
+248 silly addNameRange     '6.0.3',
+248 silly addNameRange     '6.0.4',
+248 silly addNameRange     '7.0.0',
+248 silly addNameRange     '7.0.1',
+248 silly addNameRange     '7.0.3',
+248 silly addNameRange     '7.0.4',
+248 silly addNameRange     '7.0.5',
+248 silly addNameRange     '7.0.6',
+248 silly addNameRange     '7.1.0' ] ]
+249 verbose addNamed [ 'glob', '5.0.15' ]
+250 verbose addNamed [ '5.0.15', '5.0.15' ]
+251 silly lockFile 03e27dc7-glob-5-0-15 glob@5.0.15
+252 verbose lock glob@5.0.15 /home/tomasz/.npm/03e27dc7-glob-5-0-15.lock
+253 http 304 https://registry.npmjs.org/uglify-js
+254 silly registry.get cb [ 304,
+254 silly registry.get   { date: 'Thu, 22 Sep 2016 17:52:45 GMT',
+254 silly registry.get     via: '1.1 varnish',
+254 silly registry.get     'cache-control': 'max-age=300',
+254 silly registry.get     etag: '"7P94G9JK4EMSNJGO5OX1QQFP7"',
+254 silly registry.get     age: '158',
+254 silly registry.get     connection: 'keep-alive',
+254 silly registry.get     'x-served-by': 'cache-lcy1132-LCY',
+254 silly registry.get     'x-cache': 'HIT',
+254 silly registry.get     'x-cache-hits': '1',
+254 silly registry.get     'x-timer': 'S1474566765.565829,VS0,VE0',
+254 silly registry.get     vary: 'Accept-Encoding' } ]
+255 verbose etag uglify-js from cache
+256 silly addNameRange number 2 { name: 'uglify-js',
+256 silly addNameRange   range: '>=2.4.24-0 <3.0.0-0',
+256 silly addNameRange   hasData: true }
+257 silly addNameRange versions [ 'uglify-js',
+257 silly addNameRange   [ '0.0.1',
+257 silly addNameRange     '0.0.2',
+257 silly addNameRange     '0.0.3',
+257 silly addNameRange     '0.0.4',
+257 silly addNameRange     '0.0.5',
+257 silly addNameRange     '1.0.1',
+257 silly addNameRange     '1.0.2',
+257 silly addNameRange     '1.0.3',
+257 silly addNameRange     '1.0.4',
+257 silly addNameRange     '1.0.5',
+257 silly addNameRange     '1.0.6',
+257 silly addNameRange     '1.0.7',
+257 silly addNameRange     '1.1.0',
+257 silly addNameRange     '1.1.1',
+257 silly addNameRange     '1.2.0',
+257 silly addNameRange     '1.2.1',
+257 silly addNameRange     '1.2.2',
+257 silly addNameRange     '1.2.3',
+257 silly addNameRange     '1.2.4',
+257 silly addNameRange     '1.2.5',
+257 silly addNameRange     '1.2.6',
+257 silly addNameRange     '1.3.0',
+257 silly addNameRange     '1.3.1',
+257 silly addNameRange     '1.3.2',
+257 silly addNameRange     '1.3.3',
+257 silly addNameRange     '1.3.4',
+257 silly addNameRange     '2.2.0',
+257 silly addNameRange     '2.2.1',
+257 silly addNameRange     '2.2.2',
+257 silly addNameRange     '2.2.3',
+257 silly addNameRange     '2.2.4',
+257 silly addNameRange     '2.2.5',
+257 silly addNameRange     '2.3.0',
+257 silly addNameRange     '2.3.1',
+257 silly addNameRange     '2.3.2',
+257 silly addNameRange     '2.3.3',
+257 silly addNameRange     '2.3.4',
+257 silly addNameRange     '2.3.5',
+257 silly addNameRange     '2.3.6',
+257 silly addNameRange     '1.3.5',
+257 silly addNameRange     '2.4.0',
+257 silly addNameRange     '2.4.1',
+257 silly addNameRange     '2.4.2',
+257 silly addNameRange     '2.4.3',
+257 silly addNameRange     '2.4.4',
+257 silly addNameRange     '2.4.5',
+257 silly addNameRange     '2.4.6',
+257 silly addNameRange     '2.4.7',
+257 silly addNameRange     '2.4.8',
+257 silly addNameRange     '2.4.9',
+257 silly addNameRange     '2.4.10',
+257 silly addNameRange     '2.4.11',
+257 silly addNameRange     '2.4.12',
+257 silly addNameRange     '2.4.13',
+257 silly addNameRange     '2.4.14',
+257 silly addNameRange     '2.4.15',
+257 silly addNameRange     '2.4.16',
+257 silly addNameRange     '2.4.17',
+257 silly addNameRange     '2.4.18',
+257 silly addNameRange     '2.4.19',
+257 silly addNameRange     '2.4.20',
+257 silly addNameRange     '2.4.21',
+257 silly addNameRange     '2.4.22',
+257 silly addNameRange     '2.4.23',
+257 silly addNameRange     '2.4.24',
+257 silly addNameRange     '2.5.0',
+257 silly addNameRange     '2.6.0',
+257 silly addNameRange     '2.6.1',
+257 silly addNameRange     '2.6.2',
+257 silly addNameRange     '2.6.3',
+257 silly addNameRange     '2.6.4',
+257 silly addNameRange     '2.7.0',
+257 silly addNameRange     '2.7.1',
+257 silly addNameRange     '2.7.2',
+257 silly addNameRange     '2.7.3' ] ]
+258 verbose addNamed [ 'uglify-js', '2.7.3' ]
+259 verbose addNamed [ '2.7.3', '2.7.3' ]
+260 silly lockFile 7066cffd-uglify-js-2-7-3 uglify-js@2.7.3
+261 verbose lock uglify-js@2.7.3 /home/tomasz/.npm/7066cffd-uglify-js-2-7-3.lock
+262 http 200 https://registry.npmjs.org/css-resolve-import
+263 silly registry.get cb [ 200,
+263 silly registry.get   { server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+263 silly registry.get     etag: '"CKQHR9EGZOBVLNB97RN7T0Y4Y"',
+263 silly registry.get     'content-type': 'application/json',
+263 silly registry.get     'cache-control': 'max-age=300',
+263 silly registry.get     'content-length': '7385',
+263 silly registry.get     'accept-ranges': 'bytes',
+263 silly registry.get     date: 'Thu, 22 Sep 2016 17:52:45 GMT',
+263 silly registry.get     via: '1.1 varnish',
+263 silly registry.get     age: '0',
+263 silly registry.get     connection: 'keep-alive',
+263 silly registry.get     'x-served-by': 'cache-lcy1131-LCY',
+263 silly registry.get     'x-cache': 'MISS',
+263 silly registry.get     'x-cache-hits': '0',
+263 silly registry.get     'x-timer': 'S1474566765.474801,VS0,VE177',
+263 silly registry.get     vary: 'Accept-Encoding' } ]
+264 http 200 https://registry.npmjs.org/commander/-/commander-2.9.0.tgz
+265 silly lockFile 03e27dc7-glob-5-0-15 glob@5.0.15
+266 silly lockFile 03e27dc7-glob-5-0-15 glob@5.0.15
+267 silly lockFile 6285da20-glob-5-0-14 glob@^5.0.14
+268 silly lockFile 6285da20-glob-5-0-14 glob@^5.0.14
+269 silly addNameRange number 2 { name: 'css-resolve-import',
+269 silly addNameRange   range: '>=0.1.1-0 <0.2.0-0',
+269 silly addNameRange   hasData: true }
+270 silly addNameRange versions [ 'css-resolve-import',
+270 silly addNameRange   [ '0.0.1', '0.0.2', '0.0.3', '0.1.0', '0.1.1', '0.1.2' ] ]
+271 verbose addNamed [ 'css-resolve-import', '0.1.2' ]
+272 verbose addNamed [ '0.1.2', '0.1.2' ]
+273 silly lockFile c277c93b-css-resolve-import-0-1-2 css-resolve-import@0.1.2
+274 verbose lock css-resolve-import@0.1.2 /home/tomasz/.npm/c277c93b-css-resolve-import-0-1-2.lock
+275 silly lockFile da68546c-ort-css-resolve-import-0-1-2-tgz https://registry.npmjs.org/css-resolve-import/-/css-resolve-import-0.1.2.tgz
+276 verbose lock https://registry.npmjs.org/css-resolve-import/-/css-resolve-import-0.1.2.tgz /home/tomasz/.npm/da68546c-ort-css-resolve-import-0-1-2-tgz.lock
+277 verbose addRemoteTarball [ 'https://registry.npmjs.org/css-resolve-import/-/css-resolve-import-0.1.2.tgz',
+277 verbose addRemoteTarball   'ff6d28ac4a175c9d57adb9d2ce6da6f916a1d535' ]
+278 info retry fetch attempt 1 at 19:52:45
+279 verbose fetch to= /home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765648-0.634533085860312/tmp.tgz
+280 http GET https://registry.npmjs.org/css-resolve-import/-/css-resolve-import-0.1.2.tgz
+281 verbose tar unpack /home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765525-0.9360579429194331/tmp.tgz
+282 silly lockFile bc4d8a57-65525-0-9360579429194331-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765525-0.9360579429194331/package
+283 verbose lock tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765525-0.9360579429194331/package /home/tomasz/.npm/bc4d8a57-65525-0-9360579429194331-package.lock
+284 silly lockFile 2e1a6ed9-65525-0-9360579429194331-tmp-tgz tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765525-0.9360579429194331/tmp.tgz
+285 verbose lock tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765525-0.9360579429194331/tmp.tgz /home/tomasz/.npm/2e1a6ed9-65525-0-9360579429194331-tmp-tgz.lock
+286 silly gunzTarPerm modes [ '755', '644' ]
+287 silly gunzTarPerm extractEntry package.json
+288 silly gunzTarPerm extractEntry LICENSE
+289 silly gunzTarPerm extractEntry index.js
+290 silly gunzTarPerm extractEntry Readme.md
+291 silly gunzTarPerm extractEntry History.md
+292 silly lockFile bc4d8a57-65525-0-9360579429194331-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765525-0.9360579429194331/package
+293 silly lockFile bc4d8a57-65525-0-9360579429194331-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765525-0.9360579429194331/package
+294 silly lockFile 7066cffd-uglify-js-2-7-3 uglify-js@2.7.3
+295 silly lockFile 7066cffd-uglify-js-2-7-3 uglify-js@2.7.3
+296 silly lockFile 2e1a6ed9-65525-0-9360579429194331-tmp-tgz tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765525-0.9360579429194331/tmp.tgz
+297 silly lockFile 2e1a6ed9-65525-0-9360579429194331-tmp-tgz tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765525-0.9360579429194331/tmp.tgz
+298 silly lockFile 5bc39e92-uglify-js-2-4-24 uglify-js@^2.4.24
+299 silly lockFile 5bc39e92-uglify-js-2-4-24 uglify-js@^2.4.24
+300 verbose tar pack [ '/home/tomasz/.npm/commander/2.9.0/package.tgz',
+300 verbose tar pack   '/home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765525-0.9360579429194331/package' ]
+301 verbose tarball /home/tomasz/.npm/commander/2.9.0/package.tgz
+302 verbose folder /home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765525-0.9360579429194331/package
+303 silly lockFile bc4d8a57-65525-0-9360579429194331-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765525-0.9360579429194331/package
+304 verbose lock tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765525-0.9360579429194331/package /home/tomasz/.npm/bc4d8a57-65525-0-9360579429194331-package.lock
+305 silly lockFile 05170740--npm-commander-2-9-0-package-tgz tar:///home/tomasz/.npm/commander/2.9.0/package.tgz
+306 verbose lock tar:///home/tomasz/.npm/commander/2.9.0/package.tgz /home/tomasz/.npm/05170740--npm-commander-2-9-0-package-tgz.lock
+307 silly lockFile bc4d8a57-65525-0-9360579429194331-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765525-0.9360579429194331/package
+308 silly lockFile bc4d8a57-65525-0-9360579429194331-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765525-0.9360579429194331/package
+309 silly lockFile 05170740--npm-commander-2-9-0-package-tgz tar:///home/tomasz/.npm/commander/2.9.0/package.tgz
+310 silly lockFile 05170740--npm-commander-2-9-0-package-tgz tar:///home/tomasz/.npm/commander/2.9.0/package.tgz
+311 silly lockFile 8e6a5178-masz-npm-commander-2-9-0-package /home/tomasz/.npm/commander/2.9.0/package
+312 verbose lock /home/tomasz/.npm/commander/2.9.0/package /home/tomasz/.npm/8e6a5178-masz-npm-commander-2-9-0-package.lock
+313 silly lockFile 8e6a5178-masz-npm-commander-2-9-0-package /home/tomasz/.npm/commander/2.9.0/package
+314 silly lockFile 8e6a5178-masz-npm-commander-2-9-0-package /home/tomasz/.npm/commander/2.9.0/package
+315 verbose tar unpack /home/tomasz/.npm/commander/2.9.0/package.tgz
+316 silly lockFile 9fa39c84-masz-npm-commander-2-9-0-package tar:///home/tomasz/.npm/commander/2.9.0/package
+317 verbose lock tar:///home/tomasz/.npm/commander/2.9.0/package /home/tomasz/.npm/9fa39c84-masz-npm-commander-2-9-0-package.lock
+318 silly lockFile 05170740--npm-commander-2-9-0-package-tgz tar:///home/tomasz/.npm/commander/2.9.0/package.tgz
+319 verbose lock tar:///home/tomasz/.npm/commander/2.9.0/package.tgz /home/tomasz/.npm/05170740--npm-commander-2-9-0-package-tgz.lock
+320 silly gunzTarPerm modes [ '755', '644' ]
+321 silly gunzTarPerm extractEntry package.json
+322 silly gunzTarPerm extractEntry index.js
+323 silly gunzTarPerm extractEntry Readme.md
+324 silly lockFile 9fa39c84-masz-npm-commander-2-9-0-package tar:///home/tomasz/.npm/commander/2.9.0/package
+325 silly lockFile 9fa39c84-masz-npm-commander-2-9-0-package tar:///home/tomasz/.npm/commander/2.9.0/package
+326 silly lockFile 05170740--npm-commander-2-9-0-package-tgz tar:///home/tomasz/.npm/commander/2.9.0/package.tgz
+327 silly lockFile 05170740--npm-commander-2-9-0-package-tgz tar:///home/tomasz/.npm/commander/2.9.0/package.tgz
+328 verbose chmod /home/tomasz/.npm/commander/2.9.0/package.tgz 644
+329 verbose chown /home/tomasz/.npm/commander/2.9.0/package.tgz [ 1000, 1000 ]
+330 silly lockFile fc4c5515-rg-commander-commander-2-9-0-tgz https://registry.npmjs.org/commander/-/commander-2.9.0.tgz
+331 silly lockFile fc4c5515-rg-commander-commander-2-9-0-tgz https://registry.npmjs.org/commander/-/commander-2.9.0.tgz
+332 silly lockFile 07267fc6-commander-2-9-0 commander@2.9.0
+333 silly lockFile 07267fc6-commander-2-9-0 commander@2.9.0
+334 silly lockFile f6e43770-commander-2-8-1 commander@^2.8.1
+335 silly lockFile f6e43770-commander-2-8-1 commander@^2.8.1
+336 http 200 https://registry.npmjs.org/css-resolve-import/-/css-resolve-import-0.1.2.tgz
+337 verbose tar unpack /home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765648-0.634533085860312/tmp.tgz
+338 silly lockFile 1a1b64c0-765648-0-634533085860312-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765648-0.634533085860312/package
+339 verbose lock tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765648-0.634533085860312/package /home/tomasz/.npm/1a1b64c0-765648-0-634533085860312-package.lock
+340 silly lockFile feb004aa-765648-0-634533085860312-tmp-tgz tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765648-0.634533085860312/tmp.tgz
+341 verbose lock tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765648-0.634533085860312/tmp.tgz /home/tomasz/.npm/feb004aa-765648-0-634533085860312-tmp-tgz.lock
+342 silly gunzTarPerm modes [ '755', '644' ]
+343 silly gunzTarPerm extractEntry package.json
+344 silly gunzTarPerm extractEntry .npmignore
+345 silly gunzTarPerm extractEntry index.js
+346 silly gunzTarPerm extractEntry src/parse.js
+347 silly gunzTarPerm extractEntry src/strip-utf8-byte-order.js
+348 silly lockFile 1a1b64c0-765648-0-634533085860312-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765648-0.634533085860312/package
+349 silly lockFile 1a1b64c0-765648-0-634533085860312-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765648-0.634533085860312/package
+350 silly lockFile feb004aa-765648-0-634533085860312-tmp-tgz tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765648-0.634533085860312/tmp.tgz
+351 silly lockFile feb004aa-765648-0-634533085860312-tmp-tgz tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765648-0.634533085860312/tmp.tgz
+352 verbose tar pack [ '/home/tomasz/.npm/css-resolve-import/0.1.2/package.tgz',
+352 verbose tar pack   '/home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765648-0.634533085860312/package' ]
+353 verbose tarball /home/tomasz/.npm/css-resolve-import/0.1.2/package.tgz
+354 verbose folder /home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765648-0.634533085860312/package
+355 silly lockFile 1a1b64c0-765648-0-634533085860312-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765648-0.634533085860312/package
+356 verbose lock tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765648-0.634533085860312/package /home/tomasz/.npm/1a1b64c0-765648-0-634533085860312-package.lock
+357 silly lockFile e12c0cdd-resolve-import-0-1-2-package-tgz tar:///home/tomasz/.npm/css-resolve-import/0.1.2/package.tgz
+358 verbose lock tar:///home/tomasz/.npm/css-resolve-import/0.1.2/package.tgz /home/tomasz/.npm/e12c0cdd-resolve-import-0-1-2-package-tgz.lock
+359 silly lockFile 1a1b64c0-765648-0-634533085860312-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765648-0.634533085860312/package
+360 silly lockFile 1a1b64c0-765648-0-634533085860312-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566765648-0.634533085860312/package
+361 silly lockFile e12c0cdd-resolve-import-0-1-2-package-tgz tar:///home/tomasz/.npm/css-resolve-import/0.1.2/package.tgz
+362 silly lockFile e12c0cdd-resolve-import-0-1-2-package-tgz tar:///home/tomasz/.npm/css-resolve-import/0.1.2/package.tgz
+363 silly lockFile fe4f6f39-css-resolve-import-0-1-2-package /home/tomasz/.npm/css-resolve-import/0.1.2/package
+364 verbose lock /home/tomasz/.npm/css-resolve-import/0.1.2/package /home/tomasz/.npm/fe4f6f39-css-resolve-import-0-1-2-package.lock
+365 silly lockFile fe4f6f39-css-resolve-import-0-1-2-package /home/tomasz/.npm/css-resolve-import/0.1.2/package
+366 silly lockFile fe4f6f39-css-resolve-import-0-1-2-package /home/tomasz/.npm/css-resolve-import/0.1.2/package
+367 verbose tar unpack /home/tomasz/.npm/css-resolve-import/0.1.2/package.tgz
+368 silly lockFile 1aa058aa-css-resolve-import-0-1-2-package tar:///home/tomasz/.npm/css-resolve-import/0.1.2/package
+369 verbose lock tar:///home/tomasz/.npm/css-resolve-import/0.1.2/package /home/tomasz/.npm/1aa058aa-css-resolve-import-0-1-2-package.lock
+370 silly lockFile e12c0cdd-resolve-import-0-1-2-package-tgz tar:///home/tomasz/.npm/css-resolve-import/0.1.2/package.tgz
+371 verbose lock tar:///home/tomasz/.npm/css-resolve-import/0.1.2/package.tgz /home/tomasz/.npm/e12c0cdd-resolve-import-0-1-2-package-tgz.lock
+372 silly gunzTarPerm modes [ '755', '644' ]
+373 silly gunzTarPerm extractEntry package.json
+374 silly gunzTarPerm extractEntry .npmignore
+375 silly gunzTarPerm extractEntry index.js
+376 silly gunzTarPerm extractEntry src/parse.js
+377 silly gunzTarPerm extractEntry src/strip-utf8-byte-order.js
+378 silly lockFile 1aa058aa-css-resolve-import-0-1-2-package tar:///home/tomasz/.npm/css-resolve-import/0.1.2/package
+379 silly lockFile 1aa058aa-css-resolve-import-0-1-2-package tar:///home/tomasz/.npm/css-resolve-import/0.1.2/package
+380 silly lockFile e12c0cdd-resolve-import-0-1-2-package-tgz tar:///home/tomasz/.npm/css-resolve-import/0.1.2/package.tgz
+381 silly lockFile e12c0cdd-resolve-import-0-1-2-package-tgz tar:///home/tomasz/.npm/css-resolve-import/0.1.2/package.tgz
+382 verbose chmod /home/tomasz/.npm/css-resolve-import/0.1.2/package.tgz 644
+383 verbose chown /home/tomasz/.npm/css-resolve-import/0.1.2/package.tgz [ 1000, 1000 ]
+384 silly lockFile da68546c-ort-css-resolve-import-0-1-2-tgz https://registry.npmjs.org/css-resolve-import/-/css-resolve-import-0.1.2.tgz
+385 silly lockFile da68546c-ort-css-resolve-import-0-1-2-tgz https://registry.npmjs.org/css-resolve-import/-/css-resolve-import-0.1.2.tgz
+386 silly lockFile c277c93b-css-resolve-import-0-1-2 css-resolve-import@0.1.2
+387 silly lockFile c277c93b-css-resolve-import-0-1-2 css-resolve-import@0.1.2
+388 silly lockFile 0a86c72c-css-resolve-import-0-1-1 css-resolve-import@^0.1.1
+389 silly lockFile 0a86c72c-css-resolve-import-0-1-1 css-resolve-import@^0.1.1
+390 http 200 https://registry.npmjs.org/fmerge
+391 silly registry.get cb [ 200,
+391 silly registry.get   { server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+391 silly registry.get     etag: '"F3QJM7T3XOPQOV25VLEDY9NJJ"',
+391 silly registry.get     'content-type': 'application/json',
+391 silly registry.get     'cache-control': 'max-age=300',
+391 silly registry.get     'content-length': '6754',
+391 silly registry.get     'accept-ranges': 'bytes',
+391 silly registry.get     date: 'Thu, 22 Sep 2016 17:52:46 GMT',
+391 silly registry.get     via: '1.1 varnish',
+391 silly registry.get     age: '0',
+391 silly registry.get     connection: 'keep-alive',
+391 silly registry.get     'x-served-by': 'cache-lcy1131-LCY',
+391 silly registry.get     'x-cache': 'MISS',
+391 silly registry.get     'x-cache-hits': '0',
+391 silly registry.get     'x-timer': 'S1474566765.477255,VS0,VE697',
+391 silly registry.get     vary: 'Accept-Encoding' } ]
+392 silly addNameRange number 2 { name: 'fmerge', range: '>=1.2.0-0 <2.0.0-0', hasData: true }
+393 silly addNameRange versions [ 'fmerge',
+393 silly addNameRange   [ '1.0.0', '1.0.1', '1.0.2', '1.1.0', '1.1.1', '1.2.0' ] ]
+394 verbose addNamed [ 'fmerge', '1.2.0' ]
+395 verbose addNamed [ '1.2.0', '1.2.0' ]
+396 silly lockFile 16e697e5-fmerge-1-2-0 fmerge@1.2.0
+397 verbose lock fmerge@1.2.0 /home/tomasz/.npm/16e697e5-fmerge-1-2-0.lock
+398 silly lockFile 2d05a294-pmjs-org-fmerge-fmerge-1-2-0-tgz https://registry.npmjs.org/fmerge/-/fmerge-1.2.0.tgz
+399 verbose lock https://registry.npmjs.org/fmerge/-/fmerge-1.2.0.tgz /home/tomasz/.npm/2d05a294-pmjs-org-fmerge-fmerge-1-2-0-tgz.lock
+400 verbose addRemoteTarball [ 'https://registry.npmjs.org/fmerge/-/fmerge-1.2.0.tgz',
+400 verbose addRemoteTarball   '36e99d2ae255e3ee1af666b4df780553671cf692' ]
+401 info retry fetch attempt 1 at 19:52:46
+402 verbose fetch to= /home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766154-0.26684886892326176/tmp.tgz
+403 http GET https://registry.npmjs.org/fmerge/-/fmerge-1.2.0.tgz
+404 http 200 https://registry.npmjs.org/hogan.js
+405 silly registry.get cb [ 200,
+405 silly registry.get   { server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+405 silly registry.get     etag: '"6GTZNNGH3GSYNHLIB5GF595JN"',
+405 silly registry.get     'content-type': 'application/json',
+405 silly registry.get     'cache-control': 'max-age=300',
+405 silly registry.get     'content-length': '12179',
+405 silly registry.get     'accept-ranges': 'bytes',
+405 silly registry.get     date: 'Thu, 22 Sep 2016 17:52:46 GMT',
+405 silly registry.get     via: '1.1 varnish',
+405 silly registry.get     age: '0',
+405 silly registry.get     connection: 'keep-alive',
+405 silly registry.get     'x-served-by': 'cache-lcy1123-LCY',
+405 silly registry.get     'x-cache': 'MISS',
+405 silly registry.get     'x-cache-hits': '0',
+405 silly registry.get     'x-timer': 'S1474566765.474115,VS0,VE711',
+405 silly registry.get     vary: 'Accept-Encoding' } ]
+406 silly addNameRange number 2 { name: 'hogan.js', range: '>=3.0.2-0 <4.0.0-0', hasData: true }
+407 silly addNameRange versions [ 'hogan.js',
+407 silly addNameRange   [ '1.0.0',
+407 silly addNameRange     '1.0.2',
+407 silly addNameRange     '1.0.4-dev',
+407 silly addNameRange     '1.0.5-dev',
+407 silly addNameRange     '2.0.0',
+407 silly addNameRange     '3.0.1',
+407 silly addNameRange     '3.0.2' ] ]
+408 verbose addNamed [ 'hogan.js', '3.0.2' ]
+409 verbose addNamed [ '3.0.2', '3.0.2' ]
+410 silly lockFile a88dd43a-hogan-js-3-0-2 hogan.js@3.0.2
+411 verbose lock hogan.js@3.0.2 /home/tomasz/.npm/a88dd43a-hogan-js-3-0-2.lock
+412 silly lockFile 34c26ebc--org-hogan-js-hogan-js-3-0-2-tgz https://registry.npmjs.org/hogan.js/-/hogan.js-3.0.2.tgz
+413 verbose lock https://registry.npmjs.org/hogan.js/-/hogan.js-3.0.2.tgz /home/tomasz/.npm/34c26ebc--org-hogan-js-hogan-js-3-0-2-tgz.lock
+414 verbose addRemoteTarball [ 'https://registry.npmjs.org/hogan.js/-/hogan.js-3.0.2.tgz',
+414 verbose addRemoteTarball   '4cd9e1abd4294146e7679e41d7898732b02c7bfd' ]
+415 info retry fetch attempt 1 at 19:52:46
+416 verbose fetch to= /home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766184-0.6159782141912729/tmp.tgz
+417 http GET https://registry.npmjs.org/hogan.js/-/hogan.js-3.0.2.tgz
+418 http 200 https://registry.npmjs.org/sqwish
+419 silly registry.get cb [ 200,
+419 silly registry.get   { server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+419 silly registry.get     etag: '"EKS4HGX2AG71WXHMRNNZJIM84"',
+419 silly registry.get     'content-type': 'application/json',
+419 silly registry.get     'cache-control': 'max-age=300',
+419 silly registry.get     'content-length': '12095',
+419 silly registry.get     'accept-ranges': 'bytes',
+419 silly registry.get     date: 'Thu, 22 Sep 2016 17:52:46 GMT',
+419 silly registry.get     via: '1.1 varnish',
+419 silly registry.get     age: '0',
+419 silly registry.get     connection: 'keep-alive',
+419 silly registry.get     'x-served-by': 'cache-lcy1125-LCY',
+419 silly registry.get     'x-cache': 'MISS',
+419 silly registry.get     'x-cache-hits': '0',
+419 silly registry.get     'x-timer': 'S1474566765.486962,VS0,VE742',
+419 silly registry.get     vary: 'Accept-Encoding' } ]
+420 silly addNameRange number 2 { name: 'sqwish', range: '>=0.2.2-0 <0.3.0-0', hasData: true }
+421 silly addNameRange versions [ 'sqwish',
+421 silly addNameRange   [ '0.0.1',
+421 silly addNameRange     '0.0.2',
+421 silly addNameRange     '0.0.3',
+421 silly addNameRange     '0.0.4',
+421 silly addNameRange     '0.0.5',
+421 silly addNameRange     '0.0.6',
+421 silly addNameRange     '0.0.7',
+421 silly addNameRange     '0.0.8',
+421 silly addNameRange     '0.0.9',
+421 silly addNameRange     '0.1.0',
+421 silly addNameRange     '0.1.1',
+421 silly addNameRange     '0.1.2',
+421 silly addNameRange     '0.2.0',
+421 silly addNameRange     '0.2.1',
+421 silly addNameRange     '0.2.2' ] ]
+422 verbose addNamed [ 'sqwish', '0.2.2' ]
+423 verbose addNamed [ '0.2.2', '0.2.2' ]
+424 silly lockFile 138764a9-sqwish-0-2-2 sqwish@0.2.2
+425 verbose lock sqwish@0.2.2 /home/tomasz/.npm/138764a9-sqwish-0-2-2.lock
+426 silly lockFile 138764a9-sqwish-0-2-2 sqwish@0.2.2
+427 silly lockFile 138764a9-sqwish-0-2-2 sqwish@0.2.2
+428 silly lockFile c6870a7d-sqwish-0-2-2 sqwish@~0.2.2
+429 silly lockFile c6870a7d-sqwish-0-2-2 sqwish@~0.2.2
+430 http 200 https://registry.npmjs.org/fmerge/-/fmerge-1.2.0.tgz
+431 verbose tar unpack /home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766154-0.26684886892326176/tmp.tgz
+432 silly lockFile c07d2f5d-6154-0-26684886892326176-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766154-0.26684886892326176/package
+433 verbose lock tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766154-0.26684886892326176/package /home/tomasz/.npm/c07d2f5d-6154-0-26684886892326176-package.lock
+434 silly lockFile a670b1b4-6154-0-26684886892326176-tmp-tgz tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766154-0.26684886892326176/tmp.tgz
+435 verbose lock tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766154-0.26684886892326176/tmp.tgz /home/tomasz/.npm/a670b1b4-6154-0-26684886892326176-tmp-tgz.lock
+436 silly gunzTarPerm modes [ '755', '644' ]
+437 silly gunzTarPerm extractEntry package.json
+438 silly gunzTarPerm extractEntry .npmignore
+439 silly gunzTarPerm extractEntry fmerge.min.js
+440 silly gunzTarPerm extractEntry index.js
+441 silly gunzTarPerm extractEntry install.js
+442 silly gunzTarPerm extractEntry readme.md
+443 silly lockFile c07d2f5d-6154-0-26684886892326176-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766154-0.26684886892326176/package
+444 silly lockFile c07d2f5d-6154-0-26684886892326176-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766154-0.26684886892326176/package
+445 silly lockFile a670b1b4-6154-0-26684886892326176-tmp-tgz tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766154-0.26684886892326176/tmp.tgz
+446 silly lockFile a670b1b4-6154-0-26684886892326176-tmp-tgz tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766154-0.26684886892326176/tmp.tgz
+447 verbose tar pack [ '/home/tomasz/.npm/fmerge/1.2.0/package.tgz',
+447 verbose tar pack   '/home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766154-0.26684886892326176/package' ]
+448 verbose tarball /home/tomasz/.npm/fmerge/1.2.0/package.tgz
+449 verbose folder /home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766154-0.26684886892326176/package
+450 silly lockFile c07d2f5d-6154-0-26684886892326176-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766154-0.26684886892326176/package
+451 verbose lock tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766154-0.26684886892326176/package /home/tomasz/.npm/c07d2f5d-6154-0-26684886892326176-package.lock
+452 silly lockFile f58685f1-asz-npm-fmerge-1-2-0-package-tgz tar:///home/tomasz/.npm/fmerge/1.2.0/package.tgz
+453 verbose lock tar:///home/tomasz/.npm/fmerge/1.2.0/package.tgz /home/tomasz/.npm/f58685f1-asz-npm-fmerge-1-2-0-package-tgz.lock
+454 http 200 https://registry.npmjs.org/hogan.js/-/hogan.js-3.0.2.tgz
+455 silly lockFile c07d2f5d-6154-0-26684886892326176-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766154-0.26684886892326176/package
+456 silly lockFile c07d2f5d-6154-0-26684886892326176-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766154-0.26684886892326176/package
+457 silly lockFile f58685f1-asz-npm-fmerge-1-2-0-package-tgz tar:///home/tomasz/.npm/fmerge/1.2.0/package.tgz
+458 silly lockFile f58685f1-asz-npm-fmerge-1-2-0-package-tgz tar:///home/tomasz/.npm/fmerge/1.2.0/package.tgz
+459 silly lockFile f9b57867--tomasz-npm-fmerge-1-2-0-package /home/tomasz/.npm/fmerge/1.2.0/package
+460 verbose lock /home/tomasz/.npm/fmerge/1.2.0/package /home/tomasz/.npm/f9b57867--tomasz-npm-fmerge-1-2-0-package.lock
+461 silly lockFile f9b57867--tomasz-npm-fmerge-1-2-0-package /home/tomasz/.npm/fmerge/1.2.0/package
+462 silly lockFile f9b57867--tomasz-npm-fmerge-1-2-0-package /home/tomasz/.npm/fmerge/1.2.0/package
+463 verbose tar unpack /home/tomasz/.npm/fmerge/1.2.0/package.tgz
+464 silly lockFile cc12367c--tomasz-npm-fmerge-1-2-0-package tar:///home/tomasz/.npm/fmerge/1.2.0/package
+465 verbose lock tar:///home/tomasz/.npm/fmerge/1.2.0/package /home/tomasz/.npm/cc12367c--tomasz-npm-fmerge-1-2-0-package.lock
+466 silly lockFile f58685f1-asz-npm-fmerge-1-2-0-package-tgz tar:///home/tomasz/.npm/fmerge/1.2.0/package.tgz
+467 verbose lock tar:///home/tomasz/.npm/fmerge/1.2.0/package.tgz /home/tomasz/.npm/f58685f1-asz-npm-fmerge-1-2-0-package-tgz.lock
+468 silly gunzTarPerm modes [ '755', '644' ]
+469 silly gunzTarPerm extractEntry package.json
+470 silly gunzTarPerm extractEntry .npmignore
+471 silly gunzTarPerm extractEntry fmerge.min.js
+472 silly gunzTarPerm extractEntry index.js
+473 silly gunzTarPerm extractEntry install.js
+474 silly gunzTarPerm extractEntry readme.md
+475 silly lockFile cc12367c--tomasz-npm-fmerge-1-2-0-package tar:///home/tomasz/.npm/fmerge/1.2.0/package
+476 silly lockFile cc12367c--tomasz-npm-fmerge-1-2-0-package tar:///home/tomasz/.npm/fmerge/1.2.0/package
+477 silly lockFile f58685f1-asz-npm-fmerge-1-2-0-package-tgz tar:///home/tomasz/.npm/fmerge/1.2.0/package.tgz
+478 silly lockFile f58685f1-asz-npm-fmerge-1-2-0-package-tgz tar:///home/tomasz/.npm/fmerge/1.2.0/package.tgz
+479 verbose chmod /home/tomasz/.npm/fmerge/1.2.0/package.tgz 644
+480 verbose chown /home/tomasz/.npm/fmerge/1.2.0/package.tgz [ 1000, 1000 ]
+481 silly lockFile 2d05a294-pmjs-org-fmerge-fmerge-1-2-0-tgz https://registry.npmjs.org/fmerge/-/fmerge-1.2.0.tgz
+482 silly lockFile 2d05a294-pmjs-org-fmerge-fmerge-1-2-0-tgz https://registry.npmjs.org/fmerge/-/fmerge-1.2.0.tgz
+483 silly lockFile 16e697e5-fmerge-1-2-0 fmerge@1.2.0
+484 silly lockFile 16e697e5-fmerge-1-2-0 fmerge@1.2.0
+485 silly lockFile 3b9d73cd-fmerge-1-2-0 fmerge@^1.2.0
+486 silly lockFile 3b9d73cd-fmerge-1-2-0 fmerge@^1.2.0
+487 verbose tar unpack /home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766184-0.6159782141912729/tmp.tgz
+488 silly lockFile 7eb61be5-66184-0-6159782141912729-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766184-0.6159782141912729/package
+489 verbose lock tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766184-0.6159782141912729/package /home/tomasz/.npm/7eb61be5-66184-0-6159782141912729-package.lock
+490 silly lockFile c5ff6c61-66184-0-6159782141912729-tmp-tgz tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766184-0.6159782141912729/tmp.tgz
+491 verbose lock tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766184-0.6159782141912729/tmp.tgz /home/tomasz/.npm/c5ff6c61-66184-0-6159782141912729-tmp-tgz.lock
+492 silly gunzTarPerm modes [ '755', '644' ]
+493 silly gunzTarPerm extractEntry package.json
+494 silly gunzTarPerm extractEntry .npmignore
+495 silly gunzTarPerm extractEntry README.md
+496 silly gunzTarPerm extractEntry LICENSE
+497 silly gunzTarPerm extractEntry inheritance.js
+498 silly gunzTarPerm extractEntry test.js
+499 silly gunzTarPerm extractEntry dist/hogan-3.0.2.amd.js
+500 silly gunzTarPerm extractEntry dist/hogan-3.0.2.common.js
+501 silly gunzTarPerm extractEntry dist/hogan-3.0.2.js
+502 silly gunzTarPerm extractEntry dist/hogan-3.0.2.min.amd.js
+503 silly gunzTarPerm extractEntry dist/hogan-3.0.2.min.common.js
+504 silly gunzTarPerm extractEntry dist/hogan-3.0.2.min.js
+505 silly gunzTarPerm extractEntry dist/hogan-3.0.2.min.mustache.js
+506 silly gunzTarPerm extractEntry dist/hogan-3.0.2.mustache.js
+507 silly gunzTarPerm extractEntry dist/template-3.0.2.js
+508 silly gunzTarPerm extractEntry dist/template-3.0.2.min.js
+509 silly gunzTarPerm extractEntry build/gh-pages/1.0.0/hogan.js
+510 silly gunzTarPerm extractEntry build/gh-pages/1.0.0/hogan.min.js
+511 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.0/hogan.js
+512 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.0/hogan.min.js
+513 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.3/hogan.js
+514 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.3/hogan.min.js
+515 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.4/hogan-1.0.4.amd.js
+516 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.4/hogan-1.0.4.common.js
+517 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.4/hogan-1.0.4.js
+518 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.4/hogan-1.0.4.min.amd.js
+519 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.4/hogan-1.0.4.min.common.js
+520 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.4/hogan-1.0.4.min.js
+521 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.4/hogan-1.0.4.min.mustache.js
+522 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.4/hogan-1.0.4.mustache.js
+523 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.4/template-1.0.4.js
+524 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.4/template-1.0.4.min.js
+525 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.5/hogan-1.0.5.amd.js
+526 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.5/hogan-1.0.5.common.js
+527 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.5/hogan-1.0.5.js
+528 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.5/hogan-1.0.5.min.amd.js
+529 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.5/hogan-1.0.5.min.common.js
+530 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.5/hogan-1.0.5.min.js
+531 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.5/hogan-1.0.5.min.mustache.js
+532 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.5/hogan-1.0.5.mustache.js
+533 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.5/template-1.0.5.js
+534 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.5/template-1.0.5.min.js
+535 silly gunzTarPerm extractEntry build/gh-pages/builds/2.0.0/hogan-2.0.0.amd.js
+536 silly gunzTarPerm extractEntry build/gh-pages/builds/2.0.0/hogan-2.0.0.common.js
+537 silly gunzTarPerm extractEntry build/gh-pages/builds/2.0.0/hogan-2.0.0.js
+538 silly gunzTarPerm extractEntry build/gh-pages/builds/2.0.0/hogan-2.0.0.min.amd.js
+539 silly gunzTarPerm extractEntry build/gh-pages/builds/2.0.0/hogan-2.0.0.min.common.js
+540 silly gunzTarPerm extractEntry build/gh-pages/builds/2.0.0/hogan-2.0.0.min.js
+541 silly gunzTarPerm extractEntry build/gh-pages/builds/2.0.0/hogan-2.0.0.min.mustache.js
+542 silly gunzTarPerm extractEntry build/gh-pages/builds/2.0.0/hogan-2.0.0.mustache.js
+543 silly gunzTarPerm extractEntry build/gh-pages/builds/2.0.0/template-2.0.0.js
+544 silly gunzTarPerm extractEntry build/gh-pages/builds/2.0.0/template-2.0.0.min.js
+545 silly gunzTarPerm extractEntry build/gh-pages/favicon.ico
+546 silly gunzTarPerm extractEntry build/gh-pages/images/logo.png
+547 silly gunzTarPerm extractEntry build/gh-pages/images/noise.png
+548 silly gunzTarPerm extractEntry build/gh-pages/images/small-hogan-icon.png
+549 silly gunzTarPerm extractEntry build/gh-pages/images/stripes.png
+550 silly gunzTarPerm extractEntry build/gh-pages/index.html
+551 silly gunzTarPerm extractEntry build/gh-pages/stylesheets/layout.css
+552 silly gunzTarPerm extractEntry build/gh-pages/stylesheets/skeleton.css
+553 silly gunzTarPerm extractEntry component.json
+554 silly gunzTarPerm extractEntry .gitmodules
+555 silly gunzTarPerm extractEntry inheritance.html
+556 silly gunzTarPerm extractEntry .editorconfig
+557 silly gunzTarPerm extractEntry lib/compiler.js
+558 silly gunzTarPerm extractEntry lib/hogan.js
+559 silly gunzTarPerm extractEntry lib/template.js
+560 silly gunzTarPerm extractEntry test.mustache
+561 silly gunzTarPerm extractEntry .travis.yml
+562 silly gunzTarPerm extractEntry test.html
+563 silly gunzTarPerm extractEntry bin/hulk
+564 silly gunzTarPerm extractEntry web/builds/1.0.0/hogan.js
+565 silly gunzTarPerm extractEntry web/builds/1.0.0/hogan.min.js
+566 silly gunzTarPerm extractEntry web/builds/1.0.3/hogan.js
+567 silly gunzTarPerm extractEntry web/builds/1.0.3/hogan.min.js
+568 silly gunzTarPerm extractEntry web/builds/1.0.4/hogan-1.0.4.amd.js
+569 silly gunzTarPerm extractEntry web/builds/1.0.4/hogan-1.0.4.common.js
+570 silly gunzTarPerm extractEntry web/builds/1.0.4/hogan-1.0.4.js
+571 silly gunzTarPerm extractEntry web/builds/1.0.4/hogan-1.0.4.min.amd.js
+572 silly gunzTarPerm extractEntry web/builds/1.0.4/hogan-1.0.4.min.common.js
+573 silly gunzTarPerm extractEntry web/builds/1.0.4/hogan-1.0.4.min.js
+574 silly gunzTarPerm extractEntry web/builds/1.0.4/hogan-1.0.4.min.mustache.js
+575 silly gunzTarPerm extractEntry web/builds/1.0.4/hogan-1.0.4.mustache.js
+576 silly gunzTarPerm extractEntry web/builds/1.0.4/template-1.0.4.js
+577 silly gunzTarPerm extractEntry web/builds/1.0.4/template-1.0.4.min.js
+578 silly gunzTarPerm extractEntry web/builds/1.0.5/hogan-1.0.5.amd.js
+579 silly gunzTarPerm extractEntry web/builds/1.0.5/hogan-1.0.5.common.js
+580 silly gunzTarPerm extractEntry web/builds/1.0.5/hogan-1.0.5.js
+581 silly gunzTarPerm extractEntry web/builds/1.0.5/hogan-1.0.5.min.amd.js
+582 silly gunzTarPerm extractEntry web/builds/1.0.5/hogan-1.0.5.min.common.js
+583 silly gunzTarPerm extractEntry web/builds/1.0.5/hogan-1.0.5.min.js
+584 silly gunzTarPerm extractEntry web/builds/1.0.5/hogan-1.0.5.min.mustache.js
+585 silly gunzTarPerm extractEntry web/builds/1.0.5/hogan-1.0.5.mustache.js
+586 silly gunzTarPerm extractEntry web/builds/1.0.5/template-1.0.5.js
+587 silly gunzTarPerm extractEntry web/builds/1.0.5/template-1.0.5.min.js
+588 silly gunzTarPerm extractEntry web/builds/2.0.0/hogan-2.0.0.amd.js
+589 silly gunzTarPerm extractEntry web/builds/2.0.0/hogan-2.0.0.common.js
+590 silly gunzTarPerm extractEntry web/builds/2.0.0/hogan-2.0.0.js
+591 silly gunzTarPerm extractEntry web/builds/2.0.0/hogan-2.0.0.min.amd.js
+592 silly gunzTarPerm extractEntry web/builds/2.0.0/hogan-2.0.0.min.common.js
+593 silly gunzTarPerm extractEntry web/builds/2.0.0/hogan-2.0.0.min.js
+594 silly gunzTarPerm extractEntry web/builds/2.0.0/hogan-2.0.0.min.mustache.js
+595 silly gunzTarPerm extractEntry web/builds/2.0.0/hogan-2.0.0.mustache.js
+596 silly gunzTarPerm extractEntry web/builds/2.0.0/template-2.0.0.js
+597 silly gunzTarPerm extractEntry web/builds/2.0.0/template-2.0.0.min.js
+598 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan-3.0.0.amd.js
+599 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan-3.0.0.min.common.js
+600 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan-3.0.0.min.js
+601 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan-3.0.0.min.mustache.js
+602 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan-3.0.0.mustache.js
+603 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan-3.0.0.min.amd.js
+604 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan.template-3.0.0.common.js
+605 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan.template-3.0.0.js
+606 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan.template-3.0.0.min.amd.js
+607 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan.template-3.0.0.min.common.js
+608 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan.template-3.0.0.min.js
+609 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan-3.0.0.js
+610 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan.template-3.0.0.min.mustache.js
+611 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan-3.0.0.common.js
+612 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan.template-3.0.0.mustache.js
+613 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan.template-3.0.0.amd.js
+614 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan-3.0.1.amd.js
+615 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan-3.0.1.min.common.js
+616 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan-3.0.1.min.js
+617 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan-3.0.1.min.mustache.js
+618 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan-3.0.1.mustache.js
+619 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan-3.0.1.min.amd.js
+620 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan.template-3.0.1.common.js
+621 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan.template-3.0.1.js
+622 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan.template-3.0.1.min.amd.js
+623 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan.template-3.0.1.min.common.js
+624 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan.template-3.0.1.min.js
+625 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan-3.0.1.js
+626 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan.template-3.0.1.min.mustache.js
+627 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan-3.0.1.common.js
+628 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan.template-3.0.1.mustache.js
+629 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan.template-3.0.1.amd.js
+630 silly gunzTarPerm extractEntry web/builds/3.0.2/hogan-3.0.2.amd.js
+631 silly gunzTarPerm extractEntry web/builds/3.0.2/hogan-3.0.2.common.js
+632 silly gunzTarPerm extractEntry web/builds/3.0.2/hogan-3.0.2.js
+633 silly gunzTarPerm extractEntry web/builds/3.0.2/hogan-3.0.2.min.amd.js
+634 silly gunzTarPerm extractEntry web/builds/3.0.2/hogan-3.0.2.min.common.js
+635 silly gunzTarPerm extractEntry web/builds/3.0.2/hogan-3.0.2.min.js
+636 silly gunzTarPerm extractEntry web/builds/3.0.2/hogan-3.0.2.min.mustache.js
+637 silly gunzTarPerm extractEntry web/builds/3.0.2/hogan-3.0.2.mustache.js
+638 silly gunzTarPerm extractEntry web/builds/3.0.2/template-3.0.2.js
+639 silly gunzTarPerm extractEntry web/builds/3.0.2/template-3.0.2.min.js
+640 silly lockFile 7eb61be5-66184-0-6159782141912729-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766184-0.6159782141912729/package
+641 silly lockFile 7eb61be5-66184-0-6159782141912729-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766184-0.6159782141912729/package
+642 silly lockFile c5ff6c61-66184-0-6159782141912729-tmp-tgz tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766184-0.6159782141912729/tmp.tgz
+643 silly lockFile c5ff6c61-66184-0-6159782141912729-tmp-tgz tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766184-0.6159782141912729/tmp.tgz
+644 verbose tar pack [ '/home/tomasz/.npm/hogan.js/3.0.2/package.tgz',
+644 verbose tar pack   '/home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766184-0.6159782141912729/package' ]
+645 verbose tarball /home/tomasz/.npm/hogan.js/3.0.2/package.tgz
+646 verbose folder /home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766184-0.6159782141912729/package
+647 silly lockFile 7eb61be5-66184-0-6159782141912729-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766184-0.6159782141912729/package
+648 verbose lock tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766184-0.6159782141912729/package /home/tomasz/.npm/7eb61be5-66184-0-6159782141912729-package.lock
+649 silly lockFile fa746af2-z-npm-hogan-js-3-0-2-package-tgz tar:///home/tomasz/.npm/hogan.js/3.0.2/package.tgz
+650 verbose lock tar:///home/tomasz/.npm/hogan.js/3.0.2/package.tgz /home/tomasz/.npm/fa746af2-z-npm-hogan-js-3-0-2-package-tgz.lock
+651 silly lockFile 7eb61be5-66184-0-6159782141912729-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766184-0.6159782141912729/package
+652 silly lockFile 7eb61be5-66184-0-6159782141912729-package tar:///home/tomasz/tmp/npm-4201-0uWeZvw2/1474566766184-0.6159782141912729/package
+653 silly lockFile fa746af2-z-npm-hogan-js-3-0-2-package-tgz tar:///home/tomasz/.npm/hogan.js/3.0.2/package.tgz
+654 silly lockFile fa746af2-z-npm-hogan-js-3-0-2-package-tgz tar:///home/tomasz/.npm/hogan.js/3.0.2/package.tgz
+655 silly lockFile b67c3c26-omasz-npm-hogan-js-3-0-2-package /home/tomasz/.npm/hogan.js/3.0.2/package
+656 verbose lock /home/tomasz/.npm/hogan.js/3.0.2/package /home/tomasz/.npm/b67c3c26-omasz-npm-hogan-js-3-0-2-package.lock
+657 silly lockFile b67c3c26-omasz-npm-hogan-js-3-0-2-package /home/tomasz/.npm/hogan.js/3.0.2/package
+658 silly lockFile b67c3c26-omasz-npm-hogan-js-3-0-2-package /home/tomasz/.npm/hogan.js/3.0.2/package
+659 verbose tar unpack /home/tomasz/.npm/hogan.js/3.0.2/package.tgz
+660 silly lockFile 87b3255d-omasz-npm-hogan-js-3-0-2-package tar:///home/tomasz/.npm/hogan.js/3.0.2/package
+661 verbose lock tar:///home/tomasz/.npm/hogan.js/3.0.2/package /home/tomasz/.npm/87b3255d-omasz-npm-hogan-js-3-0-2-package.lock
+662 silly lockFile fa746af2-z-npm-hogan-js-3-0-2-package-tgz tar:///home/tomasz/.npm/hogan.js/3.0.2/package.tgz
+663 verbose lock tar:///home/tomasz/.npm/hogan.js/3.0.2/package.tgz /home/tomasz/.npm/fa746af2-z-npm-hogan-js-3-0-2-package-tgz.lock
+664 silly gunzTarPerm modes [ '755', '644' ]
+665 silly gunzTarPerm extractEntry package.json
+666 silly gunzTarPerm extractEntry .npmignore
+667 silly gunzTarPerm extractEntry README.md
+668 silly gunzTarPerm extractEntry LICENSE
+669 silly gunzTarPerm extractEntry inheritance.js
+670 silly gunzTarPerm extractEntry test.js
+671 silly gunzTarPerm extractEntry dist/hogan-3.0.2.amd.js
+672 silly gunzTarPerm extractEntry dist/hogan-3.0.2.common.js
+673 silly gunzTarPerm extractEntry dist/hogan-3.0.2.js
+674 silly gunzTarPerm extractEntry dist/hogan-3.0.2.min.amd.js
+675 silly gunzTarPerm extractEntry dist/hogan-3.0.2.min.common.js
+676 silly gunzTarPerm extractEntry dist/hogan-3.0.2.min.js
+677 silly gunzTarPerm extractEntry dist/hogan-3.0.2.min.mustache.js
+678 silly gunzTarPerm extractEntry dist/hogan-3.0.2.mustache.js
+679 silly gunzTarPerm extractEntry dist/template-3.0.2.js
+680 silly gunzTarPerm extractEntry dist/template-3.0.2.min.js
+681 silly gunzTarPerm extractEntry build/gh-pages/1.0.0/hogan.js
+682 silly gunzTarPerm extractEntry build/gh-pages/1.0.0/hogan.min.js
+683 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.0/hogan.js
+684 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.0/hogan.min.js
+685 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.3/hogan.js
+686 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.3/hogan.min.js
+687 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.4/hogan-1.0.4.amd.js
+688 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.4/hogan-1.0.4.common.js
+689 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.4/hogan-1.0.4.js
+690 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.4/hogan-1.0.4.min.amd.js
+691 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.4/hogan-1.0.4.min.common.js
+692 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.4/hogan-1.0.4.min.js
+693 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.4/hogan-1.0.4.min.mustache.js
+694 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.4/hogan-1.0.4.mustache.js
+695 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.4/template-1.0.4.js
+696 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.4/template-1.0.4.min.js
+697 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.5/hogan-1.0.5.amd.js
+698 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.5/hogan-1.0.5.common.js
+699 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.5/hogan-1.0.5.js
+700 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.5/hogan-1.0.5.min.amd.js
+701 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.5/hogan-1.0.5.min.common.js
+702 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.5/hogan-1.0.5.min.js
+703 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.5/hogan-1.0.5.min.mustache.js
+704 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.5/hogan-1.0.5.mustache.js
+705 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.5/template-1.0.5.js
+706 silly gunzTarPerm extractEntry build/gh-pages/builds/1.0.5/template-1.0.5.min.js
+707 silly gunzTarPerm extractEntry build/gh-pages/builds/2.0.0/hogan-2.0.0.amd.js
+708 silly gunzTarPerm extractEntry build/gh-pages/builds/2.0.0/hogan-2.0.0.common.js
+709 silly gunzTarPerm extractEntry build/gh-pages/builds/2.0.0/hogan-2.0.0.js
+710 silly gunzTarPerm extractEntry build/gh-pages/builds/2.0.0/hogan-2.0.0.min.amd.js
+711 silly gunzTarPerm extractEntry build/gh-pages/builds/2.0.0/hogan-2.0.0.min.common.js
+712 silly gunzTarPerm extractEntry build/gh-pages/builds/2.0.0/hogan-2.0.0.min.js
+713 silly gunzTarPerm extractEntry build/gh-pages/builds/2.0.0/hogan-2.0.0.min.mustache.js
+714 silly gunzTarPerm extractEntry build/gh-pages/builds/2.0.0/hogan-2.0.0.mustache.js
+715 silly gunzTarPerm extractEntry build/gh-pages/builds/2.0.0/template-2.0.0.js
+716 silly gunzTarPerm extractEntry build/gh-pages/builds/2.0.0/template-2.0.0.min.js
+717 silly gunzTarPerm extractEntry build/gh-pages/favicon.ico
+718 silly gunzTarPerm extractEntry build/gh-pages/images/logo.png
+719 silly gunzTarPerm extractEntry build/gh-pages/images/noise.png
+720 silly gunzTarPerm extractEntry build/gh-pages/images/small-hogan-icon.png
+721 silly gunzTarPerm extractEntry build/gh-pages/images/stripes.png
+722 silly gunzTarPerm extractEntry build/gh-pages/index.html
+723 silly gunzTarPerm extractEntry build/gh-pages/stylesheets/layout.css
+724 silly gunzTarPerm extractEntry build/gh-pages/stylesheets/skeleton.css
+725 silly gunzTarPerm extractEntry component.json
+726 silly gunzTarPerm extractEntry .gitmodules
+727 silly gunzTarPerm extractEntry inheritance.html
+728 silly gunzTarPerm extractEntry .editorconfig
+729 silly gunzTarPerm extractEntry lib/compiler.js
+730 silly gunzTarPerm extractEntry lib/hogan.js
+731 silly gunzTarPerm extractEntry lib/template.js
+732 silly gunzTarPerm extractEntry .travis.yml
+733 silly gunzTarPerm extractEntry test.html
+734 silly gunzTarPerm extractEntry bin/hulk
+735 silly gunzTarPerm extractEntry test.mustache
+736 silly gunzTarPerm extractEntry web/builds/1.0.0/hogan.js
+737 silly gunzTarPerm extractEntry web/builds/1.0.0/hogan.min.js
+738 silly gunzTarPerm extractEntry web/builds/1.0.3/hogan.js
+739 silly gunzTarPerm extractEntry web/builds/1.0.3/hogan.min.js
+740 silly gunzTarPerm extractEntry web/builds/1.0.4/hogan-1.0.4.amd.js
+741 silly gunzTarPerm extractEntry web/builds/1.0.4/hogan-1.0.4.common.js
+742 silly gunzTarPerm extractEntry web/builds/1.0.4/hogan-1.0.4.js
+743 silly gunzTarPerm extractEntry web/builds/1.0.4/hogan-1.0.4.min.amd.js
+744 silly gunzTarPerm extractEntry web/builds/1.0.4/hogan-1.0.4.min.common.js
+745 silly gunzTarPerm extractEntry web/builds/1.0.4/hogan-1.0.4.min.js
+746 silly gunzTarPerm extractEntry web/builds/1.0.4/hogan-1.0.4.min.mustache.js
+747 silly gunzTarPerm extractEntry web/builds/1.0.4/hogan-1.0.4.mustache.js
+748 silly gunzTarPerm extractEntry web/builds/1.0.4/template-1.0.4.js
+749 silly gunzTarPerm extractEntry web/builds/1.0.4/template-1.0.4.min.js
+750 silly gunzTarPerm extractEntry web/builds/1.0.5/hogan-1.0.5.amd.js
+751 silly gunzTarPerm extractEntry web/builds/1.0.5/hogan-1.0.5.common.js
+752 silly gunzTarPerm extractEntry web/builds/1.0.5/hogan-1.0.5.js
+753 silly gunzTarPerm extractEntry web/builds/1.0.5/hogan-1.0.5.min.amd.js
+754 silly gunzTarPerm extractEntry web/builds/1.0.5/hogan-1.0.5.min.common.js
+755 silly gunzTarPerm extractEntry web/builds/1.0.5/hogan-1.0.5.min.js
+756 silly gunzTarPerm extractEntry web/builds/1.0.5/hogan-1.0.5.min.mustache.js
+757 silly gunzTarPerm extractEntry web/builds/1.0.5/hogan-1.0.5.mustache.js
+758 silly gunzTarPerm extractEntry web/builds/1.0.5/template-1.0.5.js
+759 silly gunzTarPerm extractEntry web/builds/1.0.5/template-1.0.5.min.js
+760 silly gunzTarPerm extractEntry web/builds/2.0.0/hogan-2.0.0.amd.js
+761 silly gunzTarPerm extractEntry web/builds/2.0.0/hogan-2.0.0.common.js
+762 silly gunzTarPerm extractEntry web/builds/2.0.0/hogan-2.0.0.js
+763 silly gunzTarPerm extractEntry web/builds/2.0.0/hogan-2.0.0.min.amd.js
+764 silly gunzTarPerm extractEntry web/builds/2.0.0/hogan-2.0.0.min.common.js
+765 silly gunzTarPerm extractEntry web/builds/2.0.0/hogan-2.0.0.min.js
+766 silly gunzTarPerm extractEntry web/builds/2.0.0/hogan-2.0.0.min.mustache.js
+767 silly gunzTarPerm extractEntry web/builds/2.0.0/hogan-2.0.0.mustache.js
+768 silly gunzTarPerm extractEntry web/builds/2.0.0/template-2.0.0.js
+769 silly gunzTarPerm extractEntry web/builds/2.0.0/template-2.0.0.min.js
+770 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan-3.0.0.amd.js
+771 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan-3.0.0.min.common.js
+772 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan-3.0.0.min.js
+773 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan-3.0.0.min.mustache.js
+774 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan-3.0.0.mustache.js
+775 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan-3.0.0.min.amd.js
+776 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan.template-3.0.0.common.js
+777 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan.template-3.0.0.js
+778 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan.template-3.0.0.min.amd.js
+779 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan.template-3.0.0.min.common.js
+780 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan.template-3.0.0.min.js
+781 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan-3.0.0.js
+782 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan.template-3.0.0.min.mustache.js
+783 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan-3.0.0.common.js
+784 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan.template-3.0.0.mustache.js
+785 silly gunzTarPerm extractEntry web/builds/3.0.0/hogan.template-3.0.0.amd.js
+786 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan-3.0.1.amd.js
+787 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan-3.0.1.min.common.js
+788 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan-3.0.1.min.js
+789 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan-3.0.1.min.mustache.js
+790 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan-3.0.1.mustache.js
+791 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan-3.0.1.min.amd.js
+792 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan.template-3.0.1.common.js
+793 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan.template-3.0.1.js
+794 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan.template-3.0.1.min.amd.js
+795 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan.template-3.0.1.min.common.js
+796 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan.template-3.0.1.min.js
+797 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan-3.0.1.js
+798 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan.template-3.0.1.min.mustache.js
+799 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan-3.0.1.common.js
+800 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan.template-3.0.1.mustache.js
+801 silly gunzTarPerm extractEntry web/builds/3.0.1/hogan.template-3.0.1.amd.js
+802 silly gunzTarPerm extractEntry web/builds/3.0.2/hogan-3.0.2.amd.js
+803 silly gunzTarPerm extractEntry web/builds/3.0.2/hogan-3.0.2.common.js
+804 silly gunzTarPerm extractEntry web/builds/3.0.2/hogan-3.0.2.js
+805 silly gunzTarPerm extractEntry web/builds/3.0.2/hogan-3.0.2.min.amd.js
+806 silly gunzTarPerm extractEntry web/builds/3.0.2/hogan-3.0.2.min.common.js
+807 silly gunzTarPerm extractEntry web/builds/3.0.2/hogan-3.0.2.min.js
+808 silly gunzTarPerm extractEntry web/builds/3.0.2/hogan-3.0.2.min.mustache.js
+809 silly gunzTarPerm extractEntry web/builds/3.0.2/hogan-3.0.2.mustache.js
+810 silly gunzTarPerm extractEntry web/builds/3.0.2/template-3.0.2.js
+811 silly gunzTarPerm extractEntry web/builds/3.0.2/template-3.0.2.min.js
+812 silly lockFile 87b3255d-omasz-npm-hogan-js-3-0-2-package tar:///home/tomasz/.npm/hogan.js/3.0.2/package
+813 silly lockFile 87b3255d-omasz-npm-hogan-js-3-0-2-package tar:///home/tomasz/.npm/hogan.js/3.0.2/package
+814 silly lockFile fa746af2-z-npm-hogan-js-3-0-2-package-tgz tar:///home/tomasz/.npm/hogan.js/3.0.2/package.tgz
+815 silly lockFile fa746af2-z-npm-hogan-js-3-0-2-package-tgz tar:///home/tomasz/.npm/hogan.js/3.0.2/package.tgz
+816 verbose chmod /home/tomasz/.npm/hogan.js/3.0.2/package.tgz 644
+817 verbose chown /home/tomasz/.npm/hogan.js/3.0.2/package.tgz [ 1000, 1000 ]
+818 silly lockFile 34c26ebc--org-hogan-js-hogan-js-3-0-2-tgz https://registry.npmjs.org/hogan.js/-/hogan.js-3.0.2.tgz
+819 silly lockFile 34c26ebc--org-hogan-js-hogan-js-3-0-2-tgz https://registry.npmjs.org/hogan.js/-/hogan.js-3.0.2.tgz
+820 silly lockFile a88dd43a-hogan-js-3-0-2 hogan.js@3.0.2
+821 silly lockFile a88dd43a-hogan-js-3-0-2 hogan.js@3.0.2
+822 silly lockFile 3a3adee7-hogan-js-3-0-2 hogan.js@^3.0.2
+823 silly lockFile 3a3adee7-hogan-js-3-0-2 hogan.js@^3.0.2
+824 silly resolved [ { author:
+824 silly resolved      { name: 'Isaac Z. Schlueter',
+824 silly resolved        email: 'i@izs.me',
+824 silly resolved        url: 'http://blog.izs.me/' },
+824 silly resolved     name: 'glob',
+824 silly resolved     description: 'a little globber',
+824 silly resolved     version: '5.0.15',
+824 silly resolved     repository: { type: 'git', url: 'git://github.com/isaacs/node-glob.git' },
+824 silly resolved     main: 'glob.js',
+824 silly resolved     files: [ 'glob.js', 'sync.js', 'common.js' ],
+824 silly resolved     engines: { node: '*' },
+824 silly resolved     dependencies:
+824 silly resolved      { inflight: '^1.0.4',
+824 silly resolved        inherits: '2',
+824 silly resolved        minimatch: '2 || 3',
+824 silly resolved        once: '^1.3.0',
+824 silly resolved        'path-is-absolute': '^1.0.0' },
+824 silly resolved     devDependencies: { mkdirp: '0', rimraf: '^2.2.8', tap: '^1.1.4', tick: '0.0.6' },
+824 silly resolved     scripts:
+824 silly resolved      { prepublish: 'npm run benchclean',
+824 silly resolved        profclean: 'rm -f v8.log profile.txt',
+824 silly resolved        test: 'tap test/*.js --cov',
+824 silly resolved        'test-regen': 'npm run profclean && TEST_REGEN=1 node test/00-setup.js',
+824 silly resolved        bench: 'bash benchmark.sh',
+824 silly resolved        prof: 'bash prof.sh && cat profile.txt',
+824 silly resolved        benchclean: 'node benchclean.js' },
+824 silly resolved     license: 'ISC',
+824 silly resolved     readme: '[![Build Status](https://travis-ci.org/isaacs/node-glob.svg?branch=master)](https://travis-ci.org/isaacs/node-glob/) [![Dependency Status](https://david-dm.org/isaacs/node-glob.svg)](https://david-dm.org/isaacs/node-glob) [![devDependency Status](https://david-dm.org/isaacs/node-glob/dev-status.svg)](https://david-dm.org/isaacs/node-glob#info=devDependencies) [![optionalDependency Status](https://david-dm.org/isaacs/node-glob/optional-status.svg)](https://david-dm.org/isaacs/node-glob#info=optionalDependencies)\n\n# Glob\n\nMatch files using the patterns the shell uses, like stars and stuff.\n\nThis is a glob implementation in JavaScript.  It uses the `minimatch`\nlibrary to do its matching.\n\n![](oh-my-glob.gif)\n\n## Usage\n\n```javascript\nvar glob = require("glob")\n\n// options is optional\nglob("**/*.js", options, function (er, files) {\n  // files is an array of filenames.\n  // If the `nonull` option is set, and nothing\n  // was found, then files is ["**/*.js"]\n  // er is an error object or null.\n})\n```\n\n## Glob Primer\n\n"Globs" are the patterns you type when you do stuff like `ls *.js` on\nthe command line, or put `build/*` in a `.gitignore` file.\n\nBefore parsing the path part patterns, braced sections are expanded\ninto a set.  Braced sections start with `{` and end with `}`, with any\nnumber of comma-delimited sections within.  Braced sections may contain\nslash characters, so `a{/b/c,bcd}` would expand into `a/b/c` and `abcd`.\n\nThe following characters have special magic meaning when used in a\npath portion:\n\n* `*` Matches 0 or more characters in a single path portion\n* `?` Matches 1 character\n* `[...]` Matches a range of characters, similar to a RegExp range.\n  If the first character of the range is `!` or `^` then it matches\n  any character not in the range.\n* `!(pattern|pattern|pattern)` Matches anything that does not match\n  any of the patterns provided.\n* `?(pattern|pattern|pattern)` Matches zero or one occurrence of the\n  patterns provided.\n* `+(pattern|pattern|pattern)` Matches one or more occurrences of the\n  patterns provided.\n* `*(a|b|c)` Matches zero or more occurrences of the patterns provided\n* `@(pattern|pat*|pat?erN)` Matches exactly one of the patterns\n  provided\n* `**` If a "globstar" is alone in a path portion, then it matches\n  zero or more directories and subdirectories searching for matches.\n  It does not crawl symlinked directories.\n\n### Dots\n\nIf a file or directory path portion has a `.` as the first character,\nthen it will not match any glob pattern unless that pattern\'s\ncorresponding path part also has a `.` as its first character.\n\nFor example, the pattern `a/.*/c` would match the file at `a/.b/c`.\nHowever the pattern `a/*/c` would not, because `*` does not start with\na dot character.\n\nYou can make glob treat dots as normal characters by setting\n`dot:true` in the options.\n\n### Basename Matching\n\nIf you set `matchBase:true` in the options, and the pattern has no\nslashes in it, then it will seek for any file anywhere in the tree\nwith a matching basename.  For example, `*.js` would match\n`test/simple/basic.js`.\n\n### Negation\n\nThe intent for negation would be for a pattern starting with `!` to\nmatch everything that *doesn\'t* match the supplied pattern.  However,\nthe implementation is weird, and for the time being, this should be\navoided.  The behavior is deprecated in version 5, and will be removed\nentirely in version 6.\n\n### Empty Sets\n\nIf no matching files are found, then an empty array is returned.  This\ndiffers from the shell, where the pattern itself is returned.  For\nexample:\n\n    $ echo a*s*d*f\n    a*s*d*f\n\nTo get the bash-style behavior, set the `nonull:true` in the options.\n\n### See Also:\n\n* `man sh`\n* `man bash` (Search for "Pattern Matching")\n* `man 3 fnmatch`\n* `man 5 gitignore`\n* [minimatch documentation](https://github.com/isaacs/minimatch)\n\n## glob.hasMagic(pattern, [options])\n\nReturns `true` if there are any special characters in the pattern, and\n`false` otherwise.\n\nNote that the options affect the results.  If `noext:true` is set in\nthe options object, then `+(a|b)` will not be considered a magic\npattern.  If the pattern has a brace expansion, like `a/{b/c,x/y}`\nthen that is considered magical, unless `nobrace:true` is set in the\noptions.\n\n## glob(pattern, [options], cb)\n\n* `pattern` {String} Pattern to be matched\n* `options` {Object}\n* `cb` {Function}\n  * `err` {Error | null}\n  * `matches` {Array<String>} filenames found matching the pattern\n\nPerform an asynchronous glob search.\n\n## glob.sync(pattern, [options])\n\n* `pattern` {String} Pattern to be matched\n* `options` {Object}\n* return: {Array<String>} filenames found matching the pattern\n\nPerform a synchronous glob search.\n\n## Class: glob.Glob\n\nCreate a Glob object by instantiating the `glob.Glob` class.\n\n```javascript\nvar Glob = require("glob").Glob\nvar mg = new Glob(pattern, options, cb)\n```\n\nIt\'s an EventEmitter, and starts walking the filesystem to find matches\nimmediately.\n\n### new glob.Glob(pattern, [options], [cb])\n\n* `pattern` {String} pattern to search for\n* `options` {Object}\n* `cb` {Function} Called when an error occurs, or matches are found\n  * `err` {Error | null}\n  * `matches` {Array<String>} filenames found matching the pattern\n\nNote that if the `sync` flag is set in the options, then matches will\nbe immediately available on the `g.found` member.\n\n### Properties\n\n* `minimatch` The minimatch object that the glob uses.\n* `options` The options object passed in.\n* `aborted` Boolean which is set to true when calling `abort()`.  There\n  is no way at this time to continue a glob search after aborting, but\n  you can re-use the statCache to avoid having to duplicate syscalls.\n* `cache` Convenience object.  Each field has the following possible\n  values:\n  * `false` - Path does not exist\n  * `true` - Path exists\n  * `\'DIR\'` - Path exists, and is not a directory\n  * `\'FILE\'` - Path exists, and is a directory\n  * `[file, entries, ...]` - Path exists, is a directory, and the\n    array value is the results of `fs.readdir`\n* `statCache` Cache of `fs.stat` results, to prevent statting the same\n  path multiple times.\n* `symlinks` A record of which paths are symbolic links, which is\n  relevant in resolving `**` patterns.\n* `realpathCache` An optional object which is passed to `fs.realpath`\n  to minimize unnecessary syscalls.  It is stored on the instantiated\n  Glob object, and may be re-used.\n\n### Events\n\n* `end` When the matching is finished, this is emitted with all the\n  matches found.  If the `nonull` option is set, and no match was found,\n  then the `matches` list contains the original pattern.  The matches\n  are sorted, unless the `nosort` flag is set.\n* `match` Every time a match is found, this is emitted with the matched.\n* `error` Emitted when an unexpected error is encountered, or whenever\n  any fs error occurs if `options.strict` is set.\n* `abort` When `abort()` is called, this event is raised.\n\n### Methods\n\n* `pause` Temporarily stop the search\n* `resume` Resume the search\n* `abort` Stop the search forever\n\n### Options\n\nAll the options that can be passed to Minimatch can also be passed to\nGlob to change pattern matching behavior.  Also, some have been added,\nor have glob-specific ramifications.\n\nAll options are false by default, unless otherwise noted.\n\nAll options are added to the Glob object, as well.\n\nIf you are running many `glob` operations, you can pass a Glob object\nas the `options` argument to a subsequent operation to shortcut some\n`stat` and `readdir` calls.  At the very least, you may pass in shared\n`symlinks`, `statCache`, `realpathCache`, and `cache` options, so that\nparallel glob operations will be sped up by sharing information about\nthe filesystem.\n\n* `cwd` The current working directory in which to search.  Defaults\n  to `process.cwd()`.\n* `root` The place where patterns starting with `/` will be mounted\n  onto.  Defaults to `path.resolve(options.cwd, "/")` (`/` on Unix\n  systems, and `C:\\` or some such on Windows.)\n* `dot` Include `.dot` files in normal matches and `globstar` matches.\n  Note that an explicit dot in a portion of the pattern will always\n  match dot files.\n* `nomount` By default, a pattern starting with a forward-slash will be\n  "mounted" onto the root setting, so that a valid filesystem path is\n  returned.  Set this flag to disable that behavior.\n* `mark` Add a `/` character to directory matches.  Note that this\n  requires additional stat calls.\n* `nosort` Don\'t sort the results.\n* `stat` Set to true to stat *all* results.  This reduces performance\n  somewhat, and is completely unnecessary, unless `readdir` is presumed\n  to be an untrustworthy indicator of file existence.\n* `silent` When an unusual error is encountered when attempting to\n  read a directory, a warning will be printed to stderr.  Set the\n  `silent` option to true to suppress these warnings.\n* `strict` When an unusual error is encountered when attempting to\n  read a directory, the process will just continue on in search of\n  other matches.  Set the `strict` option to raise an error in these\n  cases.\n* `cache` See `cache` property above.  Pass in a previously generated\n  cache object to save some fs calls.\n* `statCache` A cache of results of filesystem information, to prevent\n  unnecessary stat calls.  While it should not normally be necessary\n  to set this, you may pass the statCache from one glob() call to the\n  options object of another, if you know that the filesystem will not\n  change between calls.  (See "Race Conditions" below.)\n* `symlinks` A cache of known symbolic links.  You may pass in a\n  previously generated `symlinks` object to save `lstat` calls when\n  resolving `**` matches.\n* `sync` DEPRECATED: use `glob.sync(pattern, opts)` instead.\n* `nounique` In some cases, brace-expanded patterns can result in the\n  same file showing up multiple times in the result set.  By default,\n  this implementation prevents duplicates in the result set.  Set this\n  flag to disable that behavior.\n* `nonull` Set to never return an empty set, instead returning a set\n  containing the pattern itself.  This is the default in glob(3).\n* `debug` Set to enable debug logging in minimatch and glob.\n* `nobrace` Do not expand `{a,b}` and `{1..3}` brace sets.\n* `noglobstar` Do not match `**` against multiple filenames.  (Ie,\n  treat it as a normal `*` instead.)\n* `noext` Do not match `+(a|b)` "extglob" patterns.\n* `nocase` Perform a case-insensitive match.  Note: on\n  case-insensitive filesystems, non-magic patterns will match by\n  default, since `stat` and `readdir` will not raise errors.\n* `matchBase` Perform a basename-only match if the pattern does not\n  contain any slash characters.  That is, `*.js` would be treated as\n  equivalent to `**/*.js`, matching all js files in all directories.\n* `nodir` Do not match directories, only files.  (Note: to match\n  *only* directories, simply put a `/` at the end of the pattern.)\n* `ignore` Add a pattern or an array of patterns to exclude matches.\n* `follow` Follow symlinked directories when expanding `**` patterns.\n  Note that this can result in a lot of duplicate references in the\n  presence of cyclic links.\n* `realpath` Set to true to call `fs.realpath` on all of the results.\n  In the case of a symlink that cannot be resolved, the full absolute\n  path to the matched entry is returned (though it will usually be a\n  broken symlink)\n* `nonegate` Suppress deprecated `negate` behavior.  (See below.)\n  Default=true\n* `nocomment` Suppress deprecated `comment` behavior.  (See below.)\n  Default=true\n\n## Comparisons to other fnmatch/glob implementations\n\nWhile strict compliance with the existing standards is a worthwhile\ngoal, some discrepancies exist between node-glob and other\nimplementations, and are intentional.\n\nThe double-star character `**` is supported by default, unless the\n`noglobstar` flag is set.  This is supported in the manner of bsdglob\nand bash 4.3, where `**` only has special significance if it is the only\nthing in a path part.  That is, `a/**/b` will match `a/x/y/b`, but\n`a/**b` will not.\n\nNote that symlinked directories are not crawled as part of a `**`,\nthough their contents may match against subsequent portions of the\npattern.  This prevents infinite loops and duplicates and the like.\n\nIf an escaped pattern has no matches, and the `nonull` flag is set,\nthen glob returns the pattern as-provided, rather than\ninterpreting the character escapes.  For example,\n`glob.match([], "\\\\*a\\\\?")` will return `"\\\\*a\\\\?"` rather than\n`"*a?"`.  This is akin to setting the `nullglob` option in bash, except\nthat it does not resolve escaped pattern characters.\n\nIf brace expansion is not disabled, then it is performed before any\nother interpretation of the glob pattern.  Thus, a pattern like\n`+(a|{b),c)}`, which would not be valid in bash or zsh, is expanded\n**first** into the set of `+(a|b)` and `+(a|c)`, and those patterns are\nchecked for validity.  Since those two are valid, matching proceeds.\n\n### Comments and Negation\n\n**Note**: In version 5 of this module, negation and comments are\n**disabled** by default.  You can explicitly set `nonegate:false` or\n`nocomment:false` to re-enable them.  They are going away entirely in\nversion 6.\n\nThe intent for negation would be for a pattern starting with `!` to\nmatch everything that *doesn\'t* match the supplied pattern.  However,\nthe implementation is weird.  It is better to use the `ignore` option\nto set a pattern or set of patterns to exclude from matches.  If you\nwant the "everything except *x*" type of behavior, you can use `**` as\nthe main pattern, and set an `ignore` for the things to exclude.\n\nThe comments feature is added in minimatch, primarily to more easily\nsupport use cases like ignore files, where a `#` at the start of a\nline makes the pattern "empty".  However, in the context of a\nstraightforward filesystem globber, "comments" don\'t make much sense.\n\n## Windows\n\n**Please only use forward-slashes in glob expressions.**\n\nThough windows uses either `/` or `\\` as its path separator, only `/`\ncharacters are used by this glob implementation.  You must use\nforward-slashes **only** in glob expressions.  Back-slashes will always\nbe interpreted as escape characters, not path separators.\n\nResults from absolute patterns such as `/foo/*` are mounted onto the\nroot setting using `path.join`.  On windows, this will by default result\nin `/foo/*` matching `C:\\foo\\bar.txt`.\n\n## Race Conditions\n\nGlob searching, by its very nature, is susceptible to race conditions,\nsince it relies on directory walking and such.\n\nAs a result, it is possible that a file that exists when glob looks for\nit may have been deleted or modified by the time it returns the result.\n\nAs part of its internal implementation, this program caches all stat\nand readdir calls that it makes, in order to cut down on system\noverhead.  However, this also makes it even more susceptible to races,\nespecially if the cache or statCache objects are reused between glob\ncalls.\n\nUsers are thus advised not to use a glob result as a guarantee of\nfilesystem state in the face of rapid changes.  For the vast majority\nof operations, this is never a problem.\n\n## Contributing\n\nAny change to behavior (including bugfixes) must come with a test.\n\nPatches that fail tests or reduce performance will be rejected.\n\n```\n# to run tests\nnpm test\n\n# to re-generate test fixtures\nnpm run test-regen\n\n# to benchmark against bash/zsh\nnpm run bench\n\n# to profile javascript\nnpm run prof\n```\n',
+824 silly resolved     readmeFilename: 'README.md',
+824 silly resolved     bugs: { url: 'https://github.com/isaacs/node-glob/issues' },
+824 silly resolved     _id: 'glob@5.0.15',
+824 silly resolved     _from: 'glob@^5.0.14' },
+824 silly resolved   { name: 'uglify-js',
+824 silly resolved     description: 'JavaScript parser, mangler/compressor and beautifier toolkit',
+824 silly resolved     homepage: 'http://lisperator.net/uglifyjs',
+824 silly resolved     author:
+824 silly resolved      { name: 'Mihai Bazon',
+824 silly resolved        email: 'mihai.bazon@gmail.com',
+824 silly resolved        url: 'http://lisperator.net/' },
+824 silly resolved     license: 'BSD-2-Clause',
+824 silly resolved     version: '2.7.3',
+824 silly resolved     engines: { node: '>=0.8.0' },
+824 silly resolved     maintainers: [ [Object] ],
+824 silly resolved     repository: { type: 'git', url: 'https://github.com/mishoo/UglifyJS2.git' },
+824 silly resolved     bugs: { url: 'https://github.com/mishoo/UglifyJS2/issues' },
+824 silly resolved     main: 'tools/node.js',
+824 silly resolved     bin: { uglifyjs: 'bin/uglifyjs' },
+824 silly resolved     files: [ 'bin', 'lib', 'tools', 'LICENSE' ],
+824 silly resolved     dependencies:
+824 silly resolved      { async: '~0.2.6',
+824 silly resolved        'source-map': '~0.5.1',
+824 silly resolved        'uglify-to-browserify': '~1.0.0',
+824 silly resolved        yargs: '~3.10.0' },
+824 silly resolved     devDependencies:
+824 silly resolved      { acorn: '~0.6.0',
+824 silly resolved        escodegen: '~1.3.3',
+824 silly resolved        esfuzz: '~0.3.1',
+824 silly resolved        estraverse: '~1.5.1',
+824 silly resolved        mocha: '~2.3.4' },
+824 silly resolved     browserify: { transform: [Object] },
+824 silly resolved     scripts:
+824 silly resolved      { shrinkwrap: 'rm ./npm-shrinkwrap.json; rm -rf ./node_modules; npm i && npm shrinkwrap && npm outdated',
+824 silly resolved        test: 'node test/run-tests.js' },
+824 silly resolved     keywords: [ 'uglify', 'uglify-js', 'minify', 'minifier' ],
+824 silly resolved     readme: 'UglifyJS 2\n==========\n[![Build Status](https://travis-ci.org/mishoo/UglifyJS2.svg)](https://travis-ci.org/mishoo/UglifyJS2)\n\nUglifyJS is a JavaScript parser, minifier, compressor or beautifier toolkit.\n\nThis page documents the command line utility.  For\n[API and internals documentation see my website](http://lisperator.net/uglifyjs/).\nThere\'s also an\n[in-browser online demo](http://lisperator.net/uglifyjs/#demo) (for Firefox,\nChrome and probably Safari).\n\nInstall\n-------\n\nFirst make sure you have installed the latest version of [node.js](http://nodejs.org/)\n(You may need to restart your computer after this step).\n\nFrom NPM for use as a command line app:\n\n    npm install uglify-js -g\n\nFrom NPM for programmatic use:\n\n    npm install uglify-js\n\nFrom Git:\n\n    git clone git://github.com/mishoo/UglifyJS2.git\n    cd UglifyJS2\n    npm link .\n\nUsage\n-----\n\n    uglifyjs [input files] [options]\n\nUglifyJS2 can take multiple input files.  It\'s recommended that you pass the\ninput files first, then pass the options.  UglifyJS will parse input files\nin sequence and apply any compression options.  The files are parsed in the\nsame global scope, that is, a reference from a file to some\nvariable/function declared in another file will be matched properly.\n\nIf you want to read from STDIN instead, pass a single dash instead of input\nfiles.\n\nIf you wish to pass your options before the input files, separate the two with\na double dash to prevent input files being used as option arguments:\n\n    uglifyjs --compress --mangle -- input.js\n\nThe available options are:\n\n```\n  --source-map                  Specify an output file where to generate source\n                                map.\n  --source-map-root             The path to the original source to be included\n                                in the source map.\n  --source-map-url              The path to the source map to be added in //#\n                                sourceMappingURL.  Defaults to the value passed\n                                with --source-map.\n  --source-map-include-sources  Pass this flag if you want to include the\n                                content of source files in the source map as\n                                sourcesContent property.\n  --in-source-map               Input source map, useful if you\'re compressing\n                                JS that was generated from some other original\n                                code.\n  --screw-ie8                   Use this flag if you don\'t wish to support\n                                Internet Explorer 6-8 quirks.\n                                By default UglifyJS will not try to be IE-proof.\n  --support-ie8                 Use this flag to support Internet Explorer 6-8 quirks.\n                                Note: may break standards compliant `catch` identifiers.\n  --expr                        Parse a single expression, rather than a\n                                program (for parsing JSON)\n  -p, --prefix                  Skip prefix for original filenames that appear\n                                in source maps. For example -p 3 will drop 3\n                                directories from file names and ensure they are\n                                relative paths. You can also specify -p\n                                relative, which will make UglifyJS figure out\n                                itself the relative paths between original\n                                sources, the source map and the output file.\n  -o, --output                  Output file (default STDOUT).\n  -b, --beautify                Beautify output/specify output options.\n  -m, --mangle                  Mangle names/pass mangler options.\n  -r, --reserved                Reserved names to exclude from mangling.\n  -c, --compress                Enable compressor/pass compressor options. Pass\n                                options like -c\n                                hoist_vars=false,if_return=false. Use -c with\n                                no argument to use the default compression\n                                options.\n  -d, --define                  Global definitions\n  -e, --enclose                 Embed everything in a big function, with a\n                                configurable parameter/argument list.\n  --comments                    Preserve copyright comments in the output. By\n                                default this works like Google Closure, keeping\n                                JSDoc-style comments that contain "@license" or\n                                "@preserve". You can optionally pass one of the\n                                following arguments to this flag:\n                                - "all" to keep all comments\n                                - a valid JS regexp (needs to start with a\n                                slash) to keep only comments that match.\n                                Note that currently not *all* comments can be\n                                kept when compression is on, because of dead\n                                code removal or cascading statements into\n                                sequences.\n  --preamble                    Preamble to prepend to the output.  You can use\n                                this to insert a comment, for example for\n                                licensing information.  This will not be\n                                parsed, but the source map will adjust for its\n                                presence.\n  --stats                       Display operations run time on STDERR.\n  --acorn                       Use Acorn for parsing.\n  --spidermonkey                Assume input files are SpiderMonkey AST format\n                                (as JSON).\n  --self                        Build itself (UglifyJS2) as a library (implies\n                                --wrap=UglifyJS --export-all)\n  --wrap                        Embed everything in a big function, making the\n                                “exports” and “global” variables available. You\n                                need to pass an argument to this option to\n                                specify the name that your module will take\n                                when included in, say, a browser.\n  --export-all                  Only used when --wrap, this tells UglifyJS to\n                                add code to automatically export all globals.\n  --lint                        Display some scope warnings\n  -v, --verbose                 Verbose\n  -V, --version                 Print version number and exit.\n  --noerr                       Don\'t throw an error for unknown options in -c,\n                                -b or -m.\n  --bare-returns                Allow return outside of functions.  Useful when\n                                minifying CommonJS modules and Userscripts that\n                                may be anonymous function wrapped (IIFE) by the\n                                .user.js engine `caller`.\n  --keep-fnames                 Do not mangle/drop function names.  Useful for\n                                code relying on Function.prototype.name.\n  --reserved-file               File containing reserved names\n  --reserve-domprops            Make (most?) DOM properties reserved for\n                                --mangle-props\n  --mangle-props                Mangle property names (default `0`). Set to\n                                `true` or `1` to mangle all property names. Set\n                                to `unquoted` or `2` to only mangle unquoted\n                                property names. Mode `2` also enables the\n                                `keep_quoted_props` beautifier option to\n                                preserve the quotes around property names and\n                                disables the `properties` compressor option to\n                                prevent rewriting quoted properties with dot\n                                notation. You can override these by setting\n                                them explicitly on the command line.\n  --mangle-regex                Only mangle property names matching the regex\n  --name-cache                  File to hold mangled names mappings\n  --pure-funcs                  List of functions that can be safely removed if\n                                their return value is not used           [array]\n```\n\nSpecify `--output` (`-o`) to declare the output file.  Otherwise the output\ngoes to STDOUT.\n\n## Source map options\n\nUglifyJS2 can generate a source map file, which is highly useful for\ndebugging your compressed JavaScript.  To get a source map, pass\n`--source-map output.js.map` (full path to the file where you want the\nsource map dumped).\n\nAdditionally you might need `--source-map-root` to pass the URL where the\noriginal files can be found.  In case you are passing full paths to input\nfiles to UglifyJS, you can use `--prefix` (`-p`) to specify the number of\ndirectories to drop from the path prefix when declaring files in the source\nmap.\n\nFor example:\n\n    uglifyjs /home/doe/work/foo/src/js/file1.js \\\n             /home/doe/work/foo/src/js/file2.js \\\n             -o foo.min.js \\\n             --source-map foo.min.js.map \\\n             --source-map-root http://foo.com/src \\\n             -p 5 -c -m\n\nThe above will compress and mangle `file1.js` and `file2.js`, will drop the\noutput in `foo.min.js` and the source map in `foo.min.js.map`.  The source\nmapping will refer to `http://foo.com/src/js/file1.js` and\n`http://foo.com/src/js/file2.js` (in fact it will list `http://foo.com/src`\nas the source map root, and the original files as `js/file1.js` and\n`js/file2.js`).\n\n### Composed source map\n\nWhen you\'re compressing JS code that was output by a compiler such as\nCoffeeScript, mapping to the JS code won\'t be too helpful.  Instead, you\'d\nlike to map back to the original code (i.e. CoffeeScript).  UglifyJS has an\noption to take an input source map.  Assuming you have a mapping from\nCoffeeScript → compiled JS, UglifyJS can generate a map from CoffeeScript →\ncompressed JS by mapping every token in the compiled JS to its original\nlocation.\n\nTo use this feature you need to pass `--in-source-map\n/path/to/input/source.map`.  Normally the input source map should also point\nto the file containing the generated JS, so if that\'s correct you can omit\ninput files from the command line.\n\n## Mangler options\n\nTo enable the mangler you need to pass `--mangle` (`-m`).  The following\n(comma-separated) options are supported:\n\n- `toplevel` — mangle names declared in the toplevel scope (disabled by\n  default).\n\n- `eval` — mangle names visible in scopes where `eval` or `with` are used\n  (disabled by default).\n\nWhen mangling is enabled but you want to prevent certain names from being\nmangled, you can declare those names with `--reserved` (`-r`) — pass a\ncomma-separated list of names.  For example:\n\n    uglifyjs ... -m -r \'$,require,exports\'\n\nto prevent the `require`, `exports` and `$` names from being changed.\n\n### Mangling property names (`--mangle-props`)\n\n**Note:** this will probably break your code.  Mangling property names is a\nseparate step, different from variable name mangling.  Pass\n`--mangle-props`.  It will mangle all properties that are seen in some\nobject literal, or that are assigned to.  For example:\n\n```js\nvar x = {\n  foo: 1\n};\n\nx.bar = 2;\nx["baz"] = 3;\nx[condition ? "moo" : "boo"] = 4;\nconsole.log(x.something());\n```\n\nIn the above code, `foo`, `bar`, `baz`, `moo` and `boo` will be replaced\nwith single characters, while `something()` will be left as is.\n\nIn order for this to be of any use, we should avoid mangling standard JS\nnames.  For instance, if your code would contain `x.length = 10`, then\n`length` becomes a candidate for mangling and it will be mangled throughout\nthe code, regardless if it\'s being used as part of your own objects or\naccessing an array\'s length.  To avoid that, you can use `--reserved-file`\nto pass a filename that should contain the names to be excluded from\nmangling.  This file can be used both for excluding variable names and\nproperty names.  It could look like this, for example:\n\n```js\n{\n  "vars": [ "define", "require", ... ],\n  "props": [ "length", "prototype", ... ]\n}\n```\n\n`--reserved-file` can be an array of file names (either a single\ncomma-separated argument, or you can pass multiple `--reserved-file`\narguments) — in this case it will exclude names from all those files.\n\nA default exclusion file is provided in `tools/domprops.json` which should\ncover most standard JS and DOM properties defined in various browsers.  Pass\n`--reserve-domprops` to read that in.\n\nYou can also use a regular expression to define which property names should be\nmangled.  For example, `--mangle-regex="/^_/"` will only mangle property names\nthat start with an underscore.\n\nWhen you compress multiple files using this option, in order for them to\nwork together in the end we need to ensure somehow that one property gets\nmangled to the same name in all of them.  For this, pass `--name-cache\nfilename.json` and UglifyJS will maintain these mappings in a file which can\nthen be reused.  It should be initially empty.  Example:\n\n```\nrm -f /tmp/cache.json  # start fresh\nuglifyjs file1.js file2.js --mangle-props --name-cache /tmp/cache.json -o part1.js\nuglifyjs file3.js file4.js --mangle-props --name-cache /tmp/cache.json -o part2.js\n```\n\nNow, `part1.js` and `part2.js` will be consistent with each other in terms\nof mangled property names.\n\nUsing the name cache is not necessary if you compress all your files in a\nsingle call to UglifyJS.\n\n## Compressor options\n\nYou need to pass `--compress` (`-c`) to enable the compressor.  Optionally\nyou can pass a comma-separated list of options.  Options are in the form\n`foo=bar`, or just `foo` (the latter implies a boolean option that you want\nto set `true`; it\'s effectively a shortcut for `foo=true`).\n\n- `sequences` (default: true) -- join consecutive simple statements using the\n  comma operator.  May be set to a positive integer to specify the maximum number\n  of consecutive comma sequences that will be generated. If this option is set to\n  `true` then the default `sequences` limit is `200`. Set option to `false` or `0`\n  to disable. The smallest `sequences` length is `2`. A `sequences` value of `1`\n  is grandfathered to be equivalent to `true` and as such means `200`. On rare\n  occasions the default sequences limit leads to very slow compress times in which\n  case a value of `20` or less is recommended.\n\n- `properties` -- rewrite property access using the dot notation, for\n  example `foo["bar"] → foo.bar`\n\n- `dead_code` -- remove unreachable code\n\n- `drop_debugger` -- remove `debugger;` statements\n\n- `unsafe` (default: false) -- apply "unsafe" transformations (discussion below)\n\n- `unsafe_comps` (default: false) -- Reverse `<` and `<=` to `>` and `>=` to\n  allow improved compression. This might be unsafe when an at least one of two\n  operands is an object with computed values due the use of methods like `get`,\n  or `valueOf`. This could cause change in execution order after operands in the\n  comparison are switching. Compression only works if both `comparisons` and\n  `unsafe_comps` are both set to true.\n\n- `conditionals` -- apply optimizations for `if`-s and conditional\n  expressions\n\n- `comparisons` -- apply certain optimizations to binary nodes, for example:\n  `!(a <= b) → a > b` (only when `unsafe_comps`), attempts to negate binary\n  nodes, e.g. `a = !b && !c && !d && !e → a=!(b||c||d||e)` etc.\n\n- `evaluate` -- attempt to evaluate constant expressions\n\n- `booleans` -- various optimizations for boolean context, for example `!!a\n  ? b : c → a ? b : c`\n\n- `loops` -- optimizations for `do`, `while` and `for` loops when we can\n  statically determine the condition\n\n- `unused` -- drop unreferenced functions and variables\n\n- `hoist_funs` -- hoist function declarations\n\n- `hoist_vars` (default: false) -- hoist `var` declarations (this is `false`\n  by default because it seems to increase the size of the output in general)\n\n- `if_return` -- optimizations for if/return and if/continue\n\n- `join_vars` -- join consecutive `var` statements\n\n- `cascade` -- small optimization for sequences, transform `x, x` into `x`\n  and `x = something(), x` into `x = something()`\n\n- `collapse_vars` -- default `false`. Collapse single-use `var` and `const`\n  definitions when possible.\n\n- `warnings` -- display warnings when dropping unreachable code or unused\n  declarations etc.\n\n- `negate_iife` -- negate "Immediately-Called Function Expressions"\n  where the return value is discarded, to avoid the parens that the\n  code generator would insert.\n\n- `pure_getters` -- the default is `false`.  If you pass `true` for\n  this, UglifyJS will assume that object property access\n  (e.g. `foo.bar` or `foo["bar"]`) doesn\'t have any side effects.\n\n- `pure_funcs` -- default `null`.  You can pass an array of names and\n  UglifyJS will assume that those functions do not produce side\n  effects.  DANGER: will not check if the name is redefined in scope.\n  An example case here, for instance `var q = Math.floor(a/b)`.  If\n  variable `q` is not used elsewhere, UglifyJS will drop it, but will\n  still keep the `Math.floor(a/b)`, not knowing what it does.  You can\n  pass `pure_funcs: [ \'Math.floor\' ]` to let it know that this\n  function won\'t produce any side effect, in which case the whole\n  statement would get discarded.  The current implementation adds some\n  overhead (compression will be slower).\n\n- `drop_console` -- default `false`.  Pass `true` to discard calls to\n  `console.*` functions.\n\n- `keep_fargs` -- default `true`.  Prevents the\n  compressor from discarding unused function arguments.  You need this\n  for code which relies on `Function.length`.\n\n- `keep_fnames` -- default `false`.  Pass `true` to prevent the\n  compressor from discarding function names.  Useful for code relying on\n  `Function.prototype.name`. See also: the `keep_fnames` [mangle option](#mangle).\n\n- `passes` -- default `1`. Number of times to run compress. Use an\n  integer argument larger than 1 to further reduce code size in some cases.\n  Note: raising the number of passes will increase uglify compress time.\n\n### The `unsafe` option\n\nIt enables some transformations that *might* break code logic in certain\ncontrived cases, but should be fine for most code.  You might want to try it\non your own code, it should reduce the minified size.  Here\'s what happens\nwhen this flag is on:\n\n- `new Array(1, 2, 3)` or `Array(1, 2, 3)` → `[ 1, 2, 3 ]`\n- `new Object()` → `{}`\n- `String(exp)` or `exp.toString()` → `"" + exp`\n- `new Object/RegExp/Function/Error/Array (...)` → we discard the `new`\n- `typeof foo == "undefined"` → `foo === void 0`\n- `void 0` → `undefined` (if there is a variable named "undefined" in\n  scope; we do it because the variable name will be mangled, typically\n  reduced to a single character)\n\n### Conditional compilation\n\nYou can use the `--define` (`-d`) switch in order to declare global\nvariables that UglifyJS will assume to be constants (unless defined in\nscope).  For example if you pass `--define DEBUG=false` then, coupled with\ndead code removal UglifyJS will discard the following from the output:\n```javascript\nif (DEBUG) {\n\tconsole.log("debug stuff");\n}\n```\n\nUglifyJS will warn about the condition being always false and about dropping\nunreachable code; for now there is no option to turn off only this specific\nwarning, you can pass `warnings=false` to turn off *all* warnings.\n\nAnother way of doing that is to declare your globals as constants in a\nseparate file and include it into the build.  For example you can have a\n`build/defines.js` file with the following:\n```javascript\nconst DEBUG = false;\nconst PRODUCTION = true;\n// Alternative for environments that don\'t support `const`\n/** @const */ var STAGING = false;\n// etc.\n```\n\nand build your code like this:\n\n    uglifyjs build/defines.js js/foo.js js/bar.js... -c\n\nUglifyJS will notice the constants and, since they cannot be altered, it\nwill evaluate references to them to the value itself and drop unreachable\ncode as usual.  The build will contain the `const` declarations if you use\nthem. If you are targeting < ES6 environments, use `/** @const */ var`.\n\n<a name="codegen-options"></a>\n\n#### Conditional compilation, API\nYou can also use conditional compilation via the programmatic API. With the difference that the\nproperty name is `global_defs` and is a compressor property:\n\n```js\nuglifyJS.minify([ "input.js"], {\n    compress: {\n        dead_code: true,\n        global_defs: {\n            DEBUG: false\n        }\n    }\n});\n```\n\n## Beautifier options\n\nThe code generator tries to output shortest code possible by default.  In\ncase you want beautified output, pass `--beautify` (`-b`).  Optionally you\ncan pass additional arguments that control the code output:\n\n- `beautify` (default `true`) -- whether to actually beautify the output.\n  Passing `-b` will set this to true, but you might need to pass `-b` even\n  when you want to generate minified code, in order to specify additional\n  arguments, so you can use `-b beautify=false` to override it.\n- `indent-level` (default 4)\n- `indent-start` (default 0) -- prefix all lines by that many spaces\n- `quote-keys` (default `false`) -- pass `true` to quote all keys in literal\n  objects\n- `space-colon` (default `true`) -- insert a space after the colon signs\n- `ascii-only` (default `false`) -- escape Unicode characters in strings and\n  regexps (affects directives with non-ascii characters becoming invalid)\n- `inline-script` (default `false`) -- escape the slash in occurrences of\n  `</script` in strings\n- `width` (default 80) -- only takes effect when beautification is on, this\n  specifies an (orientative) line width that the beautifier will try to\n  obey.  It refers to the width of the line text (excluding indentation).\n  It doesn\'t work very well currently, but it does make the code generated\n  by UglifyJS more readable.\n- `max-line-len` (default 32000) -- maximum line length (for uglified code)\n- `bracketize` (default `false`) -- always insert brackets in `if`, `for`,\n  `do`, `while` or `with` statements, even if their body is a single\n  statement.\n- `semicolons` (default `true`) -- separate statements with semicolons.  If\n  you pass `false` then whenever possible we will use a newline instead of a\n  semicolon, leading to more readable output of uglified code (size before\n  gzip could be smaller; size after gzip insignificantly larger).\n- `preamble` (default `null`) -- when passed it must be a string and\n  it will be prepended to the output literally.  The source map will\n  adjust for this text.  Can be used to insert a comment containing\n  licensing information, for example.\n- `quote_style` (default `0`) -- preferred quote style for strings (affects\n  quoted property names and directives as well):\n  - `0` -- prefers double quotes, switches to single quotes when there are\n    more double quotes in the string itself.\n  - `1` -- always use single quotes\n  - `2` -- always use double quotes\n  - `3` -- always use the original quotes\n- `keep_quoted_props` (default `false`) -- when turned on, prevents stripping\n  quotes from property names in object literals.\n\n### Keeping copyright notices or other comments\n\nYou can pass `--comments` to retain certain comments in the output.  By\ndefault it will keep JSDoc-style comments that contain "@preserve",\n"@license" or "@cc_on" (conditional compilation for IE).  You can pass\n`--comments all` to keep all the comments, or a valid JavaScript regexp to\nkeep only comments that match this regexp.  For example `--comments\n\'/foo|bar/\'` will keep only comments that contain "foo" or "bar".\n\nNote, however, that there might be situations where comments are lost.  For\nexample:\n```javascript\nfunction f() {\n\t/** @preserve Foo Bar */\n\tfunction g() {\n\t  // this function is never called\n\t}\n\treturn something();\n}\n```\n\nEven though it has "@preserve", the comment will be lost because the inner\nfunction `g` (which is the AST node to which the comment is attached to) is\ndiscarded by the compressor as not referenced.\n\nThe safest comments where to place copyright information (or other info that\nneeds to be kept in the output) are comments attached to toplevel nodes.\n\n## Support for the SpiderMonkey AST\n\nUglifyJS2 has its own abstract syntax tree format; for\n[practical reasons](http://lisperator.net/blog/uglifyjs-why-not-switching-to-spidermonkey-ast/)\nwe can\'t easily change to using the SpiderMonkey AST internally.  However,\nUglifyJS now has a converter which can import a SpiderMonkey AST.\n\nFor example [Acorn][acorn] is a super-fast parser that produces a\nSpiderMonkey AST.  It has a small CLI utility that parses one file and dumps\nthe AST in JSON on the standard output.  To use UglifyJS to mangle and\ncompress that:\n\n    acorn file.js | uglifyjs --spidermonkey -m -c\n\nThe `--spidermonkey` option tells UglifyJS that all input files are not\nJavaScript, but JS code described in SpiderMonkey AST in JSON.  Therefore we\ndon\'t use our own parser in this case, but just transform that AST into our\ninternal AST.\n\n### Use Acorn for parsing\n\nMore for fun, I added the `--acorn` option which will use Acorn to do all\nthe parsing.  If you pass this option, UglifyJS will `require("acorn")`.\n\nAcorn is really fast (e.g. 250ms instead of 380ms on some 650K code), but\nconverting the SpiderMonkey tree that Acorn produces takes another 150ms so\nin total it\'s a bit more than just using UglifyJS\'s own parser.\n\n### Using UglifyJS to transform SpiderMonkey AST\n\nNow you can use UglifyJS as any other intermediate tool for transforming\nJavaScript ASTs in SpiderMonkey format.\n\nExample:\n\n```javascript\nfunction uglify(ast, options, mangle) {\n  // Conversion from SpiderMonkey AST to internal format\n  var uAST = UglifyJS.AST_Node.from_mozilla_ast(ast);\n\n  // Compression\n  uAST.figure_out_scope();\n  uAST = uAST.transform(UglifyJS.Compressor(options));\n\n  // Mangling (optional)\n  if (mangle) {\n    uAST.figure_out_scope();\n    uAST.compute_char_frequency();\n    uAST.mangle_names();\n  }\n\n  // Back-conversion to SpiderMonkey AST\n  return uAST.to_mozilla_ast();\n}\n```\n\nCheck out\n[original blog post](http://rreverser.com/using-mozilla-ast-with-uglifyjs/)\nfor details.\n\nAPI Reference\n-------------\n\nAssuming installation via NPM, you can load UglifyJS in your application\nlike this:\n```javascript\nvar UglifyJS = require("uglify-js");\n```\n\nIt exports a lot of names, but I\'ll discuss here the basics that are needed\nfor parsing, mangling and compressing a piece of code.  The sequence is (1)\nparse, (2) compress, (3) mangle, (4) generate output code.\n\n### The simple way\n\nThere\'s a single toplevel function which combines all the steps.  If you\ndon\'t need additional customization, you might want to go with `minify`.\nExample:\n```javascript\nvar result = UglifyJS.minify("/path/to/file.js");\nconsole.log(result.code); // minified output\n// if you need to pass code instead of file name\nvar result = UglifyJS.minify("var b = function () {};", {fromString: true});\n```\n\nYou can also compress multiple files:\n```javascript\nvar result = UglifyJS.minify([ "file1.js", "file2.js", "file3.js" ]);\nconsole.log(result.code);\n```\n\nTo generate a source map:\n```javascript\nvar result = UglifyJS.minify([ "file1.js", "file2.js", "file3.js" ], {\n\toutSourceMap: "out.js.map"\n});\nconsole.log(result.code); // minified output\nconsole.log(result.map);\n```\n\nTo generate a source map with the fromString option, you can also use an object:\n```javascript\nvar result = UglifyJS.minify({"file1.js": "var a = function () {};"}, {\n  outSourceMap: "out.js.map",\n  fromString: true\n});\n```\n\nNote that the source map is not saved in a file, it\'s just returned in\n`result.map`.  The value passed for `outSourceMap` is only used to set the\n`file` attribute in the source map (see [the spec][sm-spec]).\n\nYou can also specify sourceRoot property to be included in source map:\n```javascript\nvar result = UglifyJS.minify([ "file1.js", "file2.js", "file3.js" ], {\n\toutSourceMap: "out.js.map",\n\tsourceRoot: "http://example.com/src"\n});\n```\n\nIf you\'re compressing compiled JavaScript and have a source map for it, you\ncan use the `inSourceMap` argument:\n```javascript\nvar result = UglifyJS.minify("compiled.js", {\n\tinSourceMap: "compiled.js.map",\n\toutSourceMap: "minified.js.map"\n});\n// same as before, it returns `code` and `map`\n```\n\nIf your input source map is not in a file, you can pass it in as an object\nusing the `inSourceMap` argument:\n\n```javascript\nvar result = UglifyJS.minify("compiled.js", {\n\tinSourceMap: JSON.parse(my_source_map_string),\n\toutSourceMap: "minified.js.map"\n});\n```\n\nThe `inSourceMap` is only used if you also request `outSourceMap` (it makes\nno sense otherwise).\n\nTo set the source map url, use the `sourceMapUrl` option.\nIf you\'re using the X-SourceMap header instead, you can just set the `sourceMapUrl` option to false.\nDefaults to outSourceMap:\n\n```javascript\nvar result = UglifyJS.minify([ "file1.js" ], {\n  outSourceMap: "out.js.map",\n  sourceMapUrl: "localhost/out.js.map"\n});\n```\n\nOther options:\n\n- `warnings` (default `false`) — pass `true` to display compressor warnings.\n\n- `fromString` (default `false`) — if you pass `true` then you can pass\n  JavaScript source code, rather than file names.\n\n- `mangle` (default `true`) — pass `false` to skip mangling names, or pass\n  an object to specify mangling options (see below).\n\n- `mangleProperties` (default `false`) — pass an object to specify custom\n  mangle property options.\n\n- `output` (default `null`) — pass an object if you wish to specify\n  additional [output options][codegen].  The defaults are optimized\n  for best compression.\n\n- `compress` (default `{}`) — pass `false` to skip compressing entirely.\n  Pass an object to specify custom [compressor options][compressor].\n\n- `parse` (default {}) — pass an object if you wish to specify some\n  additional [parser options][parser]. (not all options available... see below)\n\n##### mangle\n\n - `except` - pass an array of identifiers that should be excluded from mangling\n\n - `toplevel` — mangle names declared in the toplevel scope (disabled by\n  default).\n\n - `eval` — mangle names visible in scopes where eval or with are used\n  (disabled by default).\n\n - `keep_fnames` -- default `false`.  Pass `true` to not mangle\n  function names.  Useful for code relying on `Function.prototype.name`.\n  See also: the `keep_fnames` [compress option](#compressor-options).\n\n  Examples:\n\n  ```javascript\n  //tst.js\n  var globalVar;\n  function funcName(firstLongName, anotherLongName)\n  {\n    var myVariable = firstLongName +  anotherLongName;\n  }\n\n  UglifyJS.minify("tst.js").code;\n  // \'function funcName(a,n){}var globalVar;\'\n\n  UglifyJS.minify("tst.js", { mangle: { except: [\'firstLongName\'] } }).code;\n  // \'function funcName(firstLongName,a){}var globalVar;\'\n\n  UglifyJS.minify("tst.js", { mangle: { toplevel: true } }).code;\n  // \'function n(n,a){}var a;\'\n  ```\n\n##### mangleProperties options\n\n - `regex` — Pass a RegExp to only mangle certain names (maps to the `--mangle-regex` CLI arguments option)\n - `ignore_quoted` – Only mangle unquoted property names (maps to the `--mangle-props 2` CLI arguments option)\n\nWe could add more options to `UglifyJS.minify` — if you need additional\nfunctionality please suggest!\n\n### The hard way\n\nFollowing there\'s more detailed API info, in case the `minify` function is\ntoo simple for your needs.\n\n#### The parser\n```javascript\nvar toplevel_ast = UglifyJS.parse(code, options);\n```\n\n`options` is optional and if present it must be an object.  The following\nproperties are available:\n\n- `strict` — disable automatic semicolon insertion and support for trailing\n  comma in arrays and objects\n- `bare_returns` — Allow return outside of functions. (maps to the\n  `--bare-returns` CLI arguments option and available to `minify` `parse`\n  other options object)\n- `filename` — the name of the file where this code is coming from\n- `toplevel` — a `toplevel` node (as returned by a previous invocation of\n  `parse`)\n\nThe last two options are useful when you\'d like to minify multiple files and\nget a single file as the output and a proper source map.  Our CLI tool does\nsomething like this:\n```javascript\nvar toplevel = null;\nfiles.forEach(function(file){\n\tvar code = fs.readFileSync(file, "utf8");\n\ttoplevel = UglifyJS.parse(code, {\n\t\tfilename: file,\n\t\ttoplevel: toplevel\n\t});\n});\n```\n\nAfter this, we have in `toplevel` a big AST containing all our files, with\neach token having proper information about where it came from.\n\n#### Scope information\n\nUglifyJS contains a scope analyzer that you need to call manually before\ncompressing or mangling.  Basically it augments various nodes in the AST\nwith information about where is a name defined, how many times is a name\nreferenced, if it is a global or not, if a function is using `eval` or the\n`with` statement etc.  I will discuss this some place else, for now what\'s\nimportant to know is that you need to call the following before doing\nanything with the tree:\n```javascript\ntoplevel.figure_out_scope()\n```\n\n#### Compression\n\nLike this:\n```javascript\nvar compressor = UglifyJS.Compressor(options);\nvar compressed_ast = toplevel.transform(compressor);\n```\n\nThe `options` can be missing.  Available options are discussed above in\n“Compressor options”.  Defaults should lead to best compression in most\nscripts.\n\nThe compressor is destructive, so don\'t rely that `toplevel` remains the\noriginal tree.\n\n#### Mangling\n\nAfter compression it is a good idea to call again `figure_out_scope` (since\nthe compressor might drop unused variables / unreachable code and this might\nchange the number of identifiers or their position).  Optionally, you can\ncall a trick that helps after Gzip (counting character frequency in\nnon-mangleable words).  Example:\n```javascript\ncompressed_ast.figure_out_scope();\ncompressed_ast.compute_char_frequency();\ncompressed_ast.mangle_names();\n```\n\n#### Generating output\n\nAST nodes have a `print` method that takes an output stream.  Essentially,\nto generate code you do this:\n```javascript\nvar stream = UglifyJS.OutputStream(options);\ncompressed_ast.print(stream);\nvar code = stream.toString(); // this is your minified code\n```\n\nor, for a shortcut you can do:\n```javascript\nvar code = compressed_ast.print_to_string(options);\n```\n\nAs usual, `options` is optional.  The output stream accepts a lot of options,\nmost of them documented above in section “Beautifier options”.  The two\nwhich we care about here are `source_map` and `comments`.\n\n#### Keeping comments in the output\n\nIn order to keep certain comments in the output you need to pass the\n`comments` option.  Pass a RegExp or a function.  If you pass a RegExp, only\nthose comments whose body matches the regexp will be kept.  Note that body\nmeans without the initial `//` or `/*`.  If you pass a function, it will be\ncalled for every comment in the tree and will receive two arguments: the\nnode that the comment is attached to, and the comment token itself.\n\nThe comment token has these properties:\n\n- `type`: "comment1" for single-line comments or "comment2" for multi-line\n  comments\n- `value`: the comment body\n- `pos` and `endpos`: the start/end positions (zero-based indexes) in the\n  original code where this comment appears\n- `line` and `col`: the line and column where this comment appears in the\n  original code\n- `file` — the file name of the original file\n- `nlb` — true if there was a newline before this comment in the original\n  code, or if this comment contains a newline.\n\nYour function should return `true` to keep the comment, or a falsy value\notherwise.\n\n#### Generating a source mapping\n\nYou need to pass the `source_map` argument when calling `print`.  It needs\nto be a `SourceMap` object (which is a thin wrapper on top of the\n[source-map][source-map] library).\n\nExample:\n```javascript\nvar source_map = UglifyJS.SourceMap(source_map_options);\nvar stream = UglifyJS.OutputStream({\n\t...\n\tsource_map: source_map\n});\ncompressed_ast.print(stream);\n\nvar code = stream.toString();\nvar map = source_map.toString(); // json output for your source map\n```\n\nThe `source_map_options` (optional) can contain the following properties:\n\n- `file`: the name of the JavaScript output file that this mapping refers to\n- `root`: the `sourceRoot` property (see the [spec][sm-spec])\n- `orig`: the "original source map", handy when you compress generated JS\n  and want to map the minified output back to the original code where it\n  came from.  It can be simply a string in JSON, or a JSON object containing\n  the original source map.\n\n  [acorn]: https://github.com/ternjs/acorn\n  [source-map]: https://github.com/mozilla/source-map\n  [sm-spec]: https://docs.google.com/document/d/1U1RGAehQwRypUTovF1KRlpiOFze0b-_2gc6fAH0KY0k/edit\n  [codegen]: http://lisperator.net/uglifyjs/codegen\n  [compressor]: http://lisperator.net/uglifyjs/compress\n  [parser]: http://lisperator.net/uglifyjs/parser\n',
+824 silly resolved     readmeFilename: 'README.md',
+824 silly resolved     _id: 'uglify-js@2.7.3',
+824 silly resolved     _from: 'uglify-js@^2.4.24' },
+824 silly resolved   { name: 'commander',
+824 silly resolved     version: '2.9.0',
+824 silly resolved     description: 'the complete solution for node.js command-line programs',
+824 silly resolved     keywords: [ 'command', 'option', 'parser' ],
+824 silly resolved     author: { name: 'TJ Holowaychuk', email: 'tj@vision-media.ca' },
+824 silly resolved     license: 'MIT',
+824 silly resolved     repository: { type: 'git', url: 'https://github.com/tj/commander.js.git' },
+824 silly resolved     devDependencies: { should: '>= 0.0.1', sinon: '>=1.17.1' },
+824 silly resolved     scripts: { test: 'make test' },
+824 silly resolved     main: 'index',
+824 silly resolved     engines: { node: '>= 0.6.x' },
+824 silly resolved     files: [ 'index.js' ],
+824 silly resolved     dependencies: { 'graceful-readlink': '>= 1.0.0' },
+824 silly resolved     readme: '# Commander.js\n\n\n[![Build Status](https://api.travis-ci.org/tj/commander.js.svg)](http://travis-ci.org/tj/commander.js)\n[![NPM Version](http://img.shields.io/npm/v/commander.svg?style=flat)](https://www.npmjs.org/package/commander)\n[![NPM Downloads](https://img.shields.io/npm/dm/commander.svg?style=flat)](https://www.npmjs.org/package/commander)\n[![Join the chat at https://gitter.im/tj/commander.js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tj/commander.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)\n\n  The complete solution for [node.js](http://nodejs.org) command-line interfaces, inspired by Ruby\'s [commander](https://github.com/tj/commander).  \n  [API documentation](http://tj.github.com/commander.js/)\n\n\n## Installation\n\n    $ npm install commander\n\n## Option parsing\n\n Options with commander are defined with the `.option()` method, also serving as documentation for the options. The example below parses args and options from `process.argv`, leaving remaining args as the `program.args` array which were not consumed by options.\n\n```js\n#!/usr/bin/env node\n\n/**\n * Module dependencies.\n */\n\nvar program = require(\'commander\');\n\nprogram\n  .version(\'0.0.1\')\n  .option(\'-p, --peppers\', \'Add peppers\')\n  .option(\'-P, --pineapple\', \'Add pineapple\')\n  .option(\'-b, --bbq-sauce\', \'Add bbq sauce\')\n  .option(\'-c, --cheese [type]\', \'Add the specified type of cheese [marble]\', \'marble\')\n  .parse(process.argv);\n\nconsole.log(\'you ordered a pizza with:\');\nif (program.peppers) console.log(\'  - peppers\');\nif (program.pineapple) console.log(\'  - pineapple\');\nif (program.bbqSauce) console.log(\'  - bbq\');\nconsole.log(\'  - %s cheese\', program.cheese);\n```\n\n Short flags may be passed as a single arg, for example `-abc` is equivalent to `-a -b -c`. Multi-word options such as "--template-engine" are camel-cased, becoming `program.templateEngine` etc.\n\n\n## Coercion\n\n```js\nfunction range(val) {\n  return val.split(\'..\').map(Number);\n}\n\nfunction list(val) {\n  return val.split(\',\');\n}\n\nfunction collect(val, memo) {\n  memo.push(val);\n  return memo;\n}\n\nfunction increaseVerbosity(v, total) {\n  return total + 1;\n}\n\nprogram\n  .version(\'0.0.1\')\n  .usage(\'[options] <file ...>\')\n  .option(\'-i, --integer <n>\', \'An integer argument\', parseInt)\n  .option(\'-f, --float <n>\', \'A float argument\', parseFloat)\n  .option(\'-r, --range <a>..<b>\', \'A range\', range)\n  .option(\'-l, --list <items>\', \'A list\', list)\n  .option(\'-o, --optional [value]\', \'An optional value\')\n  .option(\'-c, --collect [value]\', \'A repeatable value\', collect, [])\n  .option(\'-v, --verbose\', \'A value that can be increased\', increaseVerbosity, 0)\n  .parse(process.argv);\n\nconsole.log(\' int: %j\', program.integer);\nconsole.log(\' float: %j\', program.float);\nconsole.log(\' optional: %j\', program.optional);\nprogram.range = program.range || [];\nconsole.log(\' range: %j..%j\', program.range[0], program.range[1]);\nconsole.log(\' list: %j\', program.list);\nconsole.log(\' collect: %j\', program.collect);\nconsole.log(\' verbosity: %j\', program.verbose);\nconsole.log(\' args: %j\', program.args);\n```\n\n## Regular Expression\n```js\nprogram\n  .version(\'0.0.1\')\n  .option(\'-s --size <size>\', \'Pizza size\', /^(large|medium|small)$/i, \'medium\')\n  .option(\'-d --drink [drink]\', \'Drink\', /^(coke|pepsi|izze)$/i)\n  .parse(process.argv);\n  \nconsole.log(\' size: %j\', program.size);\nconsole.log(\' drink: %j\', program.drink);\n```\n\n## Variadic arguments\n\n The last argument of a command can be variadic, and only the last argument.  To make an argument variadic you have to\n append `...` to the argument name.  Here is an example:\n\n```js\n#!/usr/bin/env node\n\n/**\n * Module dependencies.\n */\n\nvar program = require(\'commander\');\n\nprogram\n  .version(\'0.0.1\')\n  .command(\'rmdir <dir> [otherDirs...]\')\n  .action(function (dir, otherDirs) {\n    console.log(\'rmdir %s\', dir);\n    if (otherDirs) {\n      otherDirs.forEach(function (oDir) {\n        console.log(\'rmdir %s\', oDir);\n      });\n    }\n  });\n\nprogram.parse(process.argv);\n```\n\n An `Array` is used for the value of a variadic argument.  This applies to `program.args` as well as the argument passed\n to your action as demonstrated above.\n\n## Specify the argument syntax\n\n```js\n#!/usr/bin/env node\n\nvar program = require(\'../\');\n\nprogram\n  .version(\'0.0.1\')\n  .arguments(\'<cmd> [env]\')\n  .action(function (cmd, env) {\n     cmdValue = cmd;\n     envValue = env;\n  });\n\nprogram.parse(process.argv);\n\nif (typeof cmdValue === \'undefined\') {\n   console.error(\'no command given!\');\n   process.exit(1);\n}\nconsole.log(\'command:\', cmdValue);\nconsole.log(\'environment:\', envValue || "no environment given");\n```\n\n## Git-style sub-commands\n\n```js\n// file: ./examples/pm\nvar program = require(\'..\');\n\nprogram\n  .version(\'0.0.1\')\n  .command(\'install [name]\', \'install one or more packages\')\n  .command(\'search [query]\', \'search with optional query\')\n  .command(\'list\', \'list packages installed\', {isDefault: true})\n  .parse(process.argv);\n```\n\nWhen `.command()` is invoked with a description argument, no `.action(callback)` should be called to handle sub-commands, otherwise there will be an error. This tells commander that you\'re going to use separate executables for sub-commands, much like `git(1)` and other popular tools.  \nThe commander will try to search the executables in the directory of the entry script (like `./examples/pm`) with the name `program-command`, like `pm-install`, `pm-search`.\n\nOptions can be passed with the call to `.command()`. Specifying `true` for `opts.noHelp` will remove the option from the generated help output. Specifying `true` for `opts.isDefault` will run the subcommand if no other subcommand is specified.\n\nIf the program is designed to be installed globally, make sure the executables have proper modes, like `755`.\n\n### `--harmony`\n\nYou can enable `--harmony` option in two ways:\n* Use `#! /usr/bin/env node --harmony` in the sub-commands scripts. Note some os version don’t support this pattern.\n* Use the `--harmony` option when call the command, like `node --harmony examples/pm publish`. The `--harmony` option will be preserved when spawning sub-command process.\n\n## Automated --help\n\n The help information is auto-generated based on the information commander already knows about your program, so the following `--help` info is for free:\n\n```  \n $ ./examples/pizza --help\n\n   Usage: pizza [options]\n\n   An application for pizzas ordering\n\n   Options:\n\n     -h, --help           output usage information\n     -V, --version        output the version number\n     -p, --peppers        Add peppers\n     -P, --pineapple      Add pineapple\n     -b, --bbq            Add bbq sauce\n     -c, --cheese <type>  Add the specified type of cheese [marble]\n     -C, --no-cheese      You do not want any cheese\n\n```\n\n## Custom help\n\n You can display arbitrary `-h, --help` information\n by listening for "--help". Commander will automatically\n exit once you are done so that the remainder of your program\n does not execute causing undesired behaviours, for example\n in the following executable "stuff" will not output when\n `--help` is used.\n\n```js\n#!/usr/bin/env node\n\n/**\n * Module dependencies.\n */\n\nvar program = require(\'commander\');\n\nprogram\n  .version(\'0.0.1\')\n  .option(\'-f, --foo\', \'enable some foo\')\n  .option(\'-b, --bar\', \'enable some bar\')\n  .option(\'-B, --baz\', \'enable some baz\');\n\n// must be before .parse() since\n// node\'s emit() is immediate\n\nprogram.on(\'--help\', function(){\n  console.log(\'  Examples:\');\n  console.log(\'\');\n  console.log(\'    $ custom-help --help\');\n  console.log(\'    $ custom-help -h\');\n  console.log(\'\');\n});\n\nprogram.parse(process.argv);\n\nconsole.log(\'stuff\');\n```\n\nYields the following help output when `node script-name.js -h` or `node script-name.js --help` are run:\n\n```\n\nUsage: custom-help [options]\n\nOptions:\n\n  -h, --help     output usage information\n  -V, --version  output the version number\n  -f, --foo      enable some foo\n  -b, --bar      enable some bar\n  -B, --baz      enable some baz\n\nExamples:\n\n  $ custom-help --help\n  $ custom-help -h\n\n```\n\n## .outputHelp(cb)\n\nOutput help information without exiting.\nOptional callback cb allows post-processing of help text before it is displayed.\n\nIf you want to display help by default (e.g. if no command was provided), you can use something like:\n\n```js\nvar program = require(\'commander\');\nvar colors = require(\'colors\');\n\nprogram\n  .version(\'0.0.1\')\n  .command(\'getstream [url]\', \'get stream URL\')\n  .parse(process.argv);\n\n  if (!process.argv.slice(2).length) {\n    program.outputHelp(make_red);\n  }\n\nfunction make_red(txt) {\n  return colors.red(txt); //display the help text in red on the console\n}\n```\n\n## .help(cb)\n\n  Output help information and exit immediately.\n  Optional callback cb allows post-processing of help text before it is displayed.\n\n## Examples\n\n```js\nvar program = require(\'commander\');\n\nprogram\n  .version(\'0.0.1\')\n  .option(\'-C, --chdir <path>\', \'change the working directory\')\n  .option(\'-c, --config <path>\', \'set config path. defaults to ./deploy.conf\')\n  .option(\'-T, --no-tests\', \'ignore test hook\')\n\nprogram\n  .command(\'setup [env]\')\n  .description(\'run setup commands for all envs\')\n  .option("-s, --setup_mode [mode]", "Which setup mode to use")\n  .action(function(env, options){\n    var mode = options.setup_mode || "normal";\n    env = env || \'all\';\n    console.log(\'setup for %s env(s) with %s mode\', env, mode);\n  });\n\nprogram\n  .command(\'exec <cmd>\')\n  .alias(\'ex\')\n  .description(\'execute the given remote cmd\')\n  .option("-e, --exec_mode <mode>", "Which exec mode to use")\n  .action(function(cmd, options){\n    console.log(\'exec "%s" using %s mode\', cmd, options.exec_mode);\n  }).on(\'--help\', function() {\n    console.log(\'  Examples:\');\n    console.log();\n    console.log(\'    $ deploy exec sequential\');\n    console.log(\'    $ deploy exec async\');\n    console.log();\n  });\n\nprogram\n  .command(\'*\')\n  .action(function(env){\n    console.log(\'deploying "%s"\', env);\n  });\n\nprogram.parse(process.argv);\n```\n\nMore Demos can be found in the [examples](https://github.com/tj/commander.js/tree/master/examples) directory.\n\n## License\n\nMIT\n\n',
+824 silly resolved     readmeFilename: 'Readme.md',
+824 silly resolved     bugs: { url: 'https://github.com/tj/commander.js/issues' },
+824 silly resolved     _id: 'commander@2.9.0',
+824 silly resolved     dist: { shasum: '63c70d1c72fa14ec84a8a26bc49312d71b970804' },
+824 silly resolved     _from: 'commander@^2.8.1',
+824 silly resolved     _resolved: 'https://registry.npmjs.org/commander/-/commander-2.9.0.tgz' },
+824 silly resolved   { name: 'css-resolve-import',
+824 silly resolved     version: '0.1.2',
+824 silly resolved     description: 'Resolves @import statements in CSS',
+824 silly resolved     main: 'index.js',
+824 silly resolved     scripts: { test: 'mocha' },
+824 silly resolved     repository:
+824 silly resolved      { type: 'git',
+824 silly resolved        url: 'https://github.com/fizker/css-resolve-import.git' },
+824 silly resolved     keywords: [ 'css', 'import', 'join', 'resolve' ],
+824 silly resolved     author: { name: 'Benjamin Horsleben' },
+824 silly resolved     license: 'WTFPL',
+824 silly resolved     bugs: { url: 'https://github.com/fizker/css-resolve-import/issues' },
+824 silly resolved     homepage: 'https://github.com/fizker/css-resolve-import',
+824 silly resolved     devDependencies:
+824 silly resolved      { chai: '^1.10.0',
+824 silly resolved        'finc-chai-helpers': '^0.1.0',
+824 silly resolved        fzkes: '^0.14.1',
+824 silly resolved        mocha: '^2.1.0' },
+824 silly resolved     readme: 'ERROR: No README data found!',
+824 silly resolved     _id: 'css-resolve-import@0.1.2',
+824 silly resolved     dist: { shasum: '0555a22d56986766b7c833760e7c19323ce37f28' },
+824 silly resolved     _from: 'css-resolve-import@^0.1.1',
+824 silly resolved     _resolved: 'https://registry.npmjs.org/css-resolve-import/-/css-resolve-import-0.1.2.tgz' },
+824 silly resolved   { name: 'sqwish',
+824 silly resolved     description: 'a tool for compressing CSS',
+824 silly resolved     homepage: 'https://github.com/ded/sqwish',
+824 silly resolved     version: '0.2.2',
+824 silly resolved     author: { name: 'Dustin Diaz', email: '@ded' },
+824 silly resolved     keywords: [ 'minify', 'css', 'compress' ],
+824 silly resolved     main: 'src/index.js',
+824 silly resolved     engines: { node: '>= 0.4.1' },
+824 silly resolved     directories: { lib: 'src', bin: 'bin' },
+824 silly resolved     devDependencies: { 'sink-test': '>= 0.0.6' },
+824 silly resolved     scripts: { test: 'node tests/tests.js' },
+824 silly resolved     preferGlobal: true,
+824 silly resolved     bin: { sqwish: 'bin/sqwish' },
+824 silly resolved     readme: 'Welcome to Sqwish\n=================\n\nA [Node](http://nodejs.org) based CSS Compressor. It works like this.\n\n``` javascript\nrequire(\'sqwish\').minify(\'body { color: #ff33cc; }\');\n// => "body{color:#f3c}"\n```\n\nCLI\n---\n\nInstall it.\n\n    $ npm install -g sqwish\n\nUse it like this:\n\n    $ sqwish app.css # default output is <file>.min.css therefore app.css => app.min.css\n    $ # or...\n    $ sqwish css/styles.css -o prod/something-else.min.css\n\nNotes\n-----\n\nSqwish does not attempt to fix invalid CSS, therefore, at minimum, your CSS should at least follow the basic rules:\n\n``` css\nselectors[,more selectors] {\n  property: value;\n  another-property: another value;\n}\n```\n\nStrict Optimizations\n--------------------\n\nAside from regular minification, in <code>--strict</code> mode Sqwish will combine duplicate selectors and merge duplicate properties.\n\n``` css\n/* before */\ndiv {\n  color: orange;\n  background: red;\n}\ndiv {\n  color: #ff33cc;\n  margin: 1px 0px 1px 0px;\n}\n\n/* after */\ndiv{color:#f3c;background:red;margin:1px 0}\n```\n\nThis mode can be enabled as so:\n\n    sqwish.minify(css, true);\n\non the command line\n\n    $ sqwish styles.css --strict\n\nDevelopers\n----------\n\nBe sure you have the proper testing harness set up ahead of time by installing the <code>sink-test</code> submodule\n\n    $ npm install --dev\n\nTests can be added in <code>tests/tests.js</code>, and then run as such:\n\n    $ npm test\n\nLicense\n-------\n\nSqwish is copyright Dustin Diaz 2011 under MIT License\n\n**Happy Sqwishing!**',
+824 silly resolved     readmeFilename: 'README.md',
+824 silly resolved     _id: 'sqwish@0.2.2',
+824 silly resolved     _from: 'sqwish@~0.2.2' },
+824 silly resolved   { name: 'fmerge',
+824 silly resolved     version: '1.2.0',
+824 silly resolved     description: 'A tool for merging objects.',
+824 silly resolved     main: 'index.js',
+824 silly resolved     devDependencies: { mocha: '^1.20.0', chai: '^1.9.1' },
+824 silly resolved     scripts: { test: 'mocha', install: 'node install.js' },
+824 silly resolved     repository: { type: 'git', url: 'git://github.com/fizker/merge.git' },
+824 silly resolved     keywords: [ 'merge', 'combine' ],
+824 silly resolved     author: { name: 'Benjamin Horsleben' },
+824 silly resolved     license: 'WTFPL',
+824 silly resolved     readme: 'fmerge\n======\n\nfmerge is a simple tool for merging objects. It is perfect for handling options\nobjects.\n\nIt takes any number of parameters. It even merges recursively. Arrays will just\nbe replaced, though.\n\nIt does require a browser that supports ES5 methods though, so for IE8 or\nearlier, take a look at https://github.com/olivernn/augment.js.\n\n\nInstalling\n----------\n\nInstalling is easy. It automatically detects the environment among the three\nsupported types ([node.js](http://nodejs.org), [require.js](http://requirejs.org)\nand normal browser version).\n\n- In `node`, simply use `npm install fmerge`.\n- The module is `require.js`-aware, so you can link it directly through `require.js`\n  as well.\n    - To make the `require.js` version, either install through `npm` or check out\n      from git and run `node install.js`.\n- For normal browsers, it creates a global function `fmerge`.\n\nExample of use\n--------------\n\n    var merge = require(\'fmerge\')\n\n    console.log(merge(\n      { a: 1, b: { c: 3, d: 4 }, [ \'entry\', { e: 5 } ] }\n    , { a: 2, b: { a: 1, c: 2 }, [ \'another entry\', { a: 1 } ] }\n    ))\n    // { a: 2, b: { a: 1, c: 2, d: 4 }, [ \'another entry\', { a: 1 } ] }\n',
+824 silly resolved     readmeFilename: 'readme.md',
+824 silly resolved     bugs: { url: 'https://github.com/fizker/merge/issues' },
+824 silly resolved     _id: 'fmerge@1.2.0',
+824 silly resolved     dist: { shasum: '9b3106a475fa8f0db41dd3da1c7b99b7510d5d9b' },
+824 silly resolved     _from: 'fmerge@^1.2.0',
+824 silly resolved     _resolved: 'https://registry.npmjs.org/fmerge/-/fmerge-1.2.0.tgz' },
+824 silly resolved   { name: 'hogan.js',
+824 silly resolved     description: 'A mustache compiler.',
+824 silly resolved     version: '3.0.2',
+824 silly resolved     keywords: [ 'mustache', 'template' ],
+824 silly resolved     main: './lib/hogan.js',
+824 silly resolved     homepage: 'http://twitter.github.com/hogan.js/',
+824 silly resolved     author: { name: 'Twitter Inc.' },
+824 silly resolved     repository: { type: 'git', url: 'https://github.com/twitter/hogan.js.git' },
+824 silly resolved     licenses: [ [Object] ],
+824 silly resolved     dependencies: { nopt: '1.0.10', mkdirp: '0.3.0' },
+824 silly resolved     devDependencies:
+824 silly resolved      { 'uglify-js': '2.x',
+824 silly resolved        jsdom: '0.3.4',
+824 silly resolved        step: '0.0.5',
+824 silly resolved        rimraf: '2.0.1' },
+824 silly resolved     bin: { hulk: './bin/hulk' },
+824 silly resolved     readme: '## Hogan.js - A mustache compiler. [![Build Status](https://secure.travis-ci.org/twitter/hogan.js.png)](http://travis-ci.org/twitter/hogan.js)\n\n[Hogan.js](http://twitter.github.io/hogan.js/) is a compiler for the\n[Mustache](http://mustache.github.io/) templating language. For information\non Mustache, see the [manpage](http://mustache.github.com/mustache.5.html) and\nthe [spec](https://github.com/mustache/spec).\n\n## Basics\n\nHogan compiles templates to HoganTemplate objects, which have a render method.\n\n```js\nvar data = {\n  screenName: "dhg",\n};\n\nvar template = Hogan.compile("Follow @{{screenName}}.");\nvar output = template.render(data);\n\n// prints "Follow @dhg."\nconsole.log(output);\n```\n\n## Features\n\nHogan is fast--try it on your workload.\n\nHogan has separate scanning, parsing and code generation phases. This way it\'s\npossible to add new features without touching the scanner at all, and many\ndifferent code generation techniques can be tried without changing the parser.\n\nHogan exposes scan and parse methods. These can be useful for\npre-processing templates on the server.\n\n```js\nvar text = "{{^check}}{{#i18n}}No{{/i18n}}{{/check}}";\ntext +=  "{{#check}}{{#i18n}}Yes{{/i18n}}{{/check}}";\nvar tree = Hogan.parse(Hogan.scan(text));\n\n// outputs "# check"\nconsole.log(tree[0].tag + " " + tree[0].name);\n\n// outputs "Yes"\nconsole.log(tree[1].nodes[0].nodes[0]);\n```\n\nIt\'s also possible to use HoganTemplate objects without the Hogan compiler\npresent. That means you can pre-compile your templates on the server, and\navoid shipping the compiler. However, the optional lambda features from the\nMustache spec require the compiler and the original template source to be present.\n\nHogan also supports [template inheritance](https://github.com/mustache/spec/pull/75),\nand maintains compatibility with other implementations like [mustache.java](https://github.com/spullara/mustache.java),\n[mustache.php](https://github.com/bobthecow/mustache.php), and [GRMustache](https://github.com/groue/GRMustache)\n\n## Why Hogan.js?\n\nWhy another templating library?\n\nHogan.js was written to meet three templating library requirements: good\nperformance, standalone template objects, and a parser API.\n\n## Install\n\n# Node.js\n\n```\nnpm install hogan.js\n```\n\n# component\n\n```\ncomponent install twitter/hogan.js\n```\n\n## Compilation options\n\nThe second argument to Hogan.compile is an options hash.\n\n```js\nvar text = "my <%example%> template."\nHogan.compile(text, {delimiters: \'<% %>\'});\n```\n\nThere are currently four valid options.\n\nasString: return the compiled template as a string. This feature is used\nby hulk to produce strings containing pre-compiled templates.\n\nsectionTags: allow custom tags that require opening and closing tags, and\ntreat them as though they were section tags.\n\n```js\nvar text = "my {{_foo}}example{{/foo}} template."\nHogan.compile(text, { sectionTags: [{o: \'_foo\', c: \'foo\'}]});\n```\n\nThe value is an array of object with o and c fields that indicate names\nfor custom section tags. The example above allows parsing of {{_foo}}{{/foo}}.\n\ndelimiters: A string that overrides the default delimiters. Example: "<% %>".\n\ndisableLambda: disables the higher-order sections / lambda-replace features of Mustache.\n\n## Issues\n\nHave a bug? Please create an issue here on GitHub!\n\nhttps://github.com/twitter/hogan.js/issues\n\n## Versioning\n\nFor transparency and insight into our release cycle, releases will be numbered with the follow format:\n\n`<major>.<minor>.<patch>`\n\nAnd constructed with the following guidelines:\n\n* Breaking backwards compatibility bumps the major\n* New additions without breaking backwards compatibility bumps the minor\n* Bug fixes and misc changes bump the patch\n\nFor more information on semantic versioning, please visit http://semver.org/.\n\n## Testing\n\nTo run the tests you first need to update all git submodules.\n\n    $ git submodule init\n    $ git submodule update\n\nUnit tests are written using [QUnit](http://qunitjs.com/). To run them, open `test/index.html`\nin a browser.\n\nUse [node](http://nodejs.org/) to run all tests from the\n[mustache spec](https://github.com/mustache/spec).\n\n    $ node test/spec.js\n\n## Authors\n\n**Robert Sayre**\n\n+ http://github.com/sayrer\n\n**Jacob Thornton**\n\n+ http://github.com/fat\n\n## License\n\nCopyright 2011 Twitter, Inc.\n\nLicensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0\n',
+824 silly resolved     readmeFilename: 'README.md',
+824 silly resolved     bugs: { url: 'https://github.com/twitter/hogan.js/issues' },
+824 silly resolved     _id: 'hogan.js@3.0.2',
+824 silly resolved     dist: { shasum: '565eb75bbf9185efc0c6a0eb3e810756a07cc87c' },
+824 silly resolved     _from: 'hogan.js@^3.0.2',
+824 silly resolved     _resolved: 'https://registry.npmjs.org/hogan.js/-/hogan.js-3.0.2.tgz' } ]
+825 info install glob@5.0.15 into /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier
+826 info install uglify-js@2.7.3 into /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier
+827 info install commander@2.9.0 into /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier
+828 info install css-resolve-import@0.1.2 into /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier
+829 info install sqwish@0.2.2 into /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier
+830 info install fmerge@1.2.0 into /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier
+831 info install hogan.js@3.0.2 into /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier
+832 info installOne glob@5.0.15
+833 info installOne uglify-js@2.7.3
+834 info installOne commander@2.9.0
+835 info installOne css-resolve-import@0.1.2
+836 info installOne sqwish@0.2.2
+837 info installOne fmerge@1.2.0
+838 info installOne hogan.js@3.0.2
+839 info /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/glob unbuild
+840 info /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/uglify-js unbuild
+841 info /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/commander unbuild
+842 info /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/css-resolve-import unbuild
+843 info /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/sqwish unbuild
+844 info /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/fmerge unbuild
+845 info /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/hogan.js unbuild
+846 verbose tar unpack /home/tomasz/.npm/glob/5.0.15/package.tgz
+847 silly lockFile 045733cb-dules-minifier-node-modules-glob tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/glob
+848 verbose lock tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/glob /home/tomasz/.npm/045733cb-dules-minifier-node-modules-glob.lock
+849 silly lockFile 6e0a07d0-masz-npm-glob-5-0-15-package-tgz tar:///home/tomasz/.npm/glob/5.0.15/package.tgz
+850 verbose lock tar:///home/tomasz/.npm/glob/5.0.15/package.tgz /home/tomasz/.npm/6e0a07d0-masz-npm-glob-5-0-15-package-tgz.lock
+851 verbose tar unpack /home/tomasz/.npm/uglify-js/2.7.3/package.tgz
+852 silly lockFile 18274d3f--minifier-node-modules-uglify-js tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/uglify-js
+853 verbose lock tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/uglify-js /home/tomasz/.npm/18274d3f--minifier-node-modules-uglify-js.lock
+854 silly lockFile 2a168d30--npm-uglify-js-2-7-3-package-tgz tar:///home/tomasz/.npm/uglify-js/2.7.3/package.tgz
+855 verbose lock tar:///home/tomasz/.npm/uglify-js/2.7.3/package.tgz /home/tomasz/.npm/2a168d30--npm-uglify-js-2-7-3-package-tgz.lock
+856 verbose tar unpack /home/tomasz/.npm/commander/2.9.0/package.tgz
+857 silly lockFile c6efd5c0--minifier-node-modules-commander tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/commander
+858 verbose lock tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/commander /home/tomasz/.npm/c6efd5c0--minifier-node-modules-commander.lock
+859 silly lockFile 05170740--npm-commander-2-9-0-package-tgz tar:///home/tomasz/.npm/commander/2.9.0/package.tgz
+860 verbose lock tar:///home/tomasz/.npm/commander/2.9.0/package.tgz /home/tomasz/.npm/05170740--npm-commander-2-9-0-package-tgz.lock
+861 verbose tar unpack /home/tomasz/.npm/css-resolve-import/0.1.2/package.tgz
+862 silly lockFile 171324b7--node-modules-css-resolve-import tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/css-resolve-import
+863 verbose lock tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/css-resolve-import /home/tomasz/.npm/171324b7--node-modules-css-resolve-import.lock
+864 silly lockFile e12c0cdd-resolve-import-0-1-2-package-tgz tar:///home/tomasz/.npm/css-resolve-import/0.1.2/package.tgz
+865 verbose lock tar:///home/tomasz/.npm/css-resolve-import/0.1.2/package.tgz /home/tomasz/.npm/e12c0cdd-resolve-import-0-1-2-package-tgz.lock
+866 verbose tar unpack /home/tomasz/.npm/sqwish/0.2.2/package.tgz
+867 silly lockFile 6a8add7c-les-minifier-node-modules-sqwish tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/sqwish
+868 verbose lock tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/sqwish /home/tomasz/.npm/6a8add7c-les-minifier-node-modules-sqwish.lock
+869 silly lockFile 291b8c4b-asz-npm-sqwish-0-2-2-package-tgz tar:///home/tomasz/.npm/sqwish/0.2.2/package.tgz
+870 verbose lock tar:///home/tomasz/.npm/sqwish/0.2.2/package.tgz /home/tomasz/.npm/291b8c4b-asz-npm-sqwish-0-2-2-package-tgz.lock
+871 verbose tar unpack /home/tomasz/.npm/fmerge/1.2.0/package.tgz
+872 silly lockFile 29d516fb-les-minifier-node-modules-fmerge tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/fmerge
+873 verbose lock tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/fmerge /home/tomasz/.npm/29d516fb-les-minifier-node-modules-fmerge.lock
+874 silly lockFile f58685f1-asz-npm-fmerge-1-2-0-package-tgz tar:///home/tomasz/.npm/fmerge/1.2.0/package.tgz
+875 verbose lock tar:///home/tomasz/.npm/fmerge/1.2.0/package.tgz /home/tomasz/.npm/f58685f1-asz-npm-fmerge-1-2-0-package-tgz.lock
+876 verbose tar unpack /home/tomasz/.npm/hogan.js/3.0.2/package.tgz
+877 silly lockFile 457a440a-s-minifier-node-modules-hogan-js tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/hogan.js
+878 verbose lock tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/hogan.js /home/tomasz/.npm/457a440a-s-minifier-node-modules-hogan-js.lock
+879 silly lockFile fa746af2-z-npm-hogan-js-3-0-2-package-tgz tar:///home/tomasz/.npm/hogan.js/3.0.2/package.tgz
+880 verbose lock tar:///home/tomasz/.npm/hogan.js/3.0.2/package.tgz /home/tomasz/.npm/fa746af2-z-npm-hogan-js-3-0-2-package-tgz.lock
+881 silly gunzTarPerm modes [ '755', '644' ]
+882 silly gunzTarPerm modes [ '755', '644' ]
+883 silly gunzTarPerm modes [ '755', '644' ]
+884 silly gunzTarPerm modes [ '755', '644' ]
+885 silly gunzTarPerm modes [ '755', '644' ]
+886 silly gunzTarPerm modes [ '755', '644' ]
+887 silly gunzTarPerm modes [ '755', '644' ]
+888 silly gunzTarPerm extractEntry package.json
+889 silly gunzTarPerm extractEntry package.json
+890 silly gunzTarPerm extractEntry package.json
+891 silly gunzTarPerm extractEntry package.json
+892 silly gunzTarPerm extractEntry package.json
+893 silly gunzTarPerm extractEntry index.js
+894 silly gunzTarPerm extractEntry Readme.md
+895 silly gunzTarPerm extractEntry .npmignore
+896 silly gunzTarPerm extractEntry index.js
+897 silly gunzTarPerm extractEntry .npmignore
+898 silly gunzTarPerm extractEntry README.md
+899 silly gunzTarPerm extractEntry .npmignore
+900 silly gunzTarPerm extractEntry fmerge.min.js
+901 silly gunzTarPerm extractEntry .npmignore
+902 silly gunzTarPerm extractEntry README.md
+903 silly gunzTarPerm extractEntry index.js
+904 silly gunzTarPerm extractEntry install.js
+905 silly gunzTarPerm extractEntry src/parse.js
+906 silly gunzTarPerm extractEntry src/strip-utf8-byte-order.js
+907 silly gunzTarPerm extractEntry Makefile
+908 silly gunzTarPerm extractEntry bin/sqwish
+909 silly gunzTarPerm extractEntry LICENSE
+910 silly gunzTarPerm extractEntry inheritance.js
+911 silly gunzTarPerm extractEntry package.json
+912 silly gunzTarPerm extractEntry package.json
+913 silly gunzTarPerm extractEntry readme.md
+914 silly gunzTarPerm extractEntry example/styles.css
+915 silly gunzTarPerm extractEntry example/styles.min.css
+916 silly gunzTarPerm extractEntry test.js
+917 silly gunzTarPerm extractEntry dist/hogan-3.0.2.amd.js
+918 silly gunzTarPerm extractEntry README.md
+919 silly gunzTarPerm extractEntry common.js
+920 silly gunzTarPerm extractEntry glob.js
+921 silly gunzTarPerm extractEntry sync.js
+922 silly gunzTarPerm extractEntry README.md
+923 silly gunzTarPerm extractEntry LICENSE
+924 silly gunzTarPerm extractEntry src/index.js
+925 silly gunzTarPerm extractEntry tests/tests.js
+926 silly gunzTarPerm extractEntry bin/extract-props.js
+927 silly gunzTarPerm extractEntry bin/uglifyjs
+928 silly gunzTarPerm extractEntry dist/hogan-3.0.2.common.js
+929 silly gunzTarPerm extractEntry dist/hogan-3.0.2.js
+930 silly lockFile 171324b7--node-modules-css-resolve-import tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/css-resolve-import
+931 silly lockFile 171324b7--node-modules-css-resolve-import tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/css-resolve-import
+932 silly lockFile e12c0cdd-resolve-import-0-1-2-package-tgz tar:///home/tomasz/.npm/css-resolve-import/0.1.2/package.tgz
+933 silly lockFile e12c0cdd-resolve-import-0-1-2-package-tgz tar:///home/tomasz/.npm/css-resolve-import/0.1.2/package.tgz
+934 info preinstall css-resolve-import@0.1.2
+935 verbose readDependencies using package.json deps
+936 verbose readDependencies using package.json deps
+937 silly resolved []
+938 verbose about to build /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/css-resolve-import
+939 info build /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/css-resolve-import
+940 verbose linkStuff [ false,
+940 verbose linkStuff   false,
+940 verbose linkStuff   false,
+940 verbose linkStuff   '/scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules' ]
+941 info linkStuff css-resolve-import@0.1.2
+942 verbose linkBins css-resolve-import@0.1.2
+943 verbose linkMans css-resolve-import@0.1.2
+944 verbose rebuildBundles css-resolve-import@0.1.2
+945 info install css-resolve-import@0.1.2
+946 silly gunzTarPerm extractEntry dist/hogan-3.0.2.min.amd.js
+947 silly gunzTarPerm extractEntry dist/hogan-3.0.2.min.common.js
+948 info postinstall css-resolve-import@0.1.2
+949 silly lockFile 29d516fb-les-minifier-node-modules-fmerge tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/fmerge
+950 silly lockFile 29d516fb-les-minifier-node-modules-fmerge tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/fmerge
+951 silly lockFile f58685f1-asz-npm-fmerge-1-2-0-package-tgz tar:///home/tomasz/.npm/fmerge/1.2.0/package.tgz
+952 silly lockFile f58685f1-asz-npm-fmerge-1-2-0-package-tgz tar:///home/tomasz/.npm/fmerge/1.2.0/package.tgz
+953 info preinstall fmerge@1.2.0
+954 verbose readDependencies using package.json deps
+955 verbose readDependencies using package.json deps
+956 silly resolved []
+957 verbose about to build /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/fmerge
+958 info build /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/fmerge
+959 verbose linkStuff [ false,
+959 verbose linkStuff   false,
+959 verbose linkStuff   false,
+959 verbose linkStuff   '/scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules' ]
+960 info linkStuff fmerge@1.2.0
+961 silly gunzTarPerm extractEntry dist/hogan-3.0.2.min.js
+962 silly gunzTarPerm extractEntry dist/hogan-3.0.2.min.mustache.js
+963 verbose linkBins fmerge@1.2.0
+964 verbose linkMans fmerge@1.2.0
+965 verbose rebuildBundles fmerge@1.2.0
+966 info install fmerge@1.2.0
+967 verbose unsafe-perm in lifecycle true
+968 silly gunzTarPerm extractEntry dist/hogan-3.0.2.mustache.js
+969 silly gunzTarPerm extractEntry dist/template-3.0.2.js
+970 info fmerge@1.2.0 Failed to exec install script
+971 info /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/fmerge unbuild
+972 warn This failure might be due to the use of legacy binary "node"
+973 warn For further explanations, please read
+/usr/share/doc/nodejs/README.Debian
+974 info preuninstall fmerge@1.2.0
+975 info uninstall fmerge@1.2.0
+976 verbose false,/scripts/NetworkCurator/nc-admin/tests/node_modules,/scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules unbuild fmerge@1.2.0
+977 info postuninstall fmerge@1.2.0
+978 verbose about to build /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier
+979 info /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier unbuild
+980 info preuninstall minifier@0.8.0
+981 info uninstall minifier@0.8.0
+982 verbose true,/scripts/NetworkCurator/nc-admin/tests/node_modules,/scripts/NetworkCurator/nc-admin/tests/node_modules unbuild minifier@0.8.0
+983 verbose /scripts/NetworkCurator/nc-admin/tests/node_modules/.bin,[object Object] binRoot
+984 silly lockFile c6efd5c0--minifier-node-modules-commander tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/commander
+985 silly lockFile c6efd5c0--minifier-node-modules-commander tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/commander
+986 info postuninstall minifier@0.8.0
+987 silly lockFile 05170740--npm-commander-2-9-0-package-tgz tar:///home/tomasz/.npm/commander/2.9.0/package.tgz
+988 silly lockFile 05170740--npm-commander-2-9-0-package-tgz tar:///home/tomasz/.npm/commander/2.9.0/package.tgz
+989 info preinstall commander@2.9.0
+990 verbose readDependencies using package.json deps
+991 verbose readDependencies using package.json deps
+992 silly lockFile 6a8add7c-les-minifier-node-modules-sqwish tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/sqwish
+993 silly lockFile 6a8add7c-les-minifier-node-modules-sqwish tar:///scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/sqwish
+994 silly lockFile 291b8c4b-asz-npm-sqwish-0-2-2-package-tgz tar:///home/tomasz/.npm/sqwish/0.2.2/package.tgz
+995 silly lockFile 291b8c4b-asz-npm-sqwish-0-2-2-package-tgz tar:///home/tomasz/.npm/sqwish/0.2.2/package.tgz
+996 verbose cache add [ 'graceful-readlink@>= 1.0.0', null ]
+997 verbose cache add name=undefined spec="graceful-readlink@>= 1.0.0" args=["graceful-readlink@>= 1.0.0",null]
+998 verbose parsed url { protocol: null,
+998 verbose parsed url   slashes: null,
+998 verbose parsed url   auth: null,
+998 verbose parsed url   host: null,
+998 verbose parsed url   port: null,
+998 verbose parsed url   hostname: null,
+998 verbose parsed url   hash: null,
+998 verbose parsed url   search: null,
+998 verbose parsed url   query: null,
+998 verbose parsed url   pathname: 'graceful-readlink@%3E=%201.0.0',
+998 verbose parsed url   path: 'graceful-readlink@%3E=%201.0.0',
+998 verbose parsed url   href: 'graceful-readlink@%3E=%201.0.0' }
+999 verbose cache add name="graceful-readlink" spec=">= 1.0.0" args=["graceful-readlink",">= 1.0.0"]
+1000 verbose parsed url { protocol: null,
+1000 verbose parsed url   slashes: null,
+1000 verbose parsed url   auth: null,
+1000 verbose parsed url   host: null,
+1000 verbose parsed url   port: null,
+1000 verbose parsed url   hostname: null,
+1000 verbose parsed url   hash: null,
+1000 verbose parsed url   search: null,
+1000 verbose parsed url   query: null,
+1000 verbose parsed url   pathname: '%3E=%201.0.0',
+1000 verbose parsed url   path: '%3E=%201.0.0',
+1000 verbose parsed url   href: '%3E=%201.0.0' }
+1001 verbose addNamed [ 'graceful-readlink', '>= 1.0.0' ]
+1002 verbose addNamed [ null, '>=1.0.0' ]
+1003 silly lockFile a12a5266-graceful-readlink-1-0-0 graceful-readlink@>= 1.0.0
+1004 verbose lock graceful-readlink@>= 1.0.0 /home/tomasz/.npm/a12a5266-graceful-readlink-1-0-0.lock
+1005 silly gunzTarPerm extractEntry lib/ast.js
+1006 silly gunzTarPerm extractEntry lib/compress.js
+1007 silly addNameRange { name: 'graceful-readlink', range: '>=1.0.0', hasData: false }
+1008 error error rolling back Error: ENOTEMPTY, rmdir '/scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/uglify-js'
+1008 error error rolling back  minifier@0.8.0 { [Error: ENOTEMPTY, rmdir '/scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/uglify-js']
+1008 error error rolling back   errno: 53,
+1008 error error rolling back   code: 'ENOTEMPTY',
+1008 error error rolling back   path: '/scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/uglify-js' }
+1009 error weird error 1
+1010 verbose exit [ 1, true ]
+1011 info preinstall sqwish@0.2.2
+1012 verbose readDependencies using package.json deps
+1013 verbose url raw graceful-readlink
+1014 verbose url resolving [ 'https://registry.npmjs.org/', './graceful-readlink' ]
+1015 verbose url resolved https://registry.npmjs.org/graceful-readlink
+1016 info trying registry request attempt 1 at 19:52:47
+1017 verbose etag "4Y89F8JDJP0YPHGBB0IMVMPJA"
+1018 http GET https://registry.npmjs.org/graceful-readlink
+1019 verbose readDependencies using package.json deps
+1020 silly resolved []
+1021 verbose about to build /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/sqwish
+1022 info build /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/sqwish
+1023 verbose linkStuff [ false,
+1023 verbose linkStuff   false,
+1023 verbose linkStuff   false,
+1023 verbose linkStuff   '/scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules' ]
+1024 info linkStuff sqwish@0.2.2
+1025 verbose linkBins sqwish@0.2.2
+1026 verbose link bins [ { sqwish: 'bin/sqwish' },
+1026 verbose link bins   '/scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/.bin',
+1026 verbose link bins   false ]
+1027 verbose linkMans sqwish@0.2.2
+1028 verbose rebuildBundles sqwish@0.2.2
+1029 silly gunzTarPerm extractEntry lib/mozilla-ast.js
+1030 info /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/sqwish unbuild
+1031 info preuninstall sqwish@0.2.2
+1032 error Error: ENOENT, lstat '/scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/hogan.js/dist/hogan-3.0.2.amd.js'
+1033 error If you need help, you may report this log at:
+1033 error     <http://github.com/isaacs/npm/issues>
+1033 error or email it to:
+1033 error     <npm-@googlegroups.com>
+1034 error System Linux 3.13.0-95-generic
+1035 error command "/usr/bin/nodejs" "/usr/bin/npm" "install" "minifier"
+1036 error cwd /scripts/NetworkCurator/nc-admin/tests
+1037 error node -v v0.10.25
+1038 error npm -v 1.3.10
+1039 error path /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/hogan.js/dist/hogan-3.0.2.amd.js
+1040 error fstream_path /scripts/NetworkCurator/nc-admin/tests/node_modules/minifier/node_modules/hogan.js/dist/hogan-3.0.2.amd.js
+1041 error fstream_type File
+1042 error fstream_class FileWriter
+1043 error code ENOENT
+1044 error errno 34
+1045 error fstream_stack /usr/lib/nodejs/fstream/lib/writer.js:284:26
+1045 error fstream_stack Object.oncomplete (fs.js:107:15)
+1046 verbose exit [ 34, true ]

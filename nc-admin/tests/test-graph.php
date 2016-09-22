@@ -23,8 +23,9 @@ for ($i = 0; $i < count($nodenames); $i++) {
     echo "Creating node $nowname ($nowclass)";
     $params = array('controller' => 'NCGraphs', 'action' => 'createNewNode',
         'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
-        'network_name' => 'net-zulu', 'node_name' => $nowname, 'node_title' => "Node $nowname",
-        'class_name' => $nowclass);
+        'network' => 'net-zulu', 
+        'name' => $nowname, 'title' => "Node $nowname", 'abstract'=>'', 'content'=>'',
+        'class' => $nowclass);
     tryreport($NCapi, $params);
 }
 
@@ -38,8 +39,9 @@ for ($i = 0; $i < count($linknames); $i++) {
     echo "Creating link $nowname ($nowclass) from $sources[$i] to $targets[$i]";
     $params = array('controller' => 'NCGraphs', 'action' => 'createNewLink',
         'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
-        'network_name' => 'net-zulu', 'link_name' => $nowname, 'link_title' => "Link $nowname",
-        'class_name' => $nowclass, 'source_name' => $sources[$i], 'target_name' => $targets[$i]);
+        'network' => 'net-zulu', 
+        'name' => $nowname, 'title' => "Link $nowname", 'abstract'=>'', 'content'=>'',
+        'class' => $nowclass, 'source' => $sources[$i], 'target' => $targets[$i]);
     tryreport($NCapi, $params);
 }
 
@@ -50,16 +52,16 @@ for ($i = 0; $i < count($linknames); $i++) {
 echo "getting all nodes:";
 $params = array('controller' => 'NCGraphs', 'action' => 'getAllNodes',
     'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
-    'network_name' => 'net-zulu');
+    'network' => 'net-zulu');
 $result = tryreport($NCapi, $params, true);
-//print_r($result);
+print_r($result);
 
 echo "getting all links:";
 $params = array('controller' => 'NCGraphs', 'action' => 'getAllLinks',
     'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
-    'network_name' => 'net-zulu');
+    'network' => 'net-zulu');
 $result = tryreport($NCapi, $params, true);
-//print_r($result);
+print_r($result);
 
 
 

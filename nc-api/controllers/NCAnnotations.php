@@ -29,12 +29,12 @@ class NCAnnotations extends NCLogger {
     public function __construct($db, $params) {
 
         // check for required parameters
-        if (isset($params['network_name'])) {
-            $this->_network = $params['network_name'];
+        if (isset($params['network'])) {
+            $this->_network = $params['network'];
         } else {
-            throw new Exception("NCAnnotations requires a network name");
+            throw new Exception("Missing required parameter network");
         }
-        unset($params['network_name']);
+        unset($params['network']);
 
         parent::__construct($db, $params);
 

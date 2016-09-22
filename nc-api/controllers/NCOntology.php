@@ -29,12 +29,12 @@ class NCOntology extends NCLogger {
      */
     public function __construct($db, $params) {
 
-        if (isset($params['network_name'])) {
-            $this->_network = $params['network_name'];
+        if (isset($params['network'])) {
+            $this->_network = $params['network'];
         } else {
-            throw new Exception("Missing required parameter network_name");
+            throw new Exception("Missing required parameter network");
         }
-        unset($params['network_name']);
+        unset($params['network']);
 
         parent::__construct($db, $params);
 
@@ -49,32 +49,25 @@ class NCOntology extends NCLogger {
     }
 
     /**
-     * Similar to listOntology with parameter ontology='nodes'
-     */
-    public function getNodeOntology($idkeys = true) {
-        $this->_params['ontology'] = 'nodes';
-        return $this->getOntology($idkeys);
-    }
-
-    /**
-     * Similar to listOntology with parameter ontology='links'
-     */
-    public function getLinkOntology($idkeys = true) {
-        $this->_params['ontology'] = 'links';
-        return $this->getOntology($idkeys);
-    }
-
-    /**
      * Get a mapping between class_name and class_id
-     *      
+     *    
+     * (This is set to public for testing, but is not useful for the end user)
+     *   
      */
-    public function getOntologyDictionary() {
+    public function getOntologyDictionary($what = "both") {
         $tc = "" . NC_TABLE_CLASSES;
         $ta = "" . NC_TABLE_ANNOTEXT;
 
+        $subtype = "";
+        if ($what == "nodes") {
+            $subtype = " AND $tc.connector = 0 ";
+        } else if ($what == "links") {
+            $subtype = " AND $tc.connector = 1 ";
+        }
+
         $sql = "SELECT class_id, anno_text as class_name 
            FROM $tc JOIN $ta ON $tc.class_id = $ta.root_id AND $tc.network_id = $ta.network_id
-             WHERE $tc.network_id = ? AND $ta.network_id = ? 
+             WHERE $tc.network_id = ? AND $ta.network_id = ? $subtype
                    AND anno_type = " . NC_NAME . " AND anno_status = " . NC_ACTIVE;
         $stmt = $this->qPE($sql, [$this->_netid, $this->_netid]);
 
@@ -87,7 +80,25 @@ class NCOntology extends NCLogger {
     }
 
     /**
+     * Similar to listOntology with parameter ontology='nodes'
+     */
+    public function getNodeOntology($idkeys = true, $fulldetail=false) {
+        $this->_params['ontology'] = 'nodes';
+        return $this->getOntology($idkeys, $fulldetail);
+    }
+
+    /**
+     * Similar to listOntology with parameter ontology='links'
+     */
+    public function getLinkOntology($idkeys = true, $fulldetail=false) {
+        $this->_params['ontology'] = 'links';
+        return $this->getOntology($idkeys, $fulldetail);
+    }
+
+    /**
      * Looks all the classes associated with nodes or links in a network
+     * 
+     * This function needs work - it is very messy.
      * 
      * @param logical idkeys
      * 
@@ -98,7 +109,7 @@ class NCOntology extends NCLogger {
      * @throws Exception
      * 
      */
-    public function getOntology($idkeys = true) {
+    public function getOntology($idkeys = true, $fulldetail = false) {
 
         // check that required parameters are defined
         $onto = $this->subsetArray($this->_params, ["ontology"])["ontology"];
@@ -123,16 +134,22 @@ class NCOntology extends NCLogger {
         // prepare some helper sql bits
         $sqlcase = [];
         $sqlgroup = [];
-        $carray = ['name' => NC_NAME, 'title' => NC_TITLE, 'abstract' => NC_ABSTRACT, 'content' => NC_CONTENT];         
-        foreach (['name', 'title', 'abstract', 'content'] AS $what) {
+        $carray = ['name' => NC_NAME, 'title' => NC_TITLE, 'abstract' => NC_ABSTRACT, 'content' => NC_CONTENT];
+        $atypes = array_keys($this->_annotypes);
+        if (!$fulldetail) {
+            $atypes = ['name'];
+        }
+        foreach ($atypes AS $what) {
             $sqlcase[] = "(CASE WHEN $tac = $carray[$what] THEN $tat ELSE '' END) AS $what";
             $sqlcase[] = "(CASE WHEN $tac = $carray[$what] THEN $tai ELSE '' END) AS " . $what . "_anno_id";
-            $sqlcase[] = "(CASE WHEN $tac = $carray[$what] THEN $tad ELSE '' END) AS " . $what . "_datetime";
-            $sqlcase[] = "(CASE WHEN $tac = $carray[$what] THEN $tao ELSE '' END) AS " . $what . "_owner_id";
-            $sqlgroup[] = "GROUP_CONCAT($what SEPARATOR '') AS class_" . $what . "";
-            $sqlgroup[] = "GROUP_CONCAT($what" . "_anno_id SEPARATOR '') AS " . $what . "_anno_id";
-            $sqlgroup[] = "GROUP_CONCAT($what" . "_datetime SEPARATOR '') AS " . $what . "_datetime";
-            $sqlgroup[] = "GROUP_CONCAT($what" . "_owner_id SEPARATOR '') AS " . $what . "_owner_id";
+            $sqlgroup[] = "GROUP_CONCAT($what SEPARATOR '') AS " . $what . "";
+            $sqlgroup[] = "GROUP_CONCAT($what" . "_anno_id SEPARATOR '') AS " . $what . "_anno_id";            
+            if ($fulldetail) {
+                $sqlcase[] = "(CASE WHEN $tac = $carray[$what] THEN $tad ELSE '' END) AS " . $what . "_datetime";
+                $sqlcase[] = "(CASE WHEN $tac = $carray[$what] THEN $tao ELSE '' END) AS " . $what . "_owner_id";
+                $sqlgroup[] = "GROUP_CONCAT($what" . "_datetime SEPARATOR '') AS " . $what . "_datetime";
+                $sqlgroup[] = "GROUP_CONCAT($what" . "_owner_id SEPARATOR '') AS " . $what . "_owner_id";
+            }            
         }
         $sqlcase = implode(", ", $sqlcase);
         $sqlgroup = implode(", ", $sqlgroup);
@@ -146,9 +163,10 @@ class NCOntology extends NCLogger {
                   AND $ta.anno_status = " . NC_ACTIVE . "
                   AND $ta.root_id LIKE '" . NC_PREFIX_CLASS . "%' 
                   AND $tac <=" . NC_CONTENT . " $onto GROUP BY $ta.root_id, $tac";
-        $sql = "SELECT class_id, parent_id, connector, directional, class_status, $sqlgroup            
-            FROM ($innersql) AS T GROUP BY class_id ORDER BY parent_id, class_name";
-        
+
+        $sql = "SELECT class_id, parent_id, connector, directional, class_status AS status, $sqlgroup            
+            FROM ($innersql) AS T GROUP BY class_id ORDER BY parent_id, name";
+
         $stmt = $this->qPE($sql, [$this->_netid]);
 
         $result = array();
@@ -164,30 +182,16 @@ class NCOntology extends NCLogger {
         return $result;
     }
 
-    /**
-     * Fetches information about one class given its NAME annotation
-     * 
-     * @param string $classname     
-     * @param boolean $throw
-     * 
-     * determines if an exception is thrown when the classname does not produce hits
-     * 
-     * @return array
-     * 
-     * an array with several bits of data describing the ontology class
-     * If the class name is not found, returns null.
-     * 
-     * @throws Exception
-     */
     protected function getClassInfoFromName($classname, $throw = true) {
         $tc = "" . NC_TABLE_CLASSES;
         $tat = "" . NC_TABLE_ANNOTEXT;
+
         $sql = "SELECT class_id, $tc.parent_id AS parent_id, connector, 
             directional, class_status, anno_text AS class_name, anno_id,  
-            datetime, owner_id
-            FROM $tc JOIN $tat 
+            datetime, owner_id             
+              FROM $tc JOIN $tat 
                 ON $tc.class_id=$tat.root_id AND $tc.network_id=$tat.network_id
-              WHERE $tc.network_id = ? 
+              WHERE $tc.network_id = ? AND root_id LIKE '" . NC_PREFIX_CLASS . "%' 
                   AND $tat.anno_text = ?
                   AND $tat.anno_type= " . NC_NAME . "
                   AND $tat.anno_status=" . NC_ACTIVE;
@@ -220,9 +224,10 @@ class NCOntology extends NCLogger {
      * 
      */
     private function getClassRecord($classid) {
+
         $sql = "SELECT class_id, parent_id, connector, directional, class_status
             FROM " . NC_TABLE_CLASSES . "
-                WHERE $tc.network_id = ? AND $tc.class_id = ? ";
+                WHERE network_id = ? AND class_id = ? ";
         $stmt = $this->qPE($sql, [$this->_netid, $classid]);
         $classinfo = $stmt->fetch();
         if (!$classinfo) {
@@ -246,18 +251,18 @@ class NCOntology extends NCLogger {
      */
     protected function createNewClassWork($params) {
 
-        if (strlen($params['class_name']) < 2) {
+        if (strlen($params['name']) < 2) {
             throw new Exception("Class name too short");
         }
 
         // check if class name is alredy taken
-        $classinfo = $this->getClassInfoFromName($params['class_name'], false);
-        if ($classinfo != null) {
-            throw new Exception("Class name " . $params['class_name'] . " already exists");
+        $classid = $this->getClassInfoFromName($params['name'], false);
+        if ($classid != null) {
+            throw new Exception("Class name " . $params['name'] . " already exists");
         }
         // check properties of the parent
-        if ($params['parent_name'] != '') {
-            $parentinfo = $this->getClassInfoFromName($params['parent_name']);
+        if ($params['parent'] != '') {
+            $parentinfo = $this->getClassInfoFromName($params['parent']);
             if ($params['connector'] != $parentinfo['connector']) {
                 throw new Exception("Incompatible connector settings");
             }
@@ -278,8 +283,8 @@ class NCOntology extends NCLogger {
                    VALUES (?, ?, ?, ?, ?)";
         $this->qPE($sql, [$this->_netid, $newid, $parentid, $params['connector'], $params['directional']]);
 
-        // create an annotation set (registers the name of the class)          
-        $this->insertNewAnnoSet($this->_netid, $this->_uid, $newid, $params['class_name'], $params['class_name'], $params['class_name'], $params['class_name']);
+        // create an annotation set (registers the name of the class)                  
+        $this->batchInsertAnnoSets($this->_netid, [$params], [$newid]);
 
         return $newid;
     }
@@ -294,8 +299,8 @@ class NCOntology extends NCLogger {
     public function createNewClass() {
 
         // check that required parameters are defined
-        $params = $this->subsetArray($this->_params, ["parent_name",
-            "connector", "directional", "class_name"]);
+        $params = $this->subsetArray($this->_params, array_merge(["parent",
+                    "connector", "directional"], array_keys($this->_annotypes)));
 
         // perform the db actions
         $this->dblock([NC_TABLE_ANNOTEXT, NC_TABLE_CLASSES]);
@@ -303,7 +308,7 @@ class NCOntology extends NCLogger {
         $this->dbunlock();
 
         // log the activity
-        $this->logActivity($this->_uid, $this->_netid, "created new class", $params['class_name'], $newid);
+        $this->logActivity($this->_uid, $this->_netid, "created new class", $params['name'], $newid);
 
         return $newid;
     }
@@ -317,24 +322,25 @@ class NCOntology extends NCLogger {
      */
     protected function updateClassWork($params) {
 
-        if (strlen($params['class_name']) < 2) {
+        if (strlen($params['name']) < 2) {
             throw new Exception("Class name too short");
         }
 
-        // fetch the current information about this class
-        $oldinfo = $this->getClassInfoFromName($params['target_name']);
+        // fetch the current information about this class        
+        $oldinfo = $this->getClassInfoFromName($params['target']);
+        $classid = $oldinfo['class_id'];
         $parentid = '';
-        if ($params['parent_name'] != '') {
-            $parentinfo = $this->getClassInfoFromName($params['parent_name']);
+        if ($params['parent'] != '') {
+            $parentinfo = $this->getClassInfoFromName($params['parent']);
             $parentid = $parentinfo['class_id'];
         }
 
         // check that new data is different from existing data
         $Q1 = $parentid == $oldinfo['parent_id'];
-        $Q2 = $params['class_name'] == $params['target_name'];
+        $Q2 = $params['name'] == $params['target'];
         $Q3 = $params['directional'] == $oldinfo['directional'];
         $Q4 = $params['connector'] == $oldinfo['connector'];
-        $Q5 = $params['class_status'] == $oldinfo['class_status'];
+        $Q5 = $params['status'] == $oldinfo['class_status'];
         if ($Q1 && $Q2 && $Q3 && $Q4 && $Q5) {
             throw new Exception("Update is consistent with existing data");
         }
@@ -346,7 +352,7 @@ class NCOntology extends NCLogger {
         }
 
         // if the parent is non-trivial, further compatibility checks
-        if ($params['parent_name'] != "") {
+        if ($params['parent'] != "") {
             // connector status must match
             if ($parentinfo['connector'] != $params['connector']) {
                 throw new Exception("Incompatible class/parent connector status");
@@ -367,7 +373,7 @@ class NCOntology extends NCLogger {
             $sql = "SELECT anno_id FROM " . NC_TABLE_ANNOTEXT . " WHERE
                         network_id = ? AND anno_type=" . NC_NAME . " 
                     AND root_id LIKE 'C%' AND anno_text = ? AND anno_status=" . NC_ACTIVE;
-            $stmt = $this->qPE($sql, [$this->_netid, $params['class_name']]);
+            $stmt = $this->qPE($sql, [$this->_netid, $params['name']]);
             if ($stmt->fetch()) {
                 throw new Exception("Class name already exists");
             }
@@ -375,15 +381,35 @@ class NCOntology extends NCLogger {
             // update the class name and log the activity
             $pp = $this->subsetArray($oldinfo, ['owner_id', 'datetime', 'anno_id']);
             $pp = array_merge($pp, ['network_id' => $this->_netid,
-                'parent_id' => $parentid, 'root_id' => $oldinfo['class_id'],
-                'anno_text' => $params['class_name'], 'anno_type' => NC_NAME]);
+                'parent_id' => $parentid, 'root_id' => $classid,
+                'anno_text' => $params['name'], 'anno_type' => NC_NAME]);
             $this->updateAnnoText($pp);
-            $result += 1;
+            $result = 1;
+        }
+
+        // perhaps update the title, abstract, or content
+        $updaterest = false;
+        foreach (['title', 'abstract', 'content'] as $annotype) {
+            if ($params[$annotype] != '') {
+                $updaterest = true;
+            }
+        }
+        if ($updaterest) {
+            $oldfullinfo = $this->getFullSummaryFromRootId($this->_netid, $classid);
+            foreach (['title', 'abstract', 'content'] as $annotype) {
+                if ($params[$annotype] != '' &&
+                        $params[$annotype] != $oldfullinfo[$annotype]['anno_text']) {
+                    // update this annotation
+                    $pp = $oldfullinfo[$annotype];
+                    $pp['anno_text'] = $params[$annotype];
+                    $this->updateAnnoText($pp);
+                }
+            }
         }
 
         if (!$Q1 || !$Q3) {
             // update the class structure and log the activity
-            $this->updateClassStructure($oldinfo['class_id'], $parentid, $params['directional'], $params['class_status']);
+            $this->updateClassStructure($oldinfo['class_id'], $parentid, $params['directional'], $params['status']);
             $result +=2;
         }
     }
@@ -412,15 +438,15 @@ class NCOntology extends NCLogger {
     public function updateClass() {
 
         // check that required inputs are defined
-        $params = $this->subsetArray($this->_params, ["target_name", "class_name",
-            "parent_name", "connector", "directional", "class_status"]);
+        $params = $this->subsetArray($this->_params, array_merge(["target", "parent",
+                    "connector", "directional", "status"], array_keys($this->_annotypes)));
 
         // make sure the asking user is allowed to curate
         if ($this->_uperm < NC_PERM_CURATE) {
             throw new Exception("Insufficient permissions");
         }
 
-        if ($params["class_status"] != 1) {
+        if ($params["status"] != 1) {
             throw new Exception("Use a different function to change class status");
         }
 
@@ -430,11 +456,11 @@ class NCOntology extends NCLogger {
 
         // perform logging based on what actions were performed
         if ($action % 2 == 1) {
-            $this->logActivity($this->_uid, $this->_netid, "updated class name", $params['target_name'], $params['class_name']);
+            $this->logActivity($this->_uid, $this->_netid, "updated class name", $params['target'], $params['name']);
         }
         if ($action > 1) {
-            $value = $params['parent_name'] . "," . $params['directional'] . "," . $params['class_status'];
-            $this->logActivity($this->_uid, $this->_netid, "updated class properties for class", $params['target_name'], $value);
+            $value = $params['parent'] . "," . $params['directional'] . "," . $params['status'];
+            $this->logActivity($this->_uid, $this->_netid, "updated class properties for class", $params['target'], $value);
         }
 
         return 1;
@@ -508,7 +534,7 @@ class NCOntology extends NCLogger {
     public function removeClass() {
 
         // check that required inputs are defined
-        $classname = $this->subsetArray($this->_params, ["class_name"])['class_name'];
+        $classname = $this->subsetArray($this->_params, ["name"])['name'];
 
         // make sure the asking user is allowed to curate
         if ($this->_uperm < NC_PERM_CURATE) {
@@ -573,7 +599,7 @@ class NCOntology extends NCLogger {
     public function activateClass() {
 
         // check that required inputs are defined
-        $classname = $this->subsetArray($this->_params, ["class_name"])['class_name'];
+        $classname = $this->subsetArray($this->_params, ["name"])['name'];
 
         // make sure the asking user is allowed to curate
         if ($this->_uperm < NC_PERM_CURATE) {

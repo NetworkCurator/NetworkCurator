@@ -9,7 +9,6 @@ include_once "nc-ui/nc-components/ui-front-jumbo.php";
 // display each using the code in ui-network-card            
 $mynetworks = $NCapi->listNetworks();
 //print_r($mynetworks);
-
 // get a set of elements that need markdown treatment
 $md = [];
 ?>
@@ -21,13 +20,15 @@ $md = [];
             <h1>Existing Networks</h1>
             <?php
             for ($x = 0; $x < count($mynetworks); $x++) {
-                $netid = $mynetworks[$x]['network_id'];
-                $netname = $mynetworks[$x]['network_name'];
-                $nettitle = $mynetworks[$x]['network_title'];
-                $netabstract = $mynetworks[$x]['network_abstract'];
-                $netabstractid = $mynetworks[$x]['network_abstract_id'];
+                $netid = $mynetworks[$x]['id'];
+                $netname = $mynetworks[$x]['name'];
+                $nettitle = $mynetworks[$x]['title'];
+                $nettitleid = $mynetworks[$x]['title_id'];
+                $netabstract = $mynetworks[$x]['abstract'];
+                $netabstractid = $mynetworks[$x]['abstract_id'];
                 include "nc-components/ui-network-card.php";
                 $md[$netabstractid] = $netabstract;
+                $md[$nettitleid] = $nettitle;
             }
             ?>
 
@@ -52,9 +53,9 @@ $md = [];
 </div>
 
 
-<script>
-<?php
-echo "var nc.md=" . json_encode($md) . ";";
-?>    
-</script>
+
+<?php    
+echo ncScriptObject("nc.md", $md); 
+?>
+
 

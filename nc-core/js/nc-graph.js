@@ -43,9 +43,9 @@ nc.graph.initToolbar = function() {
         $.each(x, function(key, val) {            
             result.push({
                 id: val['class_id'],
-                label: val['class_longname'], 
-                val: val['class_name'],
-                status: val['class_status']
+                label: val['longname'], 
+                val: val['name'],
+                status: val['status']
             });
         });        
         return nc.utils.sortByKey(result, 'label');
@@ -328,7 +328,7 @@ nc.graph.initSimulation = function() {
     // create new simulation    
     nc.graph.sim = d3.forceSimulation()
     .force("link", d3.forceLink().id(function(d) {
-        return d.id;
+        return d.name;
     }))
     .force("charge", d3.forceManyBody())
     .force("center", d3.forceCenter(width / 2, height / 2))
@@ -393,7 +393,7 @@ nc.graph.simStart = function() {
         }
     }) 
     .attr("id", function(d) {
-        return d.id;
+        return d.name;
     })
     .on("click", nc.graph.select);                    
     
@@ -404,7 +404,7 @@ nc.graph.simStart = function() {
     .data(nc.graph.nodes)
     .enter().append("circle").attr("r", 9)    
     .attr("id", function(d) {        
-        return d.id;
+        return d.name;
     })
     .attr("class",function(d) {
         if ("class" in d) {

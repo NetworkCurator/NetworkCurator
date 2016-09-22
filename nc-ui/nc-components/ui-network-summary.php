@@ -14,9 +14,8 @@ $netmeta = $NCapi->getNetworkMetadata($network);
 <div class="row">
     <div class="col-sm-8">
         <h1><div id="nc-network-title" class="nc-editable-text nc-md" 
-                 val="<?php echo $netmeta['network_title_id']; ?>">        
-                     <?php echo $netmeta['network_title']; ?>
-            </div></h1>
+                 val="<?php echo $netmeta['title']['anno_id']; ?>"></div>
+        </h1>
 
         <h4 class="nc-mt-10">Curators</h4>
         <?php echo ncListnames($netmeta['curators']); ?>
@@ -28,23 +27,23 @@ $netmeta = $NCapi->getNetworkMetadata($network);
 
         <h3 class="nc-mt-10 nc-mb-10">Abstract</h3>
         <div id="nc-network-abstract" class="nc-editable-text nc-md"
-             val="<?php echo $netmeta['network_abstract_id']; ?>"></div>
+             val="<?php echo $netmeta['abstract']['anno_id']; ?>"></div>
         <hr/>
 
         <h3 class="nc-mb-10">Description</h3>
         <div id="nc-network-content" class="nc-editable-text nc-md" 
-             val="<?php echo $netmeta['network_content_id']; ?>"></div>
+             val="<?php echo $netmeta['content']['anno_id']; ?>"></div>
         <hr/>
 
-        <div id="nc-comments" class="media-body" val="<?php echo $netmeta['network_content_id']; ?>"></div>        
+        <div id="nc-comments" class="media-body" val="<?php echo $netmeta['content']['anno_id']; ?>"></div>        
         <hr/>
-        <div class="nc-mt-10" id="nc-newcomment" uid="<?php echo $uid; ?>" val="<?php echo $netmeta['network_content_id']; ?>"></div>
+        <div class="nc-mt-10" id="nc-newcomment" uid="<?php echo $uid; ?>" val="<?php echo $netmeta['content']['anno_id']; ?>"></div>
 
     </div>
 </div>
 
 <?php
 foreach (["title", "content", "abstract"] as $i) {
-    $netmd[$netmeta["network_" . $i . "_id"]] = $netmeta["network_" . $i];
+    $netmd[$netmeta[$i]['anno_id']] = $netmeta[$i]['anno_text'];
 }
 ?>

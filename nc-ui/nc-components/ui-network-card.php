@@ -12,12 +12,9 @@ $nowlink = "?page=network&network=$netname";
 <div class="media nc-mt-20">    
     <div class="media-body">
         <h3 class="media-heading">
-            <a href='<?php echo $nowlink; ?>'>
-                <?php echo $nettitle ?>
-            </a>
+            <a href='<?php echo $nowlink; ?>' class="nc-md" val="<?php echo $nettitleid; ?>"></a>            
         </h3>
-        <div class="nc-md" val="<?php echo $netabstractid; ?>"></div>
-        <?php //echo $networkabstract; ?>
+        <div class="nc-md" val="<?php echo $netabstractid; ?>"></div>        
     </div>
 </div>
 

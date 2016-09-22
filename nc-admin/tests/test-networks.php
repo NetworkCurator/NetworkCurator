@@ -17,9 +17,15 @@ include_once "test-prep.php";
 
 $params = array('controller' => 'NCNetworks', 'action' => 'listNetworks',
     'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata');
-tryreport($NCapi, $params);
+$result = tryreport($NCapi, $params, true);
+print_r($result);
 
 
+$params = array('controller' => 'NCNetworks', 'action' => 'getNetworkMetadata',
+    'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata', 
+    'network'=>'xray');
+$result = tryreport($NCapi, $params, true);
+//print_r($result);
 
 
 ?>

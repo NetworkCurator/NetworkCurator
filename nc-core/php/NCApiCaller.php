@@ -45,7 +45,7 @@ class NCApiCaller {
         $params = $this->_p;
         $params['controller'] = 'NCNetworks';
         $params['action'] = 'listNetworkUsers';
-        $params['network_name'] = $network;
+        $params['network'] = $network;
         return $this->_caller->sendRequest($params);
     }
 
@@ -60,7 +60,7 @@ class NCApiCaller {
         $params = $this->_p;
         $params['controller'] = 'NCNetworks';
         $params['action'] = 'isPublic';
-        $params['network_name'] = $network;
+        $params['network'] = $network;
         return $this->_caller->sendRequest($params);
     }
 
@@ -145,8 +145,8 @@ class NCApiCaller {
         $params = $this->_p;
         $params['controller'] = 'NCUsers';
         $params['action'] = 'queryPermissions';
-        $params['network_name'] = $network;
-        $params['target_id'] = $this->_uid;
+        $params['network'] = $network;
+        $params['target'] = $this->_uid;
         return $this->_caller->sendRequest($params);
     }
 
@@ -160,7 +160,7 @@ class NCApiCaller {
         $params = $this->_p;
         $params['controller'] = 'NCNetworks';
         $params['action'] = 'getNetworkMetadata';
-        $params['network_name'] = $network;
+        $params['network'] = $network;
         return $this->_caller->sendRequest($params);
     }
     
@@ -174,7 +174,7 @@ class NCApiCaller {
         $params = $this->_p;
         $params['controller'] = 'NCNetworks';
         $params['action'] = 'getNetworkTitle';
-        $params['network_name'] = $network;
+        $params['network'] = $network;
         return $this->_caller->sendRequest($params);
     }
        
@@ -188,7 +188,7 @@ class NCApiCaller {
         $params = $this->_p;
         $params['controller'] = 'NCOntology';
         $params['action'] = 'getNodeOntology';
-        $params['network_name'] = $network;
+        $params['network'] = $network;
         return $this->_caller->sendRequest($params);
     }
 
@@ -202,7 +202,7 @@ class NCApiCaller {
         $params = $this->_p;
         $params['controller'] = 'NCOntology';
         $params['action'] = 'getLinkOntology';
-        $params['network_name'] = $network;
+        $params['network'] = $network;
         return $this->_caller->sendRequest($params);
     }
 
@@ -211,7 +211,7 @@ class NCApiCaller {
         $params = $this->_p;
         $params['controller'] = 'NCNetworks';
         $params['action'] = 'getActivityLogSize';
-        $params['network_name'] = $network;
+        $params['network'] = $network;
         return $this->_caller->sendRequest($params);
     }
     
@@ -219,7 +219,7 @@ class NCApiCaller {
         $params = $this->_p;
         $params['controller'] = 'NCAnnotations';
         $params['action'] = 'getComments';
-        $params['network_name'] = $network;
+        $params['network'] = $network;
         $params['root_id'] = $rootid;
         return $this->_caller->sendRequest($params);
     }
@@ -228,7 +228,7 @@ class NCApiCaller {
         $params = $this->_p;
         $params['controller'] = 'NCGraphs';
         $params['action'] = 'getAllNodes';
-        $params['network_name'] = $network;
+        $params['network'] = $network;
         return $this->_caller->sendRequest($params);
     }
     
@@ -236,7 +236,7 @@ class NCApiCaller {
         $params = $this->_p;        
         $params['controller'] = 'NCGraphs';        
         $params['action'] = 'getAllLinks';        
-        $params['network_name'] = $network;        
+        $params['network'] = $network;        
         return $this->_caller->sendRequest($params);
     }
 }

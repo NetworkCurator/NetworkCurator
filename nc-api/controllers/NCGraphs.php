@@ -9,7 +9,7 @@ include_once "NCOntology.php";
  */
 
 class NCGraphs extends NCOntology {
-    
+
     /**
      * Constructor 
      * 
@@ -22,7 +22,7 @@ class NCGraphs extends NCOntology {
      * array with parameters
      */
     public function __construct($db, $params) {
-        parent::__construct($db, $params);       
+        parent::__construct($db, $params);
     }
 
     /**
@@ -97,30 +97,34 @@ class NCGraphs extends NCOntology {
     public function createNewNode() {
 
         // check that required inputs are defined
-        $params = $this->subsetArray($this->_params, ["node_name", "node_title", "class_name"]);
+        $params = $this->subsetArray($this->_params, array_merge(["class"], array_keys($this->_annotypes)));
+
+        if (strlen($params['name']) < 2) {
+            throw new Exception("Name too short");
+        }
 
         $this->dblock([NC_TABLE_CLASSES, NC_TABLE_NODES, NC_TABLE_ANNOTEXT]);
 
         // get the class id associated with the class name
-        $classinfo = $this->getClassInfo($this->_netid, $params['class_name']);
-        $classid = $classinfo['class_id'];
+        $classinfo = $this->getClassInfo($this->_netid, $params['class']);
+        $params['class_id'] = $classinfo['class_id'];
         if ($classinfo['connector'] != 0) {
             throw new Exception("Invalid class for a node");
         }
 
         // check if this node name already exists        
-        $nodename = $this->getNameAnnoRootId($this->_netid, $params['node_name'], false);
-        if ($nodename) {
+        $nodeexists = $this->getNameAnnoRootId($this->_netid, $params['name'], false);
+        if ($nodeexists) {
             throw new Exception("Node name already exists");
         }
 
-        // if reached here, create the new node  
-        $nodeid = $this->insertNode($params['node_name'], $classid, $params['node_title']);
+        // if reached here, create the new node (uses batch insert with one node)        
+        $nodeid = $this->batchInsertNodes([$params]);
 
         $this->dbunlock();
-        
+
         // log entry for creation
-        $this->logActivity($this->_uid, $this->_netid, "created node", $params['node_name'], $params['node_title']);
+        $this->logActivity($this->_uid, $this->_netid, "created node", $params['name'], $params['title']);
 
         return $nodeid;
     }
@@ -139,8 +143,12 @@ class NCGraphs extends NCOntology {
      * @param type $nodecontent
      * 
      * @return type
+     * 
+     * @deprecated
+     * in favor of batchInsertNodes
+     * 
      */
-    protected function insertNode($nodename, $classid, $nodetitle, $nodeabstract = 'empty', $nodecontent = 'empty') {
+    private function insertNode($classid, $name, $title, $abstract = 'empty', $content = 'empty') {
 
         $timer = new NCTimer();
 
@@ -153,12 +161,54 @@ class NCGraphs extends NCOntology {
             (network_id, node_id, class_id, node_status) VALUES (?, ?, ?, ?)";
         $this->qPE($sql, [$this->_netid, $nodeid, $classid, NC_ACTIVE]);
         $timer->recordTime("after node insert");
-        // insert name, title, abstract, content, annotations for the link
-        $this->insertNewAnnoSet($this->_netid, $this->_uid, $nodeid, $nodename, $nodetitle, $nodeabstract, $nodecontent);
+        // insert matching name, title, abstract, content, annotations 
+        //$this->insertNewAnnoSet($this->_netid, $this->_uid, $nodeid, $name, $title, $abstract, $content);
         $timer->recordTime("after annoinsert");
         //echo $timer->showTimes();
 
         return $nodeid;
+    }
+
+    /**
+     * Perform all db actions associated with inserting nodes.
+     * Updates the nodes table, creates name/title/abstract/content annotations
+     * 
+     * @param array $nodeset
+     * 
+     * array of new nodes
+     * each element should contain 'class_id', 'name', 'title', 'abstract', 'content'     
+     * (empty titles, abstract, contents revert to name)
+     * 
+     * Note the class is a class_id not a class_name
+     * 
+     * @return string
+     * 
+     * the first linkid that is inserted (this is useful when inserting a single link)
+     * 
+     */
+    protected function batchInsertNodes($nodeset) {
+
+        // get some ids for all the nodes
+        $n = count($nodeset);
+        $nodeids = $this->makeRandomIDSet(NC_TABLE_NODES, 'node_id', NC_PREFIX_NODE, NC_ID_LEN - 1, $n);
+
+        // Insert into the nodes table using a straight-up query 
+        // (not prepped because all items are generated server-side)
+        $sql = "INSERT INTO " . NC_TABLE_NODES . " 
+            (network_id, node_id, class_id, node_status) VALUES ";
+        $sqlvalues = [];
+        for ($i = 0; $i < $n; $i++) {
+            $temp = [$this->_netid, $nodeids[$i], $nodeset[$i]['class_id'], 1];
+            $sqlvalues[] = "('" . implode("', '", $temp) . "')";
+        }
+        $sql .= implode(", ", $sqlvalues);
+        $this->q($sql);
+
+        //echo "bIN 4 ";
+        // insert corresponding to name, title, abstract, content, annotations 
+        $this->batchInsertAnnoSets($this->_netid, $nodeset, $nodeids);
+        //echo "bIN 5 ";         
+        return $nodeids[0];
     }
 
     /**
@@ -170,35 +220,39 @@ class NCGraphs extends NCOntology {
     public function createNewLink() {
 
         // check that required inputs are defined
-        $params = $this->subsetArray($this->_params, ["link_name", "link_title", 
-            "class_name", "source_name", "target_name"]);
+        $params = $this->subsetArray($this->_params, array_merge(["class",
+                    "source", "target"], array_keys($this->_annotypes)));
+
+        if (strlen($params['name']) < 2) {
+            throw new Exception("Name too short");
+        }
 
         $this->dblock([NC_TABLE_CLASSES, NC_TABLE_NODES, NC_TABLE_LINKS, NC_TABLE_ANNOTEXT]);
 
         // get the class id associated with the class name
-        $classinfo = $this->getClassInfoFromName($params['class_name']);
-        $classid = $classinfo['class_id'];
+        $classinfo = $this->getClassInfoFromName($params['class']);
+        $params['class_id'] = $classinfo['class_id'];
         if ($classinfo['connector'] != 1) {
             throw new Exception("Invalid class for a link");
         }
 
-        // get the node id for the source and target
-        $sourceid = $this->getNodeId($this->_netid, $params['source_name']);
-        $targetid = $this->getNodeId($this->_netid, $params['target_name']);
-
         // check if the link name is available
-        $linkinfo = $this->getNameAnnoRootId($this->_netid, $params['link_name'], false);
+        $linkinfo = $this->getNameAnnoRootId($this->_netid, $params['name'], false);
         if ($linkinfo) {
             throw new Exception("Link name is already taken");
         }
 
+        // get the node id for the source and target
+        $params['source_id'] = $this->getNodeId($this->_netid, $params['source']);
+        $params['target_id'] = $this->getNodeId($this->_netid, $params['target']);
+
         // if reached here, create the new node        
-        $linkid = $this->insertLink($params['link_name'], $classid, $sourceid, $targetid, $params['link_title']);
+        $linkid = $this->batchInsertLinks([$params]);
 
         $this->dbunlock();
 
         // log entry for creation
-        $this->logActivity($this->_uid, $this->_netid, "created link", $params['link_name'], $params['link_title']);
+        $this->logActivity($this->_uid, $this->_netid, "created link", $params['name'], $params['title']);
 
         return $linkid;
     }
@@ -220,8 +274,12 @@ class NCGraphs extends NCOntology {
      * @return string
      * 
      * id for the new link
+     * 
+     * @deprecated 
+     * in favor of batchInsertLinks
+     * 
      */
-    protected function insertLink($linkname, $classid, $sourceid, $targetid, $linktitle, $linkabstract = 'empty', $linkcontent = 'empty') {
+    private function insertLink($classid, $sourceid, $targetid, $name, $title, $abstract = 'empty', $content = 'empty') {
 
         $linkid = $this->makeRandomID(NC_TABLE_LINKS, 'link_id', NC_PREFIX_LINK, NC_ID_LEN);
 
@@ -232,9 +290,53 @@ class NCGraphs extends NCOntology {
         $this->qPE($sql, [$this->_netid, $linkid, $sourceid, $targetid, $classid, NC_ACTIVE]);
 
         // insert name, title, abstract, content, annotations for the link
-        $this->insertNewAnnoSet($this->_netid, $this->_uid, $linkid, $linkname, $linktitle, $linkabstract, $linkcontent);
+        //$this->insertNewAnnoSet($this->_netid, $this->_uid, $linkid, $name, $title, $abstract, $content);
 
         return $linkid;
+    }
+
+    /**
+     * Perform all db actions associated with inserting links.
+     * Updates the links table, creates name/title/abstract/content annotations
+     * 
+     * @param array $nodeset
+     * 
+     * array of new nodes
+     * each element should contain 'class_id', 'source_id', 'target_id', 
+     * 'name', 'title', 'abstract', 'content'     
+     * (empty titles, abstract, contents revert to name)
+     * 
+     * Note this requires ids (not names) for class, source, target
+     * 
+     * @return string
+     * 
+     * the first linkid that is inserted (this is useful when inserting a single link) 
+     */
+    protected function batchInsertLinks($linkset) {
+
+        // get ids for all the links
+        $n = count($linkset);
+        $linkids = $this->makeRandomIDSet(NC_TABLE_LINKS, 'link_id', NC_PREFIX_NODE, NC_ID_LEN - 1, $n);
+
+        // Insert into the links table using a straight-up query 
+        // (not prepped because all items are generated server-side)
+        $sql = "INSERT INTO " . NC_TABLE_LINKS . " 
+            (network_id, link_id, source_id, target_id, class_id, link_status) VALUES ";
+        $sqlvalues = [];
+        for ($i = 0; $i < $n; $i++) {
+            $temp = [$this->_netid, $linkids[$i], $linkset[$i]['source_id'],
+                $linkset[$i]['target_id'], $linkset[$i]['class_id'], NC_ACTIVE];
+            $sqlvalues[] = "('" . implode("', '", $temp) . "')";
+        }
+        $sql .= implode(", ", $sqlvalues);
+        $this->q($sql);
+
+        //echo "bIL 4 ";
+        // insert corresponding to name, title, abstract, content, annotations 
+        $this->batchInsertAnnoSets($this->_netid, $linkset, $linkids);
+
+        return $linkids[0];
+        //echo "bIL 5 ";  
     }
 
     /**
@@ -255,7 +357,7 @@ class NCGraphs extends NCOntology {
         $tat = "" . NC_TABLE_ANNOTEXT;
 
         $sql = "SELECT node_id AS id, $tn.class_id AS class_id, 
-                       nodenameT.anno_text AS name, classnameT.anno_text AS class_name 
+                       nodenameT.anno_text AS name, classnameT.anno_text AS class 
             FROM $tn JOIN $tat AS nodenameT
                         ON $tn.network_id = nodenameT.network_id AND
                         $tn.node_id = nodenameT.root_id
@@ -298,7 +400,7 @@ class NCGraphs extends NCOntology {
 
         $sql = "SELECT link_id AS id, $tl.class_id AS class_id, 
                        source_id AS source, target_id AS target,
-                       linknameT.anno_text as name, classnameT.anno_text AS class_name 
+                       linknameT.anno_text as name, classnameT.anno_text AS class 
             FROM $tl JOIN $tat AS linknameT
                         ON $tl.network_id = linknameT.network_id AND
                         $tl.link_id = linknameT.root_id
