@@ -11,21 +11,22 @@ if (typeof nc == "undefined") {
     throw new Error("nc is undefined");
 }
 nc.ui = {};
-nc.ui.speed = 'normal';
 
 
-/* ==========================================================================
+/* ====================================================================================
  * Constants that determine user experience
- * ========================================================================== */
+ * ==================================================================================== */
 
-// timeout used when animating some
-nc.ui.timeout = 3000;
+// speed determines animations like fade-outs
+nc.ui.speed = 'normal';
+// timeout used when making a user wait on purpose 
+// (e.g. between updates or to temporarily indicate the output of an action)
+nc.ui.timeout = 2000;
 
 
-
-/* ==========================================================================
+/* ====================================================================================
  * Permissions
- * ========================================================================== */
+ * ==================================================================================== */
 
 /**
  * create html with a form for updating user permissions
@@ -42,16 +43,12 @@ nc.ui.PermissionsWidget = function(udata) {
     // returns an <label></label> object
     function ncuiPB(val, uid, perm) {
         // convert a numeric value into a label        
-        var vl = ["None", "View", "Comment", "Edit", "Curate"];
-        var lab = vl[val];       
-        if (perm==val) {
-            perm = " active";
-        } else {
-            perm = "";
-        }
-        if (uid=="guest" && val>1) perm = " disabled";            
+        var vl = ['None', 'View', 'Comment', 'Edit', 'Curate'];
+        var lab = vl[val];    
+        perm = (perm==val ? ' active' : '');        
+        if (uid=='guest' && val>1) perm = ' disabled';            
                 
-        // create a <label> html 
+        // create a radio button html
         var html = '<label class="btn btn-default btn-sm nc-mw-sm'+perm+'">';
         html += '<input type="radio" autocomplete="off" value="'+val+'" '+perm+'>';
         html += lab+'</label>';        
@@ -92,26 +89,21 @@ nc.ui.PermissionsWidget = function(udata) {
 }
       
 
-/* ==========================================================================
+/* ====================================================================================
  * Ontology
- * ========================================================================== */
+ * ==================================================================================== */
 
 /**
  * create a bit of html with a form updating user permissions
- * 
- * netname - string with network name, assumed global variable
- * classdata - array with existing class structure
- * isnodes - boolean (true to populate node class tree, false to populate link tree)
- * readonly - boolean, true to simplify the tree and avoid editing buttons 
+ *  
+ * @param classdata - array with existing class structure
+ * @param islink - boolean (true to populate node class tree, false to populate link tree) 
  * 
  */
 nc.ui.ClassTreeWidget = function(classdata, islink) {
                     
     // get the root div for the treee
-    var root = $('#nc-ontology-nodes');    
-    if (islink) {
-        root = $('#nc-ontology-links');        
-    }                 
+    var root = (islink ? $('#nc-ontology-links'): $('#nc-ontology-nodes'));                         
           
     // create a div for children and a new form
     var rootrow = {
@@ -120,13 +112,12 @@ nc.ui.ClassTreeWidget = function(classdata, islink) {
         name:'', 
         connector:+islink, 
         directional:0
-    };
-    //var parentsofroot = ncuiClassDisplay(rootrow, 0);
+    };    
     var parentsofroot = '<ol class="nc-classtree-children" val=""></ol>';     
     parentsofroot += nc.ui.ClassForm(rootrow);    
     root.append(parentsofroot);
         
-    // set up drag-drop of classes     
+    // set up drag-drop of classes (uses jquery extension "sortable")  
     var oldContainer;
     root.find(".nc-classtree-children").sortable({
         handle: 'button[val="move"]',
@@ -135,7 +126,6 @@ nc.ui.ClassTreeWidget = function(classdata, islink) {
                 if(oldContainer)
                     oldContainer.el.removeClass("droptarget");
                 container.el.addClass("droptarget");
-
                 oldContainer = container;                                       
             }
         },
@@ -145,7 +135,7 @@ nc.ui.ClassTreeWidget = function(classdata, islink) {
             $item.addClass('aftermove');
             setTimeout(function() {
                 $item.removeClass('aftermove');
-            }, 1500);
+            }, nc.ui.timeout/2);
         }
     });
      
@@ -206,8 +196,8 @@ nc.ui.ClassTreeWidget = function(classdata, islink) {
         root.find("form.nc-classupdate[val='"+classid+"']").toggle();                
     });    
     
-    // after all the tree is populated, only display a small number of elements    
-    //root.find("form.nc-classupdate").hide();    
+    // after all the tree is populated, display a subset of the created elements 
+    // (others will become activated upon editing of the class)
     root.find("div.nc-classdisplay").show();    
     root.find("form.nc-classcreate[val='']").show();    
 }
@@ -243,7 +233,8 @@ nc.ui.ClassTreeRowWidget = function(classrow) {
  * 
  * The implementation looks like it can be done with ".toggle()" but the first time 
  * 
- * obj - a jquery object holding the <li> for the class
+ * @param obj - a jquery object holding the <li> for the class
+ * 
  */
 nc.ui.toggleClassDisplay = function(obj) {     
     obj.find('> div.nc-classdisplay')
@@ -262,18 +253,17 @@ nc.ui.ClassDisplay = function(classrow) {
     
     // create a div with one label (possible a directional comment) and one button
     var fg = '<div val="'+classrow['class_id']+'" class="nc-classdisplay">'; 
-    fg+='<span class="nc-comment" val="nc-classname">'+classrow['name']+'</span>';
+    fg += '<span class="nc-comment" val="nc-classname">'+classrow['name']+'</span>';
     // forms for links include a checkbox for directional links    
     fg += '<span class="nc-comment" val="nc-directional">';
-    if (+classrow['directional']) {
-        fg+= ' (directional)';
-    }
+    if (+classrow['directional']) fg+= ' (directional)';    
     fg += '</span><span class="nc-comment" val="nc-deprecated" style="display: none">[deprecated]</span>';    
-    if (nc.curator) {        
-        fg += '<button val="remove" class="pull-right btn btn-primary btn-sm nc-mw-sm nc-hm-3">Remove</button>';
-        fg += '<button val="activate" class="pull-right btn btn-primary btn-sm nc-mw-sm nc-hm-3" style="display: none">Activate</button>';                       
-        fg += '<button val="edit" class="pull-right btn btn-primary btn-sm nc-mw-sm nc-hm-3">Edit</button>';   
-        fg += '<button val="move" class="pull-right btn btn-primary btn-sm nc-mw-sm nc-hm-3">Move</button>';               
+    if (nc.curator) { 
+        var temp = '<button class="pull-right btn btn-primary btn-sm nc-mw-sm nc-hm-3" ';
+        fg += temp +' val="remove">Remove</button>';
+        fg += temp +' val="activate" style="display: none">Activate</button>';                       
+        fg += temp + ' val="edit">Edit</button>';   
+        fg += temp + ' val="move">Move</button>';               
     }
     fg += '</div>'; 
                 
@@ -281,11 +271,16 @@ nc.ui.ClassDisplay = function(classrow) {
 }
 
 /**
- * Creates a form that asks the user for a new class name and shows a submit button
+ * Creates a form. The form is slightly different depending on whether the classrow
+ * has an exisitng 'classname. 
  * 
- * parentid - name of parent class (or empty if root)
- * islink, isdirectional - settings for link class configuration
- * classname - name of existing class (or empty if new class)
+ * @param classrow
+ * 
+ * array with settings describing a class
+ * 
+ * if element 'classname' is non-empty, creates a class update form
+ * if element 'classname' is empty, creates a new class form
+ * 
  */
 nc.ui.ClassForm = function(classrow) {
     
@@ -297,26 +292,19 @@ nc.ui.ClassForm = function(classrow) {
     var classname = classrow['name'];
     var islink = +classrow['connector'];
     var directional = +classrow['directional'];
-        
-    var formclass = 'nc-classupdate';
-    if (classname=='') {
-        formclass = 'nc-classcreate';
-    } 
+     
+    var formclass = (classname=='' ? 'nc-classcreate' : 'nc-classupdate');    
     
     // create the form
     var ff ='<form val="'+classid+'" style="display: none" class="form-inline nc-class-form '+formclass+'" onsubmit="return false">';
     // create the textbox asking for the classname
     var fg = '<div class="form-group"><input class="form-control input-sm" placeholder="Class name"';
-    if (classname!='') {
-        fg+= 'value="'+classname+'"';
-    }
+    if (classname!='') fg+= ' val="'+classname+'"';    
     fg += '></div>';        
     // forms for links include a checkbox for directional links
     if (islink) {        
         fg += '<div class="form-group"><label class="form-check-inline"><input type="checkbox" class="form-check-input"';
-        if (directional) {
-            fg+= ' checked';
-        }
+        if (directional) fg+= ' checked';        
         fg+='>Directional</label></div>';        
     }
     // buttons to create a new class or update a class name
@@ -345,27 +333,19 @@ nc.ui.ClassForm = function(classrow) {
  */
 nc.ui.addClassTreeRow = function(classrow) {  
          
-    // find the root of the relevant tree    
-    var root = $('#nc-ontology-nodes');    
-    if (+classrow['connector']) {        
-        root = $('#nc-ontology-links');        
-    }  
+    // find the root of the relevant tree  
+    var root = (+classrow['connector'] ? $('#nc-ontology-links'): $('#nc-ontology-nodes'));
        
     // check if this class already exists
-    if (root.find('li[val="'+classrow['class_id']+'"]').length>0) {
-        return true;
-    }
+    if (root.find('li[val="'+classrow['class_id']+'"]').length>0) return true;        
        
     // find the target div where to insert the node    
     var parentid = classrow['parent_id'];        
     var targetdiv = root.find('ol.nc-classtree-children[val="'+parentid+'"]');            
-    if (targetdiv.length==0) {
-        return false;
-    }
+    if (targetdiv.length==0) return false;        
     
     // create the widget for this class
-    var newobj = $(nc.ui.ClassTreeRowWidget(classrow));
-    newobj.hide();
+    var newobj = $(nc.ui.ClassTreeRowWidget(classrow)).hide();    
     
     // figure out whether to insert before the form or at the end    
     if (targetdiv.children("form.nc-classcreate").length > 0) {         
@@ -381,9 +361,9 @@ nc.ui.addClassTreeRow = function(classrow) {
 
 
 
-/* ==========================================================================
+/* ====================================================================================
  * Log
- * ========================================================================== */
+ * ==================================================================================== */
 
 /**
  * Create a toolbar for the activity log
@@ -416,7 +396,7 @@ nc.ui.populateActivityArea = function(data) {
  * Provides html to write out one line in the log table
  */
 nc.ui.OneLogEntry = function(data) {
-    var html = '<div class="media nc-log-entry">';    
+    var html = '<div class="media nc-log-entry">';      
     html += '<span class="nc-log-entry-date">'+data['datetime']+' </span>';
     html+= '<span class="nc-log-entry-user">'+data['user_id']+' </span>';
     html += '<span class="nc-log-entry-action">'+data['action']+' </span>';
@@ -430,9 +410,9 @@ nc.ui.OneLogEntry = function(data) {
 
 
 
-/* ==========================================================================
+/* ====================================================================================
  * Generic, i.e. small-scale widgets
- * ========================================================================== */
+ * ==================================================================================== */
 
 /**
  * Create a toolbar button group
@@ -505,9 +485,9 @@ nc.ui.DropdownButton=function(atype, aa, aval, withdeprecated) {
 
 
 
-/* ==========================================================================
+/* ====================================================================================
  * Curation
- * ========================================================================== */
+ * ==================================================================================== */
 
 /**
  * Create a div with a toolbox for curation/editing
@@ -577,9 +557,9 @@ nc.ui.AnnoEditBox = function() {
 
 
 
-/* ==========================================================================
+/* ====================================================================================
  * Comments
- * ========================================================================== */
+ * ==================================================================================== */
 
 /**
  * Creates a box to display a comment or type in a comment

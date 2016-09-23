@@ -12,6 +12,7 @@ class NCNetworks extends NCLogger {
     // db connection and array of parameters are inherited from NCLogger    
     // some variables extracted from $_params, for convenience
     private $_network;
+    private $_netid;
 
     /**
      * Constructor 
@@ -32,6 +33,7 @@ class NCNetworks extends NCLogger {
         // check for required parameters
         if (isset($params['network'])) {
             $this->_network = $params['network'];
+            $this->_netid = $this->getNetworkId($params['network']);
         } else {
             $this->_network = "";
         }
@@ -39,7 +41,7 @@ class NCNetworks extends NCLogger {
             $this->_uid = $params['user_id'];
         } else {
             throw new Exception("NCNetworks requires parameter user_id");
-        }
+        }                
     }
 
     /**
@@ -131,9 +133,8 @@ class NCNetworks extends NCLogger {
      * 
      * 
      */
-    public function isPublic() {
-        $netid = $this->getNetworkId($this->_network);
-        $guestperm = (int) $this->getUserPermissionsNetID($netid, "guest");
+    public function isPublic() {       
+        $guestperm = (int) $this->getUserPermissions($this->_netid, "guest");
         return $guestperm > NC_PERM_NONE;
     }
 
@@ -199,10 +200,9 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
 
         $tu = "" . NC_TABLE_USERS;
         $tp = "" . NC_TABLE_PERMISSIONS;
-
-        $netid = $this->getNetworkId($this->_network);
+       
         // check that requesting user can view this network       
-        $uperm = $this->getUserPermissionsNetID($netid, $this->_uid);
+        $uperm = $this->getUserPermissions($this->_netid, $this->_uid);
         if ($uperm < NC_PERM_VIEW) {
             throw new Exception("Insufficient permission to view network");
         }
@@ -214,7 +214,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
                   WHERE BINARY $tp.user_id!='admin' AND $tp.user_id!='guest'
                      AND $tp.network_id = ? AND $tp.permissions>" . NC_PERM_NONE . "
                      ORDER BY $tu.user_id";
-        $stmt = $this->qPE($sql, [$netid]);
+        $stmt = $this->qPE($sql, [$this->_netid]);
         $result = array();
         while ($row = $stmt->fetch()) {
             $result[$row['user_id']] = $row;
@@ -230,18 +230,15 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
      * @throws Exception
      */
     public function getNetworkMetadata() {
-
-        // find the network id that corresponds to the name
-        $netid = $this->getNetworkId($this->_network, true);
-
+     
         // check if user has permission to view the table        
-        if ($this->getUserPermissionsNetID($netid, $this->_uid) < NC_PERM_VIEW) {
+        if ($this->getUserPermissions($this->_netid, $this->_uid) < NC_PERM_VIEW) {
             throw new Exception("Insufficient permission to view the network");
         }
 
         // get a full summary (name, title, abstract, content)
-        $result = $this->getFullSummaryFromRootId($netid, $netid, true);
-        $result['network_id'] = $netid;
+        $result = $this->getFullSummaryFromRootId($this->_netid, $this->_netid, true);
+        $result['network_id'] = $this->_netid;
 
         // find the users who have privileges on the network
         $tu = "" . NC_TABLE_USERS;
@@ -252,7 +249,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
                 WHERE $tp.network_id = ? AND $tp.permissions>" . NC_PERM_VIEW . "
                     AND $tp.permissions<=" . NC_PERM_CURATE . "
                 ORDER BY $tu.user_lastname, $tu.user_firstname, $tu.user_middlename";
-        $stmt = $this->qPE($sql, [$netid]);
+        $stmt = $this->qPE($sql, [$this->_netid]);
         // move information into three new arrays by permission level
         $curators = array();
         $authors = array();
@@ -281,12 +278,9 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
      * @throws Exception
      */
     public function getNetworkTitle() {
-
-        // find the network id that corresponds to the name
-        $netid = $this->getNetworkId($this->_network, true);
-
+     
         // check if user has permission to view the table        
-        if ($this->getUserPermissionsNetID($netid, $this->_uid) < NC_PERM_VIEW) {
+        if ($this->getUserPermissions($this->_netid, $this->_uid) < NC_PERM_VIEW) {
             throw new Exception("Insufficient permission to view the network");
         }
 
@@ -295,7 +289,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         $sql = "SELECT anno_text FROM $ta 
               WHERE BINARY network_id = ? AND root_id = ?
                 AND anno_status = " . NC_ACTIVE . " AND anno_type = " . NC_TITLE;
-        $stmt = $this->qPE($sql, [$netid, $netid]);
+        $stmt = $this->qPE($sql, [$this->_netid, $this->_netid]);
         $result = $stmt->fetch();
         if (!$result) {
             throw new Exception("Error fetching network title");
@@ -311,9 +305,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
      * @throws Exception
      */
     public function getNetworkActivity() {
-
-        $netid = $this->getNetworkId($this->_network, true);
-
+ 
         // settings for limiting output
         $offset = 0;
         $limit = 50;
@@ -346,10 +338,10 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         $sqlorder = "ORDER BY datetime DESC ";
         if (is_null($startdate)) {
             $sql .= $sqlorder . " LIMIT $limit OFFSET $offset";
-            $stmt = $this->qPE($sql, [$netid]);
+            $stmt = $this->qPE($sql, [$this->_netid]);
         } else {
             $sql .= " WHERE datetime >= ? AND datetime <= ? $sqlorder";
-            $stmt = $this->qPE($sql, [$netid, $startdate, $enddate]);
+            $stmt = $this->qPE($sql, [$this->_netid, $startdate, $enddate]);
         }
 
         $result = array();
@@ -371,11 +363,10 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
      * 
      */
     public function getActivityLogSize() {
-        $netid = $this->getNetworkId($this->_network, true);
-
+       
         $sql = "SELECT COUNT(*) AS logsize FROM " .
                 NC_TABLE_ACTIVITY . " WHERE network_id = ? ";
-        $stmt = $this->qPE($sql, [$netid]);
+        $stmt = $this->qPE($sql, [$this->_netid]);
         $result = $stmt->fetch();
         if (!$result) {
             throw new Exception("Error fetching error log");

@@ -194,7 +194,7 @@ class NCUsers extends NCLogger {
 
         // get permissions for the asking user
         // only curators and admin can update permissions        
-        $uperm = $this->getUserPermissionsNetID($netid, $this->_uid);
+        $uperm = $this->getUserPermissions($netid, $this->_uid);
         if ($uperm < NC_PERM_CURATE) {
             throw new Exception("Insufficient permissions");
         }
@@ -218,7 +218,7 @@ class NCUsers extends NCLogger {
         $userinfo[$targetid]['permissions'] = $newperm;
 
         // make sure the new permission is different from the existing value
-        $targetperm = $this->getUserPermissionsNetID($netid, $targetid);
+        $targetperm = $this->getUserPermissions($netid, $targetid);
         if ($targetperm === $newperm) {
             throw new Exception("Permissions do not need updating");
         }
@@ -253,7 +253,7 @@ class NCUsers extends NCLogger {
         // the asking user should be the site administrator
         // a user asking for their own permissions, or curator on a network
         if ($this->_uid != $params['target']) {
-            $uperm = $this->getUserPermissionsNetID($netid, $this->_uid);
+            $uperm = $this->getUserPermissions($netid, $this->_uid);
             if ($uperm < NC_PERM_CURATE) {
                 throw new Exception("Insufficient permissions");
             }
@@ -271,7 +271,7 @@ class NCUsers extends NCLogger {
         }
 
         // if reached here, all is well. Get the permission level
-        $targetperm = $this->getUserPermissionsNetID($netid, $params['target']);
+        $targetperm = $this->getUserPermissions($netid, $params['target']);
         return $targetperm;
     }
 

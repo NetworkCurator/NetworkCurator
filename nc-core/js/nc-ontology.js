@@ -13,9 +13,9 @@ nc.ontology.nodes = {};
 nc.ontology.links = {};
 
 
-/* ==========================================================================
+/* ====================================================================================
  * Building/Managing ontology structures
- * ========================================================================== */
+ * ==================================================================================== */
 
 /**
  * Invoked when user wants to create a new class for a node or link
@@ -66,19 +66,17 @@ nc.ontology.updateClassProperties = function(classid, classname, parentid, islin
                 
     if (nc.utils.checkString(classname, 1)<1) {
         nc.msg("Hey!", "Invalid class name");
-        exit();
+        return;
     }
                 
     // must translate between classid and targetname 
     // also between parentid and parentname
-    var targetname = $('div.nc-classdisplay[val="'+classid+'"] span[val="nc-classname"]').html();
-    alert("targetname "+targetname);
+    var targetname = $('div.nc-classdisplay[val="'+classid+'"] span[val="nc-classname"]').html();   
     var parentname = parentid;
     if (parentid!='') {
         parentname = $('div.nc-classdisplay[val="'+parentid+'"] span[val="nc-classname"]').html();
     }
-        
-        alert("got "+targetname+" "+parentname+" "+parentid);
+              
     $.post(nc.api, {
         controller: "NCOntology", 
         action: "updateClass", 
@@ -100,12 +98,9 @@ nc.ontology.updateClassProperties = function(classid, classname, parentid, islin
         } else {   
             // update the tree display
             var targetdisplay = $('div.nc-classdisplay[val="'+classid+'"]');            
-            targetdisplay.find('span.nc-comment[val="nc-classname"]').html(classname);
-            var dirtext = '';
-            if (isdirectional) {
-                dirtext = ' (directional)';
-            } 
-            targetdisplay.find('span.nc-comment[val="nc-directional"]').html(dirtext);
+            targetdisplay.find('> span.nc-comment[val="nc-classname"]').html(classname);          
+            var dirtext = (isdirectional ? ' (directional)': ''); 
+            targetdisplay.find('> span.nc-comment[val="nc-directional"]').html(dirtext);
         }
     });  
 }

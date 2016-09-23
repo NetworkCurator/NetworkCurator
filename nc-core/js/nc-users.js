@@ -15,13 +15,14 @@ nc.users = {};
 
 
 
-/* ==========================================================================
+/* ====================================================================================
 * Section about logging in
-* ========================================================================== */
+* ==================================================================================== */
 
 /**
  * Invoke to attempt user log-ing
  * Extracts values from a form and seds request to the server
+ * 
  *
  * @param fgid - id of formgroup containing user id
  * @param fgpwd - id of formgroup containing password
@@ -49,7 +50,7 @@ nc.users.sendLogin = function(fgid, fgpwd, fgremember) {
         if (nc.utils.checkAPIresult(data)) {
             if (data['success']==false) {
                 $('#fg-userid,#fg-password').addClass('has-error has-feedback');                
-                $('#fg-userid label').html("Please verify the username is correct:");
+                $('#fg-userid label').html("Please verify the user id is correct:");
                 $('#fg-password label').html("Please verify the password is correct:");
             } else {
                 window.location.replace("?page=front");
@@ -62,10 +63,19 @@ nc.users.sendLogin = function(fgid, fgpwd, fgremember) {
 }
 
 
+/**
+ * This function is here for symmetry with sendLogin. But the log-out work
+ * is actually done in a server-side page.
+ */
+nc.users.sendLogout = function() {
+    window.location.replace("?page=logout");
+}
 
-/* ==========================================================================
+
+
+/* ====================================================================================
 * Section about user permissions
-* ========================================================================== */
+* ==================================================================================== */
 
 
 /*
@@ -74,18 +84,16 @@ nc.users.sendLogin = function(fgid, fgpwd, fgremember) {
 */
 nc.users.lookup = function() {
         
-    // find the value associated with the selected permission level
-    var idfield = $("#nc-form-permissions input");    
-    var targetid = idfield.val();
-
-    var btn = $("#nc-permissions-lookup");    
-        
-    // if reached here, still trying to lookup the user, check if is is well-formed              
+    // find the value associated with the selected permission level        
+    var targetid = $("#nc-form-permissions input").val();
+                
+    // check if name is well-formed              
     if (nc.utils.checkString(targetid, 1)==0) { 
         nc.msg('Hey!', 'Invalid user id');  
         return false;
     }
         
+    var btn = $("#nc-permissions-lookup");    
     btn.removeClass("btn-success").addClass("btn-warning disabled").html("Checking");
     
     // api checks if user exists and indeed has no access        
@@ -93,8 +101,8 @@ nc.users.lookup = function() {
     {
         controller: "NCUsers", 
         action: "queryPermissions", 
-        network_name: nc.network,
-        target_id: targetid        
+        network: nc.network,
+        target: targetid        
     }, function(data) {        
         nc.utils.alert(data);        
         data = JSON.parse(data);
@@ -113,8 +121,7 @@ nc.users.lookup = function() {
                     nc.msg('Response', 'User already has permissions');                    
                 }                
             }
-        }
-        idfield.prop("disabled", false);
+        }      
     });
     return false;
 }
@@ -130,10 +137,8 @@ nc.users.updatePermissions = function(targetid) {
     var nowval = nowform.find("label.active").find("input:radio").val();    
     
     // find the update button for this user
-    var btn = nowform.find('button')
-    btn.addClass('btn-warning disabled');
-    btn.html('Please wait');
-    var timeout = nc.ui.timeout;
+    var btn = nowform.find('button')    
+    btn.addClass('btn-warning disabled').html('Updating');    
 
     // call the update permissions api
     nc.users.updatePermissionsGeneric(targetid, nowval, 
@@ -143,16 +148,15 @@ nc.users.updatePermissions = function(targetid) {
             btn.removeClass('btn-warning btn-success').html('Done').addClass('btn-default');        
             setTimeout(function(){
                 btn.html('Update').removeClass('btn-default disabled').addClass('btn-success');            
-            }, timeout); 
+            }, nc.ui.timeout); 
             if (nc.utils.checkAPIresult(data) && data['success']==false) {                                 
                 nc.msg('Error', data['errormsg']);                                 
                 return;
             }                        
             if (nowval==0 && targetid!=="guest") {                
                 // if setting user to 0, remove the form element from the page
-                var ncfp = $('.nc-form-permissions[val="'+targetid+'"]');
-                ncfp.fadeOut(nc.ui.speed, function() {
-                    ncfp.remove()
+                $('.nc-form-permissions[val="'+targetid+'"]').fadeOut(nc.ui.speed, function() {                
+                    $(this).remove();
                 }); 
             }
         });            

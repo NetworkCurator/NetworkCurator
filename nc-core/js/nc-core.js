@@ -47,9 +47,9 @@ var nc = {
 
 
 
-/* ==========================================================================
+/* ====================================================================================
  * User interface & interactions
- * ========================================================================== */
+ * ==================================================================================== */
 
 // markdown converter
 nc.mdconverter = new showdown.Converter({
@@ -59,9 +59,9 @@ nc.mdconverter = new showdown.Converter({
 });
 
 
-/* ==========================================================================
+/* ====================================================================================
 * Generic functions 
-* ========================================================================== */
+* ==================================================================================== */
 
 /**
 * Show a message in a modal window
@@ -74,9 +74,9 @@ nc.msg = function(h, b) {
 }
 
 
-/* ==========================================================================
+/* ====================================================================================
  * Startup
- * ========================================================================== */
+ * ==================================================================================== */
 
 /**
  * runs several startup functions. Each function determines if its content
@@ -109,9 +109,8 @@ nc.init.initPermissions = function() {
     // check if this is the permissions page
     var guestperms = $('#nc-permissions-guest');
     var usersperms = $('#nc-permissions-users');
-    if (guestperms.length==0 || usersperms.length==0) {
-        return;
-    }
+    if (guestperms.length==0 || usersperms.length==0) return;
+        
     // creat widgets
     guestperms.append(nc.ui.PermissionsWidget(nc.permissions.guest));                
     usersperms.append(nc.ui.PermissionsWidget(nc.permissions.users));                          
@@ -133,9 +132,8 @@ nc.init.initOntology = function() {
     // check if this function applies on the page
     var ontnodes = $('#nc-ontology-nodes');
     var ontlinks = $('#nc-ontology-links');        
-    if (ontnodes.length==0 || ontlinks.length==0) {
-        return;
-    }    
+    if (ontnodes.length==0 || ontlinks.length==0) return;
+         
     // add ontology trees     
     ontnodes.html(nc.ui.ClassTreeWidget(nc.ontology.nodes, false));                    
     ontlinks.html(nc.ui.ClassTreeWidget(nc.ontology.links, true));               
@@ -227,9 +225,7 @@ nc.init.initCuration = function() {
     alleditable.html(box);    
              
     // other functions are for curators only    
-    if (!nc.curator) {
-        return;
-    }    
+    if (!nc.curator) return;         
     
     // show curation level ui graphics, add an event to toggle curation on/off
     $('.nc-curator').show();    
@@ -278,21 +274,15 @@ nc.init.initNetwork = function() {
     }
     
     // hide certain components depending on current users permissions level
-    if (!nc.curator) {
-        $('.nc-curator').hide();
-    }
-    if (!nc.editor) {
-        $('.nc-editor').hide();
-    }
-    if (!nc.commentator) {
-        $('.nc-commentator').hide();
-    }
+    if (!nc.curator) $('.nc-curator').hide();        
+    if (!nc.editor) $('.nc-editor').hide();    
+    if (!nc.commentator) $('.nc-commentator').hide();    
 }
 
 
-/* ==========================================================================
+/* ====================================================================================
 * Actions on Log page
-* ========================================================================== */
+* ==================================================================================== */
 
 /**
 * Invoked from the log page when user requests a page of the log
@@ -328,9 +318,9 @@ nc.loadActivity = function(pagenum, pagelen) {
 
 
 
-/* ==========================================================================
+/* ====================================================================================
 * Annotation updates
-* ========================================================================== */
+* ==================================================================================== */
 
 /**
 * This sends an update request to the server
@@ -364,9 +354,9 @@ nc.updateAnnotationText = function(annoid, annomd) {
 }
 
 
-/* ==========================================================================
+/* ====================================================================================
 * Commenting
-* ========================================================================== */
+* ==================================================================================== */
 
 
 /**
@@ -377,7 +367,7 @@ nc.createComment = function(annomd, rootid, parentid) {
     if (nc.network=='') return; 
     
     // avoid sending a comment that is too short
-    if (annomd.length<2) exit();        
+    if (annomd.length<2) return;        
 
     // provide click feedback
     $('#nc-newcomment a.nc-submit').removeClass('btn-success').addClass('btn-default')
@@ -425,9 +415,9 @@ nc.createComment = function(annomd, rootid, parentid) {
 }
 
 
-/* ==========================================================================
+/* ====================================================================================
 * Actions on page load
-* ========================================================================== */
+* ==================================================================================== */
 
 /**
 * This starts the page initialization code

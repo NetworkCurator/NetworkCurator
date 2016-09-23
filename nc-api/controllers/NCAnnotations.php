@@ -42,7 +42,7 @@ class NCAnnotations extends NCLogger {
         $this->_netid = $this->getNetworkId($this->_network, true);
 
         // fetch user permissions 
-        $this->_uperm = $this->getUserPermissionsNetID($this->_netid, $this->_uid);
+        $this->_uperm = $this->getUserPermissions($this->_netid, $this->_uid);
     }
 
     /**

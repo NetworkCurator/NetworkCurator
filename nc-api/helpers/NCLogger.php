@@ -17,12 +17,9 @@ class NCLogger extends NCDB {
     // here define other parameters
     protected $_params; // parameters passed on by the user
     protected $_uid; // user_id (or guest)
-    protected $_upw; // user_confirmation code (or guest)
-    //private $_log = true;
+    protected $_upw; // user_confirmation code (or guest)   
     // some constant for getting annotations types
     protected $_annotypes = ["name" => NC_NAME, "title" => NC_TITLE, "abstract" => NC_ABSTRACT, "content" => NC_CONTENT];
-
-    //protected $_annovals = [NC_NAME, NC_TITLE, NC_ABSTRACT, NC_CONTENT];
 
     /**
      * Constructor with connection to database
@@ -39,26 +36,7 @@ class NCLogger extends NCDB {
             throw new Exception("Missing required parameter user_id");
         }
     }
-
-    /**
-     * Resets the parameters for this class.
-     * This is used when the API class is used internally.
-     * 
-     * @param type $params
-     */
-    public function resetParams($params) {
-        $this->_params = $params;
-    }
-
-    /**
-     * Set logging for this class. By default logging is on.
-     * 
-     * @param type $tolog
-     */
-    //public function setLogging($tolog) {
-    //    $this->_log = $tolog;
-    //}
-
+   
     /**
      * Create an id string that is not already present in a dbtable table
      * 
@@ -248,34 +226,7 @@ class NCLogger extends NCDB {
                     :anno_id, :anno_text, :anno_type, " . NC_ACTIVE . ")";
         $this->qPE($sql, $params);
     }
-
-    /**
-     * looks up the permission code for a user on a network (given a name)
-     *
-     * This function takes network and uid separately from the class _network
-     * and _uid. This allows, for example, the admin user to get the 
-     * permission for the guest user. 
-     * 
-     * @param type $network
-     * @param type $uid
-     * @throws Exception
-     */
-    protected function getUserPermissions($network, $uid) {
-        throw new Exception("getUserPermission with network as string - deprecated?");
-        $tn = "" . NC_TABLE_NETWORKS;
-        $tp = "" . NC_TABLE_PERMISSIONS;
-        $sql = "SELECT permissions
-                    FROM $tp JOIN $tn ON $tp.network_id = $tn.network_id
-                    WHERE BINARY $tp.user_id = ? AND $tn.network_name = ?";
-        $stmt = $this->_db->prepare($sql);
-        $stmt = $stmt->execute(array($uid, $network));
-        $result = $stmt . fetch();
-        if (!$result) {
-            return NC_PERM_NONE;
-        }
-        return (int) $result['permissions'];
-    }
-
+   
     /**
      * looks up the permission code for a user on a network (given an id)
      *
@@ -283,13 +234,17 @@ class NCLogger extends NCDB {
      * and _uid. This allows, for example, the admin user to get the 
      * permission for the guest user. 
      * 
-     * @param type $network 
-
-
-     * @param type $uid
+     * @param string $netid
+     * 
+     * network id code
+     * 
+     * @param string $uid
+     * 
+     * user id 
+     * 
      * @throws Exception
      */
-    protected function getUserPermissionsNetID($netid, $uid) {
+    protected function getUserPermissions($netid, $uid) {
         $sql = "SELECT permissions FROM " . NC_TABLE_PERMISSIONS .
                 " WHERE BINARY user_id = ? AND network_id = ?";
         $stmt = $this->qPE($sql, [$uid, $netid]);
@@ -367,6 +322,24 @@ class NCLogger extends NCDB {
         return $result;
     }
 
+    /**
+     * Get a full set of text annotations (name, title, etc) for a given root id.
+     * e.g. use this to fetch summary information about a given network (rootid="Wxxxx")
+     * or a link (rootid="Lxxxxxx")
+     * 
+     * @param string $netid
+     * @param string $rootid
+     * @param boolean $throw
+     * 
+     * set true to throw an exception if the rootid is not found
+     * 
+     * @return array
+     * 
+     * output will be an array, each element of which will contain a further array.
+     * The second level array will have full information about that annotation. 
+     * 
+     * @throws Exception
+     */
     protected function getFullSummaryFromRootId($netid, $rootid, $throw = true) {
  
         // fetch all the summary annotations for a given root (without pivoting)                        

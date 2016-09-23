@@ -42,7 +42,7 @@ class NCOntology extends NCLogger {
         $this->_netid = $this->getNetworkId($this->_network, true);
 
         // check that the user has permissions to view this network   
-        $this->_uperm = $this->getUserPermissionsNetID($this->_netid, $this->_uid);
+        $this->_uperm = $this->getUserPermissions($this->_netid, $this->_uid);
         if ($this->_uperm < NC_PERM_VIEW) {
             throw new Exception("Insufficient permissions to query ontology");
         }
