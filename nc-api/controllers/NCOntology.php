@@ -176,7 +176,7 @@ class NCOntology extends NCLogger {
             }
         } else {
             while ($row = $stmt->fetch()) {
-                $result[$row['class_name']] = $row;
+                $result[$row['name']] = $row;
             }
         }
         return $result;

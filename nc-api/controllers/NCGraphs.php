@@ -128,47 +128,7 @@ class NCGraphs extends NCOntology {
 
         return $nodeid;
     }
-
-    /**
-     * Internal function that perform data insert for a valid node.
-     * 
-     * The function requires a prepped query, so make sure to call
-     * prepInsertNode() before using this function.
-     * 
-     * The inputs go straight into the db, without any checks.
-     * 
-     * @param type $nodename
-     * @param type $nodetitle
-     * @param type $nodeabstract
-     * @param type $nodecontent
-     * 
-     * @return type
-     * 
-     * @deprecated
-     * in favor of batchInsertNodes
-     * 
-     */
-    private function insertNode($classid, $name, $title, $abstract = 'empty', $content = 'empty') {
-
-        $timer = new NCTimer();
-
-        $timer->recordTime("insert start");
-        $nodeid = $this->makeRandomID(NC_TABLE_NODES, 'node_id', NC_PREFIX_NODE, NC_ID_LEN);
-        $timer->recordTime("with nodeid");
-
-        // insert a node
-        $sql = "INSERT INTO " . NC_TABLE_NODES . " 
-            (network_id, node_id, class_id, node_status) VALUES (?, ?, ?, ?)";
-        $this->qPE($sql, [$this->_netid, $nodeid, $classid, NC_ACTIVE]);
-        $timer->recordTime("after node insert");
-        // insert matching name, title, abstract, content, annotations 
-        //$this->insertNewAnnoSet($this->_netid, $this->_uid, $nodeid, $name, $title, $abstract, $content);
-        $timer->recordTime("after annoinsert");
-        //echo $timer->showTimes();
-
-        return $nodeid;
-    }
-
+   
     /**
      * Perform all db actions associated with inserting nodes.
      * Updates the nodes table, creates name/title/abstract/content annotations
@@ -188,6 +148,7 @@ class NCGraphs extends NCOntology {
      */
     protected function batchInsertNodes($nodeset) {
 
+        //echo "bIN 1 ";
         // get some ids for all the nodes
         $n = count($nodeset);
         $nodeids = $this->makeRandomIDSet(NC_TABLE_NODES, 'node_id', NC_PREFIX_NODE, NC_ID_LEN - 1, $n);
@@ -202,8 +163,9 @@ class NCGraphs extends NCOntology {
             $sqlvalues[] = "('" . implode("', '", $temp) . "')";
         }
         $sql .= implode(", ", $sqlvalues);
+        //echo $sql."\n";
         $this->q($sql);
-
+        //echo "done\n";
         //echo "bIN 4 ";
         // insert corresponding to name, title, abstract, content, annotations 
         $this->batchInsertAnnoSets($this->_netid, $nodeset, $nodeids);
@@ -257,44 +219,7 @@ class NCGraphs extends NCOntology {
         return $linkid;
     }
 
-    /**
-     * Internal function that perform data insert for a valid link.
-     * 
-     * 
-     * The inputs go straight into the db, without any checks.
-     * 
-     * @param type $linkname
-     * @param type $classid
-     * @param type $sourceid
-     * @param type $targetid
-     * @param type $linkname
-     * @param type $linktitle
-     * @param type $linkabstract
-     * @param type $linkcontent
-     * @return string
-     * 
-     * id for the new link
-     * 
-     * @deprecated 
-     * in favor of batchInsertLinks
-     * 
-     */
-    private function insertLink($classid, $sourceid, $targetid, $name, $title, $abstract = 'empty', $content = 'empty') {
-
-        $linkid = $this->makeRandomID(NC_TABLE_LINKS, 'link_id', NC_PREFIX_LINK, NC_ID_LEN);
-
-        // insert new link data
-        $sql = "INSERT INTO " . NC_TABLE_LINKS . " 
-            (network_id, link_id, source_id, target_id, class_id, link_status) 
-              VALUES (?, ?, ?, ?, ?, ?)";
-        $this->qPE($sql, [$this->_netid, $linkid, $sourceid, $targetid, $classid, NC_ACTIVE]);
-
-        // insert name, title, abstract, content, annotations for the link
-        //$this->insertNewAnnoSet($this->_netid, $this->_uid, $linkid, $name, $title, $abstract, $content);
-
-        return $linkid;
-    }
-
+   
     /**
      * Perform all db actions associated with inserting links.
      * Updates the links table, creates name/title/abstract/content annotations

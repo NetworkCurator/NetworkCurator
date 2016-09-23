@@ -96,18 +96,24 @@ class NCData extends NCGraphs {
         // drop certain indexes on the annotation table        
 
         //echo "ID9 ";
-        // it will be useful to have access to the ontology        
-        $nodeontology = $this->getNodeOntology(false, true);
+        // it will be useful to have access to the ontology in full detail        
+        $nodeontology = $this->getNodeOntology(false, true);        
         $linkontology = $this->getLinkOntology(false, true);
         //echo "ID9.5 ";
 
-        $timer->recordTime("dropINDEX");
-        try {
-            $sql = "ALTER TABLE " . NC_TABLE_ANNOTEXT . " DROP INDEX root_id, DROP INDEX anno_type ";            
-            $this->q($sql);
-        } catch (Exception $ex) {
-            echo "could not drop indexes: " . $ex->getMessage() . "\n";
-        }
+        // NOTE: here tried to drop indexes before doing the adding work
+        // However, overall the performance seemed better when the indexes were there
+        // This is because most "insert" operations are now in batch.
+        // Also, most "insert" operations require a previous round of "SELECT" which benefit 
+        // a lot from the indexes
+        //$timer->recordTime("dropINDEX");
+        //try {
+        //    $sql = "ALTER TABLE " . NC_TABLE_ANNOTEXT . " DROP INDEX root_id, DROP INDEX anno_type ";            
+        //    $this->q($sql);
+        //} catch (Exception $ex) {
+        //    echo "could not drop indexes: " . $ex->getMessage() . "\n";
+        //}
+        
         //echo "ID10 ";
         $status = "";
         // import ontology, nodes, links
@@ -121,13 +127,14 @@ class NCData extends NCGraphs {
             $status .= $this->importOntology($nodeontology, $linkontology, $filedata['ontology'], $params["file_name"]);
         }
 
-        // re-get the node and link ontology after the adjustments
-        $nodeontology = $this->getNodeOntology(false, true);
-        $linkontology = $this->getLinkOntology(false, true);        
+        // re-get the node and link ontology after the adjustments. This time short format
+        $nodeontology = $this->getNodeOntology(false, false);
+        $linkontology = $this->getLinkOntology(false, false);        
 
         //echo "ID 30 ";
         $timer->recordTime("importNodes");
         if ($this->_uperm >= NC_PERM_EDIT && array_key_exists('nodes', $filedata)) {
+            //echo "ID 31";
             $status .= $this->importNodes($nodeontology, $filedata['nodes'], $params["file_name"]);
         }
 //echo "ID 40 ";
@@ -135,16 +142,16 @@ class NCData extends NCGraphs {
         if ($this->_uperm >= NC_PERM_EDIT && array_key_exists('links', $filedata)) {
             $status .= $this->importLinks($nodeontology, $linkontology, $filedata['links'], $params["file_name"]);
         }
-        //echo "ID 50 ";
-        // recreate indexes on annotation table
-        $timer->recordTime("indexing");
-        try {
-            $sql = "ALTER TABLE " . NC_TABLE_ANNOTEXT . " ADD INDEX root_id (network_id, root_id),
-                ADD INDEX anno_type (network_id, anno_type)";
-            $this->q($sql);
-        } catch (Exception $ex) {
-            echo "error creating index: " . $ex->getMessage();
-        }
+                
+        // NOTE: required if earlier DROP INDEX
+        // $timer->recordTime("indexing");
+        //try {
+        //    $sql = "ALTER TABLE " . NC_TABLE_ANNOTEXT . " ADD INDEX root_id (network_id, root_id),
+        //        ADD INDEX anno_type (network_id, anno_type)";
+        //    $this->q($sql);
+        //} catch (Exception $ex) {
+        //    echo "error creating index: " . $ex->getMessage();
+        //}
 
         $this->dbunlock();
         //echo "ID 60 ";
@@ -421,25 +428,26 @@ class NCData extends NCGraphs {
         //print_r($nodeonto);
         //echo "allnodes: ";
         //print_r($allnodes);
-        
-        
+                
         $numadded = 0;
         $numupdated = 0;
         $numskipped = 0;
 
         for ($i = 0; $i < count($nodedata); $i++) {
+            //echo $i."\n";
             if (array_key_exists('name', $nodedata[$i])) {
                 $nowdata = $nodedata[$i];                
                 $nowname = $nowdata['name'];
-
+                //echo "  ".$nowname."\n";
                 if (array_key_exists($nowname, $allnodes)) {
-                    
+                    // to do
                 } else {
                     // insert the node? Start optimistic, skip if there are problems
                     $insertok = true;
                     $nowclass = $nowdata['class'];
+                    //echo "    $nowclass \n";
                     if (array_key_exists($nowclass, $nodeonto)) {
-                        if ($nodeonto[$nowclass]['class_status'] != 1) {
+                        if ($nodeonto[$nowclass]['status'] != 1) {
                             $insertok = false;
                         }
                         $nowclassid = $nodeonto[$nowclass]['class_id'];

@@ -54,14 +54,14 @@ $params = array('controller' => 'NCGraphs', 'action' => 'getAllNodes',
     'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
     'network' => 'net-zulu');
 $result = tryreport($NCapi, $params, true);
-print_r($result);
+//print_r($result);
 
 echo "getting all links:";
 $params = array('controller' => 'NCGraphs', 'action' => 'getAllLinks',
     'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
     'network' => 'net-zulu');
 $result = tryreport($NCapi, $params, true);
-print_r($result);
+//print_r($result);
 
 
 
