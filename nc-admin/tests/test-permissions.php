@@ -27,4 +27,15 @@ for ($i = 0; $i < count($newusers); $i++) {
     tryreport($NCapi, $params);
     
 }
+
+
+echo "Adjust permissions for bravo on xray"; 
+$params = array('controller' => 'NCUsers', 'action' => 'updatePermissions',
+        'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
+        'network_name' => 'xray', 'target_id' => 'bravo', 'permissions' => 4);
+tryreport($NCapi, $params);
+
+
 ?>
+
+

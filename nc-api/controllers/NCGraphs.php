@@ -311,19 +311,7 @@ class NCGraphs extends NCOntology {
         }
         return $result;
     }
-
-    /**
-     * 
-     * @param array $batch
-     * 
-     * array should contain "name","abstract","title","content"
-     */
-    protected function batchUpdateGraphAnno($batch) {
-        //echo "in batch updaate\n";
-        //print_r($batch);
-        return -1;
-    }
-    
+        
 }
 
 ?>

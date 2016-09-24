@@ -43,6 +43,7 @@
             </div>
             <button type="submit" class="btn btn-success submit">Submit</button>            
         </form>
+        <div id="nc-import-response"></div>
 
 
     </div>
@@ -71,7 +72,10 @@
                 </p>
                 <p><b>This is important!</b></p>
                 <p val="upload">
-                    To do: Comment on upload.
+                    Data from your file will be sent and saved on the server. 
+                    Definitions in the file that match existing network objects will be used
+                    to update the existing information. Definitions that do not match 
+                    existing objects will be used to create new ontology classes, nodes, or links.                    
                 </p>
                 <p val="download">
                     To do: Comment on download.

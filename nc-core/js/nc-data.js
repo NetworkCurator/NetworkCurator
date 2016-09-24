@@ -29,6 +29,7 @@ nc.data = {};
 nc.data.importData = function(fgfile, fgdesc) {
     
     $('#'+fgfile+',#'+fgdesc).removeClass('has-warning has-error');
+    
     // basic checks on the network name text box    
     if (nc.utils.checkFormInput(fgdesc, "description", 2)<1) return 0;    
     var filedesc = $('#'+fgdesc+' input').val();
@@ -42,10 +43,30 @@ nc.data.importData = function(fgfile, fgdesc) {
         $('#'+fgfile+' label').html("Please select a data file");
     }
     var fileurl = fileinput[0].files[0];
-                    
+                                                            
+    // ask for confirmation using a modal box
+    var confirmmodal = $('#nc-data-modal');
+    confirmmodal.find('#nc-dataconfirm-file').html(filename);
+    confirmmodal.find('button[val="nc-confirm"]').off("click").click(function() {
+        nc.data.sendData(filename, filedesc, fileurl);
+    });
+    confirmmodal.find('p[val="download"]').hide();
+    confirmmodal.find('p[val="upload"]').show();    
+    confirmmodal.modal("show");    
+   
+    return false;   
+}
+
+
+/**
+ * Invoked after user confirms upload of data.
+ * 
+ */
+nc.data.sendData = function(filename, filedesc, fileurl) {
+        
     var btn = $('#nc-import-form button[type="submit"]');
     btn.toggleClass("btn-success btn-default disabled").html("Uploading");
-                    
+    
     // set up file reader and open/read the specified file
     var reader = new FileReader();
     reader.onload = function(e) {                                 
@@ -66,20 +87,21 @@ nc.data.importData = function(fgfile, fgdesc) {
             file_name: filename,
             file_desc: filedesc,
             file_content: filedata
-        }, function(data) {          
-            alert(data);
+        }, function(data) {                      
+            //alert(data);
             nc.utils.alert(data);        
             data = JSON.parse(data);
             if (nc.utils.checkAPIresult(data)) {
-                if (data['success']==false || data['data']==false) {
-                } else if (data['success']==true && data['data']==true) {                    
-                }
+                var ttt = data['data'].replace(/\n/g,"<br/>");                
+                $('#nc-import-response').html(ttt);            
+            } else {
+                $('#nc-import-response').html("something went wrong...");            
             }                        
             btn.toggleClass("btn-default disabled btn-success").html("Submit");
         }
         );    
     };   
     reader.readAsText(fileurl);    
-                    
-    return false;   
+
+
 }

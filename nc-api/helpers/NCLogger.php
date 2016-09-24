@@ -302,6 +302,73 @@ class NCLogger extends NCDB {
     }
 
     /**
+     * This works as a layer before batchUpdateAnno. Given data on "new" annotations,
+     * this function compares these annotations to the ones existing in the db. The
+     * annotations that are different are passed on to batchUpdateAnno.
+     * 
+     * 
+     * @param array $batch
+     * 
+     * Each element of the array should be another array with elements
+     * name, title, abstract, content
+     * 
+     * The elements in $batch should have keys that correspond to root_id.
+     * 
+     * @return int
+     * 
+     * number of items actually updated
+     */
+    protected function batchCheckUpdateAnno($netid, $batch, $batchsize = 100000) {
+
+        $n = count($batch);
+        if ($n == 0) {
+            return;
+        }        
+        if ($n > $batchsize) {
+            throw new Exception("too many annotations");
+        }
+
+        // fetch current annotations from the db
+        $sql = "SELECT network_id, datetime, owner_id, root_id, parent_id, "
+                . "anno_id, anno_type, anno_text FROM " . NC_TABLE_ANNOTEXT
+                . " WHERE network_id = :netid AND anno_type <= " . NC_CONTENT
+                . " AND anno_status=" . NC_ACTIVE . " AND (";
+        $sqlcheck = [];
+        $params = ['netid' => $netid];
+        $batchkeys = array_keys($batch);
+        for ($i = 0; $i < $n; $i++) {
+            $x = sprintf("%'.06d", $i);
+            $sqlcheck[] = " root_id = :root_$x ";
+            $params["root_$x"] = $batchkeys[$i];
+        }
+        $sql .= implode(" OR ", $sqlcheck) . ")";
+        $stmt = $this->qPE($sql, $params);
+
+        // scan throught the reported annotations and directly compare with the 
+        // "new" data in the batch set. Discrepant entries are moved to $toupdate
+        $toupdate = [];
+        while ($row = $stmt->fetch()) {
+            //echo ".";
+            $nowtype = array_search($row['anno_type'], $this->_annotypes);
+            $nowroot = $row['root_id'];
+            if ($batch[$nowroot][$nowtype] != '') {
+                if ($batch[$nowroot][$nowtype] != $row['anno_text']) {                    
+                    $pp = $row;
+                    $pp['anno_text'] = $batch[$nowroot][$nowtype];
+                    $pp['user_id'] = $this->_uid;
+                    $toupdate[] = $pp;
+                } 
+            }
+        }
+        
+        // pass on the shortlisted items, i.e. perform the db updates
+        $this->batchUpdateAnno($toupdate);
+        
+        // return the number of updated items
+        return count($toupdate);
+    }
+
+    /**
      * looks up the permission code for a user on a network (given an id)
      *
      * This function takes network and uid separately from the class _network
@@ -654,6 +721,25 @@ class NCLogger extends NCDB {
             $result[$key . $suffix] = $value;
         }
         return $result;
+    }
+
+    private function annocode2string($x) {
+        switch ($x) {
+            case NC_NAME:
+                $nowtype = "name";
+                break;
+            case NC_TITLE:
+                $nowtype = "title";
+                break;
+            case NC_ABSTRACT:
+                $nowtype = "abstract";
+                break;
+            case NC_CONTENT:
+                $nowtype = "content";
+                break;
+            default:
+                break;
+        }
     }
 
 }

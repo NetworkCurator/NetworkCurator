@@ -246,8 +246,8 @@ nc.graph.filterNodes = function() {
     nc.graph.nodes = [];
     for (var i=0; i<nlen; i++) {
         // get input class id
-        var iclassid = rawnodes[i].class_id;    
-        if (nonto[iclassid].class_status>0) {
+        var iclassid = rawnodes[i].class_id;         
+        if (nonto[iclassid].status>0) {
             nc.graph.nodes[counter] = rawnodes[i];
             counter++;
         }        
@@ -275,7 +275,7 @@ nc.graph.filterLinks = function() {
     //alert(nc.graph.links.length+" "+nc.graph.rawlinks.length);
     for (var i=0; i<llen; i++) {
         var iclassid = rawlinks[i].class_id;        
-        if (lonto[iclassid].class_status>0) {
+        if (lonto[iclassid].status>0) {
             // must also check if source and end nodes should be displayed            
             var isource = rawlinks[i].source;
             var itarget = rawlinks[i].target;
@@ -328,7 +328,7 @@ nc.graph.initSimulation = function() {
     // create new simulation    
     nc.graph.sim = d3.forceSimulation()
     .force("link", d3.forceLink().id(function(d) {
-        return d.name;
+        return d.id;
     }))
     .force("charge", d3.forceManyBody())
     .force("center", d3.forceCenter(width / 2, height / 2))
@@ -393,7 +393,7 @@ nc.graph.simStart = function() {
         }
     }) 
     .attr("id", function(d) {
-        return d.name;
+        return d.id;
     })
     .on("click", nc.graph.select);                    
     
@@ -404,7 +404,7 @@ nc.graph.simStart = function() {
     .data(nc.graph.nodes)
     .enter().append("circle").attr("r", 9)    
     .attr("id", function(d) {        
-        return d.name;
+        return d.id;
     })
     .attr("class",function(d) {
         if ("class" in d) {

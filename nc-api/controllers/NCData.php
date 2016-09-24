@@ -12,7 +12,7 @@ include_once "../helpers/NCTimer.php";
  * 
  */
 class NCData extends NCGraphs {
-  
+
     /**
      * Constructor 
      * 
@@ -135,7 +135,7 @@ class NCData extends NCGraphs {
         if ($this->_uperm >= NC_PERM_EDIT && array_key_exists('links', $filedata)) {
             $status .= $this->importLinks($linkdict, $filedata['links'], $params["file_name"]);
         }
-
+        $timer->recordTime("unlock");
         // NOTE: required if earlier DROP INDEX
         // $timer->recordTime("indexing");
         //try {
@@ -157,45 +157,26 @@ class NCData extends NCGraphs {
     /**
      * Helper function adjusts title, abstract, description of entire network
      * 
-     * @param type $netdata
-     * @param type $filename
-     * @return type
+     * @param array $netdata
+     * 
+     * simple array with name, title, abstract, content
+     * 
+     * @param string $filename
+     * 
+     * name of file being processed (used only to log events)
+     * 
+     * @return string
+     * 
+     * a short summary of the applied changes
      */
     private function importSummary($netdata, $filename) {
 
-        // first get the existing summary information
-        $sql = "SELECT datetime, owner_id, anno_text, anno_id, anno_type,
-                    network_id, root_id, parent_id FROM " . NC_TABLE_ANNOTEXT . "
-            WHERE network_id = ? AND anno_type <= " . NC_CONTENT . " 
-                AND root_id = ? AND parent_id = ? AND anno_status = " . NC_ACTIVE;
-        $stmt = $this->qPE($sql, [$this->_netid, $this->_netid, $this->_netid]);
-
-        // copy the results into a local array
-        $info = ['name' => [], 'title' => [], 'abstract' => [], 'content' => []];
-        while ($row = $stmt->fetch()) {
-            $row['user_id'] = $this->_uid;
-            if ($row['anno_type'] == NC_TITLE) {
-                $info['title'] = $row;
-            } else if ($row['anno_type'] == NC_ABSTRACT) {
-                $info['abstract'] = $row;
-            } else if ($row['anno_type'] == NC_CONTENT) {
-                $info['content'] = $row;
-            }
-        }
-
-        // for each defined element, check if it needs updating, and update
-        $changecounter = 0;
-        $batchupdate = [];
-        foreach (['title', 'abstract', 'content'] as $type) {
-            if (array_key_exists($type, $netdata)) {
-                if ($netdata[$type] != $info[$type]['anno_text']) {
-                    $batchupdate[] = $info[$type];
-                    $changecounter++;
-                }
-            }
-        }
-        if ($changecounter > 0) {
-            $this->batchUpdateAnno($batchupdate);
+        // prepare the netdata into a format understood by batchCheckUpdateAnno
+        $batchcheck = [$this->_netid=>$netdata];        
+        $changecounter = $this->batchCheckUpdateAnno($this->_netid, $batchcheck);
+        
+        // log activity if anything happened
+        if ($changecounter > 0) {            
             $this->logActivity($this->_uid, $this->_netid, "applied annotation changes from file", $filename, $changecounter);
         }
 
@@ -402,13 +383,12 @@ class NCData extends NCGraphs {
                 }
                 // check if the specified classes exist
                 $nowclass = $newdata[$i]['class'];
-                if (!array_key_exists($nowclass, $nodedict)) {
+                if (array_key_exists($nowclass, $nodedict)) {
+                    $newdata[$i]['class_id'] = $nodedict[$nowclass];
+                } else {
                     $msgs .= "Skipping node $nowname because class '$nowclass' is undefined\n";
-                    // by unsetting the name, this entry will not be processed below
                     unset($newdata[$i]['name']);
                     $numskipped++;
-                } else {
-                    $newdata[$i]['class_id'] = $nodedict[$nowclass];
                 }
             } else {
                 $numskipped++;
@@ -426,8 +406,7 @@ class NCData extends NCGraphs {
                 // move the node either to the update or the create batch (will be processed below)
                 $nowname = $newdata[$i]['name'];
                 if (array_key_exists($nowname, $allnodes)) {
-                    $newdata[$i]['name_id'] = $allnodes[$nowname]['id'];
-                    $updateset[] = &$newdata[$i];
+                    $updateset[$allnodes[$nowname]['id']] = &$newdata[$i];
                 } else {
                     $newset[] = &$newdata[$i];
                 }
@@ -442,7 +421,7 @@ class NCData extends NCGraphs {
         }
         $updatecount = 0;
         if (count($updateset) > 0) {
-            $updatecount = $this->batchUpdateGraphAnno($updateset);
+            $updatecount = $this->batchCheckUpdateAnno($this->_netid, $updateset);
             $this->logActivity($this->_uid, $this->_netid, "updated nodes from file", $filename, $updatecount);
         }
 
@@ -501,11 +480,11 @@ class NCData extends NCGraphs {
                 }
                 // check the specified link class is defined
                 $nowclass = $newdata[$i]['class'];
-                if (!array_key_exists($nowclass, $linkdict)) {
+                if (array_key_exists($nowclass, $linkdict)) {
+                    $newdata[$i]['class_id'] = $linkdict[$nowclass];
+                } else {
                     $msgs .= "Skipping link $nowname because class '$nowclass' is undefined\n";
                     unset($newdata[$i]['name']);
-                } else {
-                    $newdata[$i]['class_id'] = $linkdict[$nowclass];
                 }
                 // check the source/target are valid
                 $nowsource = $newdata[$i]['source'];
@@ -541,8 +520,7 @@ class NCData extends NCGraphs {
                 // move the link either to the update or the create batch (will be processed below)
                 $nowname = $newdata[$i]['name'];
                 if (array_key_exists($nowname, $alllinks)) {
-                    $newdata[$i]['id'] = $alllinks[$nowname]['id'];
-                    $updateset[] = &$newdata[$i];
+                    $updateset[$alllinks[$nowname]['id']] = &$newdata[$i];
                 } else {
                     $newset[] = &$newdata[$i];
                 }
@@ -556,7 +534,7 @@ class NCData extends NCGraphs {
         }
         $updatecount = 0;
         if (count($updateset) > 0) {
-            $updatecount = $this->batchUpdateGraphAnno($updateset);
+            $updatecount = $this->batchCheckUpdateAnno($this->_netid, $updateset);
             $this->logActivity($this->_uid, $this->_netid, "updated links from file", $filename, $updatecount);
         }
 
