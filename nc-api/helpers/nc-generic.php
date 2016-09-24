@@ -27,7 +27,7 @@ function makeRandomHexString($stringlength) {
  * 
  * @return string
  */
-function makeRandomString($stringlength, $okchars = "1234567890bcdfghjklmnpqrstvwxz") {
+function makeRandomString($stringlength, $okchars = "1234567890bcdfghjklmnpqrstvwxyz") {
 
     // helper object 
     $oklen = strlen($okchars);

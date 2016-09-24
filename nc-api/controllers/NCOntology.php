@@ -59,9 +59,9 @@ class NCOntology extends NCLogger {
         $ta = "" . NC_TABLE_ANNOTEXT;
 
         $subtype = "";
-        if ($what == "nodes") {
+        if ($what == "node") {
             $subtype = " AND $tc.connector = 0 ";
-        } else if ($what == "links") {
+        } else if ($what == "link") {
             $subtype = " AND $tc.connector = 1 ";
         }
 
@@ -71,10 +71,10 @@ class NCOntology extends NCLogger {
                    AND anno_type = " . NC_NAME . " AND anno_status = " . NC_ACTIVE;
         $stmt = $this->qPE($sql, [$this->_netid, $this->_netid]);
 
-        $result = [];
+        $result = [];        
         while ($row = $stmt->fetch()) {
             $result[$row['class_id']] = $row['class_name'];
-        }
+        }                    
 
         return $result;
     }
@@ -182,7 +182,22 @@ class NCOntology extends NCLogger {
         return $result;
     }
 
-    protected function getClassInfoFromName($classname, $throw = true) {
+   
+    /**
+     * Fetches basic class information: id (Cxxxxxx), class parent, node/link (connector),
+     * directionality, anno_id for the name, datetime of creation, and owner id. 
+     * 
+     * @param string $classname
+     * 
+     * @param boolean $throw
+     * 
+     * set true to throw an exception if the classname does not match any existing classes.
+     * 
+     * @return array
+     *      
+     * @throws Exception
+     */
+    protected function getClassInfo($classname, $throw = true) {
         $tc = "" . NC_TABLE_CLASSES;
         $tat = "" . NC_TABLE_ANNOTEXT;
 
@@ -256,13 +271,13 @@ class NCOntology extends NCLogger {
         }
 
         // check if class name is alredy taken
-        $classid = $this->getClassInfoFromName($params['name'], false);
+        $classid = $this->getClassInfo($params['name'], false);
         if ($classid != null) {
             throw new Exception("Class name " . $params['name'] . " already exists");
         }
         // check properties of the parent
         if ($params['parent'] != '') {
-            $parentinfo = $this->getClassInfoFromName($params['parent']);
+            $parentinfo = $this->getClassInfo($params['parent']);
             if ($params['connector'] != $parentinfo['connector']) {
                 throw new Exception("Incompatible connector settings");
             }
@@ -327,11 +342,11 @@ class NCOntology extends NCLogger {
         }
 
         // fetch the current information about this class        
-        $oldinfo = $this->getClassInfoFromName($params['target']);
+        $oldinfo = $this->getClassInfo($params['target']);
         $classid = $oldinfo['class_id'];
         $parentid = '';
         if ($params['parent'] != '') {
-            $parentinfo = $this->getClassInfoFromName($params['parent']);
+            $parentinfo = $this->getClassInfo($params['parent']);
             $parentid = $parentinfo['class_id'];
         }
 
@@ -383,7 +398,7 @@ class NCOntology extends NCLogger {
             $pp = array_merge($pp, ['network_id' => $this->_netid,
                 'parent_id' => $parentid, 'root_id' => $classid,
                 'anno_text' => $params['name'], 'anno_type' => NC_NAME]);
-            $this->updateAnnoText($pp);
+            $this->batchUpdateAnno([$pp]);
             $result = 1;
         }
 
@@ -396,15 +411,17 @@ class NCOntology extends NCLogger {
         }
         if ($updaterest) {
             $oldfullinfo = $this->getFullSummaryFromRootId($this->_netid, $classid);
+            $batchupdate = [];
             foreach (['title', 'abstract', 'content'] as $annotype) {
                 if ($params[$annotype] != '' &&
                         $params[$annotype] != $oldfullinfo[$annotype]['anno_text']) {
                     // update this annotation
                     $pp = $oldfullinfo[$annotype];
                     $pp['anno_text'] = $params[$annotype];
-                    $this->updateAnnoText($pp);
+                    $batchupdate[] = $pp;
                 }
             }
+            $this->batchUpdateAnno($batchupdate);
         }
 
         if (!$Q1 || !$Q3) {
@@ -480,7 +497,7 @@ class NCOntology extends NCLogger {
     protected function removeClassWork($classname) {
 
         // fetch information about the class
-        $oldinfo = $this->getClassInfoFromName($classname);
+        $oldinfo = $this->getClassInfo($classname);
         $classid = $oldinfo['class_id'];
 
         // class exists in db. Check if it has been used already in a nontrivial way
@@ -565,7 +582,7 @@ class NCOntology extends NCLogger {
     protected function activateClassWork($classname) {
 
         // check class actually needs activating
-        $classinfo = $this->getClassInfoFromName($classname);
+        $classinfo = $this->getClassInfo($classname);
         if ($classinfo['class_status'] != NC_DEPRECATED) {
             throw new Exception("Class is not deprecated");
         }

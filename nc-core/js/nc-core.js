@@ -344,7 +344,7 @@ nc.updateAnnotationText = function(annoid, annomd) {
         network: nc.network,
         anno_id: annoid,
         anno_text: annomd
-    }, function(data) {        
+    }, function(data) {           
         nc.utils.alert(data);  
         data = JSON.parse(data);
         if (!data['success']) {  

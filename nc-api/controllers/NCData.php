@@ -12,11 +12,7 @@ include_once "../helpers/NCTimer.php";
  * 
  */
 class NCData extends NCGraphs {
-
-    // sets of nodes and links that should be inserted in batch
-    private $_nodeset = [];
-    private $_linkset = [];
-
+  
     /**
      * Constructor 
      * 
@@ -45,7 +41,7 @@ class NCData extends NCGraphs {
         //echo "ID1 ";
         // check that required inputs are defined
         $params = $this->subsetArray($this->_params, ["file_name", "file_desc", "file_content"]);
-//echo "ID2 ";
+        //echo "ID2 ";
         // make sure the asking user is allowed to curate
         if ($this->_uperm < NC_PERM_EDIT) {
             throw new Exception("Insufficient permissions " . $this->_uperm);
@@ -79,7 +75,7 @@ class NCData extends NCGraphs {
         $filepath = $networkdir . "/" . $fileid . ".json";
         file_put_contents($filepath, $filestring);
         chmod($filepath, 0777);
-//echo "ID6 ";
+        //echo "ID6 ";
         // store a record of the file in the db        
         $sql = "INSERT INTO " . NC_TABLE_FILES . "
                    (datetime, file_id, user_id, network_id, file_name, 
@@ -92,15 +88,13 @@ class NCData extends NCGraphs {
         //echo "ID7 ";
         // log the upload
         $this->logActivity($this->_uid, $this->_netid, "uploaded data file", $params['file_name'], $params['file_desc']);
-//echo "ID8 ";
+        //echo "ID8 ";
         // drop certain indexes on the annotation table        
-
         //echo "ID9 ";
         // it will be useful to have access to the ontology in full detail        
-        $nodeontology = $this->getNodeOntology(false, true);        
+        $nodeontology = $this->getNodeOntology(false, true);
         $linkontology = $this->getLinkOntology(false, true);
         //echo "ID9.5 ";
-
         // NOTE: here tried to drop indexes before doing the adding work
         // However, overall the performance seemed better when the indexes were there
         // This is because most "insert" operations are now in batch.
@@ -113,7 +107,6 @@ class NCData extends NCGraphs {
         //} catch (Exception $ex) {
         //    echo "could not drop indexes: " . $ex->getMessage() . "\n";
         //}
-        
         //echo "ID10 ";
         $status = "";
         // import ontology, nodes, links
@@ -128,21 +121,21 @@ class NCData extends NCGraphs {
         }
 
         // re-get the node and link ontology after the adjustments. This time short format
-        $nodeontology = $this->getNodeOntology(false, false);
-        $linkontology = $this->getLinkOntology(false, false);        
+        $nodedict = array_flip($this->getOntologyDictionary("node"));
+        $linkdict = array_flip($this->getOntologyDictionary("link"));
 
         //echo "ID 30 ";
         $timer->recordTime("importNodes");
         if ($this->_uperm >= NC_PERM_EDIT && array_key_exists('nodes', $filedata)) {
             //echo "ID 31";
-            $status .= $this->importNodes($nodeontology, $filedata['nodes'], $params["file_name"]);
+            $status .= $this->importNodes($nodedict, $filedata['nodes'], $params["file_name"]);
         }
-//echo "ID 40 ";
+        //echo "ID 40 ";
         $timer->recordTime("importLinks");
         if ($this->_uperm >= NC_PERM_EDIT && array_key_exists('links', $filedata)) {
-            $status .= $this->importLinks($nodeontology, $linkontology, $filedata['links'], $params["file_name"]);
+            $status .= $this->importLinks($linkdict, $filedata['links'], $params["file_name"]);
         }
-                
+
         // NOTE: required if earlier DROP INDEX
         // $timer->recordTime("indexing");
         //try {
@@ -156,9 +149,9 @@ class NCData extends NCGraphs {
         $this->dbunlock();
         //echo "ID 60 ";
         $timer->recordTime("import end");
-        echo $timer->showTimes();
-//echo "importData end\n";
-        return "$status\n". $timer->showTimes();
+        //echo $timer->showTimes();
+
+        return "$status\n" . $timer->showTimes();
     }
 
     /**
@@ -192,15 +185,17 @@ class NCData extends NCGraphs {
 
         // for each defined element, check if it needs updating, and update
         $changecounter = 0;
+        $batchupdate = [];
         foreach (['title', 'abstract', 'content'] as $type) {
             if (array_key_exists($type, $netdata)) {
                 if ($netdata[$type] != $info[$type]['anno_text']) {
-                    $this->updateAnnoText($info[$type]);
+                    $batchupdate[] = $info[$type];
                     $changecounter++;
                 }
             }
         }
         if ($changecounter > 0) {
+            $this->batchUpdateAnno($batchupdate);
             $this->logActivity($this->_uid, $this->_netid, "applied annotation changes from file", $filename, $changecounter);
         }
 
@@ -208,16 +203,16 @@ class NCData extends NCGraphs {
     }
 
     /**
-     * Helper function compares ontology classes x and y
+     * Helper function compares two arrays, but only on a subset of the elements
      * 
-     * @param type $x
-     * @param type $y
+     * @param array $x
+     * @param array $y
      * @return boolean
      * 
      * true if x and y are equal along the specified types
      * false if they are different
      */
-    private function equalOntoData($x, $y, $types = ['parent_name', 'connector', 'directional', 'class_status']) {
+    private function equalSubArray($x, $y, $types) {
         foreach ($types as $nowtype) {
             if ($x[$nowtype] != $y[$nowtype]) {
                 return false;
@@ -250,14 +245,16 @@ class NCData extends NCGraphs {
 
         // consider node and link ontology types together
         $ontos = array_merge($nodeonto, $linkonto);
-        // update the ontology by replacing parent_ids with parent_name
-        $ontodict = $this->getOntologyDictionary();
-        foreach (array_keys($ontos) as $key) {
-            $nowpid = $ontos[$key]['parent_id'];
-            if ($nowpid != '') {
-                $ontos[$key]['parent_name'] = $ontodict[$nowpid];
-            } else {
-                $ontos[$key]['parent_name'] = '';
+
+        // make sure all entry contain at least some default values for all required parameters        
+        $defaults = ["title" => '', "abstract" => '', "content" => '', "class" => '',
+            "directional" => 0, "connector" => 0, "parent" => '', "status" => 1];
+
+        for ($i = 0; $i < count($newdata); $i++) {
+            foreach ($defaults as $key => $value) {
+                if (!array_key_exists($key, $newdata[$i])) {
+                    $newdata[$i][$key] = $value;
+                }
             }
         }
 
@@ -269,8 +266,6 @@ class NCData extends NCGraphs {
 
         for ($i = 0; $i < count($newdata); $i++) {
             if (array_key_exists('name', $newdata[$i])) {
-                $nowname = $newdata[$i]['name'];
-                //echo $nowname." ";
                 try {
                     $nowresult = $this->processOneOntoEntry($newdata[$i], $ontos);
                     if ($nowresult == "update") {
@@ -282,11 +277,11 @@ class NCData extends NCGraphs {
                     }
                 } catch (Exception $ex) {
                     $numskipped++;
-                    $msgs .= $nowname . ": " . $ex->getMessage() . "\n";
+                    $msgs .= $newdata[$i]['name'] . ": " . $ex->getMessage() . "\n";
                 }
             }
         }
-        
+
         if ($numadded > 0) {
             $this->logActivity($this->_uid, $this->_netid, "added ontology classes from file", $filename, $numadded);
         }
@@ -304,79 +299,63 @@ class NCData extends NCGraphs {
      */
     private function processOneOntoEntry($newentry, $ontology) {
 
-        // normalize the entry 
-        // i.e. change from fields for user-perspective ("parent") to 
-        // fields for developer-perspective ("parent_id", "parent_name")
+        // process the various scenarios: update/insert/activate/remove
         $classname = $newentry['name'];
-        if (!array_key_exists("connector", $newentry)) {
-            $newentry['connector'] = 0;
-        }
-        if (!array_key_exists("directional", $newentry)) {
-            $newentry['directional'] = 0;
-        }
-        if (array_key_exists("status", $newentry)) {
-            $newentry['class_status'] = ((int) $newentry['class_status'] > 0);
-        } else {
-            $newentry['class_status'] = 1;
-        }
-        foreach (['name', 'title', 'abstract', 'content'] as $type) {
-            if (array_key_exists($type, $newentry)) {
-                $newentry['class_' . $type] = $newentry[$type];
-            }
-        }
-        if (array_key_exists("parent", $newentry)) {
-            $newentry['parent_name'] = $newentry['parent'];
-        } else {
-            $newentry['parent_name'] = '';
-        }
-
         $updated = false;
+        $activated = false;
 
-        if (array_key_exists($classname, $ontology)) {
-            if ($newentry['class_status'] == 1) {
-                // perhaps adjust the status
-                if ($ontology[$classname]['class_status'] == 0) {
-                    // requires activation
-                    // echo "activating " . $classname."\n";
-                    $this->activateClassWork($classname);
-                    // manually update the ontology here
-                    $ontology[$classname]['class_status'] = 1;
-                    $updated = true;
-                }
-                // perhaps adjust other class structure properties
-                if (!$this->equalOntoData($newentry, $ontology[$classname])) {
-                    //echo "updating " . $nowdata['class_name']."\n"; 
-                    $newentry['target_name'] = $newentry['name'];
-                    $this->updateClassWork($newentry);
-                    $updated = true;
-                }
-                // perhaps adjust title abstract content
-                foreach (['class_title', 'class_abstract', 'class_content'] as $type) {
-                    if (array_key_exists($type, $newentry)) {
-                        if ($newentry[$type] != $ontology[$classname][$type]) {
-                            throw new Exception("TODO: implement updates on title, abstract, content");
-                            //$this->updateAnnoText($info[$type]);
-                            //$changecounter++;
-                        }
-                    }
-                }
-            } else {
-                // here new entry has 0 status
-                if ($ontology[$nowname]['class_status'] == 1) {
-                    // requires de-activation
-                    //echo "removing " . $nowdata['class_name']."\n";
-                    $this->removeClassWork($classname);
-                    $updated = true;
-                }
-            }
-        } else {
-            // class does not exists, so create from scratch            
-            //echo "creating class " . $classname."\n";
-            if ($newentry['class_status'] > 0) {                
+        if (!array_key_exists($classname, $ontology)) {
+            // class does not exists, so create from scratch                        
+            if ($newentry['status'] > 0) {
                 $this->createNewClassWork($newentry);
                 return "add";
             } else {
                 return "skip";
+            }
+        }
+
+        // if reached here, the class already exists. Perhaps adjust.
+        if ($newentry['status'] == 1) {
+            // perhaps adjust the status
+            if ($ontology[$classname]['status'] == 0) {
+                $this->activateClassWork($classname);
+                $activated = true;
+                $updated = true;
+            }
+            // perhaps adjust other class structure properties
+            if (!$this->equalSubArray($newentry, $ontology[$classname], ['parent',
+                        'connector', 'directional'])) {
+                $newentry['target'] = $newentry['name'];
+                $this->updateClassWork($newentry);
+                $updated = true;
+            }
+            // perhaps adjust title abstract content
+            $batchupdate = [];
+            foreach (['title', 'abstract', 'content'] as $type) {
+                if (array_key_exists($type, $newentry)) {
+                    if ($newentry[$type] != '' && $newentry[$type] != $ontology[$classname][$type]) {
+                        // prepare a set of data for updates
+                        $oldentry = $ontology[$classname];
+                        $classid = $ontology[$classname]['class_id'];
+                        $pp = ['network_id' => $this->_netid,
+                            'datetime' => $oldentry[$type . '_datetime'],
+                            'owner_id' => $oldentry[$type . "_owner_id"],
+                            'anno_id' => $oldentry[$type . '_anno_id'],
+                            'root_id' => $classid, 'parent_id' => $classid,
+                            'anno_text' => $newentry[$type],
+                            'anno_type' => $this->_annotypes[$type]];
+                        $batchupdate[] = $pp;
+                        $updated = true;
+                    }
+                }
+            }
+            $this->batchUpdateAnno($batchupdate);
+        } else {
+            // here new entry has 0 status
+            if ($ontology[$classname]['status'] == 1) {
+                // requires de-activation             
+                $this->removeClassWork($classname);
+                $updated = true;
             }
         }
 
@@ -385,127 +364,203 @@ class NCData extends NCGraphs {
         } else {
             return "skip";
         }
-    }    
+    }
 
     /**
      * Helper function processes adjustments for nodes
+     *      
+     * @param array $nodedict
      * 
-     * @param NCGraphs $NCgraph
-     * @param array $nodeonto
-     * @param array $nodedata
+     * node dictionary, i.e. map from node names to node ids
+     * 
+     * @param array $newdata
+     * 
+     * array with new/updated node definitions
+     * 
      * @param string $filename
      * 
      */
-    private function importNodes($nodeonto, $nodedata, $filename) {
+    private function importNodes($nodedict, $newdata, $filename) {
 
         // start a log with output messages
-        $ans = "";
+        $msgs = "";
 
         // all nodes require a name, class_name, title, status
-        $defaults = ["node_name" => '', "class" => '',
-            "title" => '', "abstract" => 'empty', "content" => 'empty',
-            "class_status" => 1];
+        $defaults = ["name" => '', "title" => '', "abstract" => '', "content" => '',
+            "class" => '', "status" => 1];
 
-        // loop throw ontodata and make sure all entries have all fields        
-        for ($i = 0; $i < count($nodedata); $i++) {
-            if (array_key_exists('name', $nodedata[$i])) {
-                $nodedata[$i]['node_name'] = $nodedata[$i]['name'];
-                foreach ($defaults as $key => $value) {
-                    if (!array_key_exists($key, $nodedata[$i])) {
-                        $nodedata[$i][$key] = $value;
-                    }
-                }
-                if ($nodedata[$i]['title']=='') {
-                    $nodedata[$i]['title'] = $nodedata[$i]['name'];
-                }
-            }
-        }
-
-        // collect data from all nodes
-        $allnodes = $this->getAllNodes(true);
-        
-        //echo "nodeont: ";
-        //print_r($nodeonto);
-        //echo "allnodes: ";
-        //print_r($allnodes);
-                
-        $numadded = 0;
-        $numupdated = 0;
+        // loop throw the new data and make sure all entries have all fields    
         $numskipped = 0;
-
-        for ($i = 0; $i < count($nodedata); $i++) {
-            //echo $i."\n";
-            if (array_key_exists('name', $nodedata[$i])) {
-                $nowdata = $nodedata[$i];                
-                $nowname = $nowdata['name'];
-                //echo "  ".$nowname."\n";
-                if (array_key_exists($nowname, $allnodes)) {
-                    // to do
-                } else {
-                    // insert the node? Start optimistic, skip if there are problems
-                    $insertok = true;
-                    $nowclass = $nowdata['class'];
-                    //echo "    $nowclass \n";
-                    if (array_key_exists($nowclass, $nodeonto)) {
-                        if ($nodeonto[$nowclass]['status'] != 1) {
-                            $insertok = false;
-                        }
-                        $nowclassid = $nodeonto[$nowclass]['class_id'];
-                        //echo "got mapping: $nowclass --> $nowclassid \n";
-                    } else {
-                        $insertok = false;
-                    }
-                    if (strlen($nowdata['title']) < 2) {
-                        $insertok = false;
-                    }
-                    //echo "considering: $nowname $nowclass $nowclassid $insertok \n";
-                    if ($insertok) {
-                        //echo "adding\n";
-                        $toadd  = $this->subsetArray($nodedata[$i], ['name', 'title','abstract', 'content']);
-                        $toadd['class_id'] = $nowclassid;                        
-                        $this->_nodeset[] = $toadd;
-                        //$this->insertNode($nowname, $nowclassid, $nowdata['title'], $nowdata['abstract'], $nowdata['content']);
-                        $numadded++;
-                    } else {
-                        $numskipped++;
+        for ($i = 0; $i < count($newdata); $i++) {
+            if (array_key_exists('name', $newdata[$i])) {
+                $nowname = $newdata[$i]['name'];
+                // write-in all the required fields
+                foreach ($defaults as $key => $value) {
+                    if (!array_key_exists($key, $newdata[$i])) {
+                        $newdata[$i][$key] = $value;
                     }
                 }
+                // check if the specified classes exist
+                $nowclass = $newdata[$i]['class'];
+                if (!array_key_exists($nowclass, $nodedict)) {
+                    $msgs .= "Skipping node $nowname because class '$nowclass' is undefined\n";
+                    // by unsetting the name, this entry will not be processed below
+                    unset($newdata[$i]['name']);
+                    $numskipped++;
+                } else {
+                    $newdata[$i]['class_id'] = $nodedict[$nowclass];
+                }
+            } else {
+                $numskipped++;
             }
         }
 
+        // collect data from all existing nodes
+        $allnodes = $this->getAllNodes(true);
 
-        $n = count($this->_nodeset);
-        //echo "nodeset has $n \n";
-        //print_r($this->_nodeset);
-        
-        if ($n > 0) {
-            $this->batchInsertNodes($this->_nodeset);
+        // split the new data into items to insert/update        
+        $newset = [];
+        $updateset = [];
+        for ($i = 0; $i < count($newdata); $i++) {
+            if (array_key_exists('name', $newdata[$i])) {
+                // move the node either to the update or the create batch (will be processed below)
+                $nowname = $newdata[$i]['name'];
+                if (array_key_exists($nowname, $allnodes)) {
+                    $newdata[$i]['name_id'] = $allnodes[$nowname]['id'];
+                    $updateset[] = &$newdata[$i];
+                } else {
+                    $newset[] = &$newdata[$i];
+                }
+            }
+        }
+        unset($allnodes);
+
+        // batch insert and update
+        if (count($newset) > 0) {
+            $this->batchInsertNodes($newset);
+            $this->logActivity($this->_uid, $this->_netid, "added nodes from file", $filename, count($newset));
+        }
+        $updatecount = 0;
+        if (count($updateset) > 0) {
+            $updatecount = $this->batchUpdateGraphAnno($updateset);
+            $this->logActivity($this->_uid, $this->_netid, "updated nodes from file", $filename, $updatecount);
         }
 
-
-        if ($numadded > 0) {
-            $this->logActivity($this->_uid, $this->_netid, "added nodes from file", $filename, $numadded);
-        }
-        if ($numupdated > 0) {
-            $this->logActivity($this->_uid, $this->_netid, "updated nodes from file", $filename, $numupdated);
-        }
-
-        return $ans . " -- nodes: added $numadded / updated $numupdated / skipped $numskipped\n";
+        return $msgs . " -- nodes: added " . count($newset) . " / updated " . $updatecount . " / skipped $numskipped\n";
     }
 
     /**
      * Helper function processes updates on links
      * 
      * 
-     * @param type $NCgraph
-     * @param type $nodeonto
-     * @param type $linkonto
-     * @param type $linkdata
-     * @param type $filename
+     * 
+     * @param type $nodedict
+     *
+     * node ontology dictionary, i.e. map from node names to node ids  
+     * 
+     * @param type $linkdict
+     * 
+     * link ontology dictionary, i.e. map from node names to node ids  
+     * 
+     * @param type $newdata
+     * 
+     * definitions of new/updated links
+     * 
+     * @param string $filename
+     * 
+     * used in log message
+     * 
      * @return string
      */
-    private function importLinks($nodeonto, $linkonto, $linkdata, $filename) {
-        return "links: todo\n";
+    private function importLinks($linkdict, $newdata, $filename) {
+
+        // start a log with output messages
+        $msgs = "";
+
+        // all nodes require a name, class_name, title, status
+        $defaults = ["name" => '', "title" => '', "abstract" => '', "content" => '',
+            "class" => '', 'source' => '', 'target' => '', "status" => 1];
+
+        // get all the nodes and make a node dictionary (vertices, not ontology)    
+        $allnodes = $this->getAllNodes(true);
+        $vdict = [];
+        foreach ($allnodes as $key => $val) {
+            $vdict[$key] = $val['id'];
+        }
+
+        // loop throw the new data and make sure all entries have all fields    
+        $numskipped = 0;
+        for ($i = 0; $i < count($newdata); $i++) {
+            if (array_key_exists('name', $newdata[$i])) {
+                $nowname = $newdata[$i]['name'];
+                // write-in all the required fields
+                foreach ($defaults as $key => $value) {
+                    if (!array_key_exists($key, $newdata[$i])) {
+                        $newdata[$i][$key] = $value;
+                    }
+                }
+                // check the specified link class is defined
+                $nowclass = $newdata[$i]['class'];
+                if (!array_key_exists($nowclass, $linkdict)) {
+                    $msgs .= "Skipping link $nowname because class '$nowclass' is undefined\n";
+                    unset($newdata[$i]['name']);
+                } else {
+                    $newdata[$i]['class_id'] = $linkdict[$nowclass];
+                }
+                // check the source/target are valid
+                $nowsource = $newdata[$i]['source'];
+                $nowtarget = $newdata[$i]['target'];
+                if (!array_key_exists($nowsource, $vdict) ||
+                        !array_key_exists($nowtarget, $vdict)) {
+                    $msgs .= "Skipping link $nowname because source or target do not exist\n";
+                    unset($newdata[$i]['name']);
+                } else {
+                    $newdata[$i]['source_id'] = $vdict[$nowsource];
+                    $newdata[$i]['target_id'] = $vdict[$nowtarget];
+                }
+
+                // after all this, check the link is still ok
+                if (!array_key_exists('name', $newdata[$i])) {
+                    $numskipped++;
+                }
+            } else {
+                $numskipped++;
+            }
+        }
+        // save a little memory by unsetting node information (no longer needed below)
+        unset($allnodes, $vdict);
+
+        // fetch existing links (required to check if defined link in newdata is new or not)
+        $alllinks = $this->getAllLinks(true);
+
+        // split the new data into items to insert/update
+        $newset = [];
+        $updateset = [];
+        for ($i = 0; $i < count($newdata); $i++) {
+            if (array_key_exists('name', $newdata[$i])) {
+                // move the link either to the update or the create batch (will be processed below)
+                $nowname = $newdata[$i]['name'];
+                if (array_key_exists($nowname, $alllinks)) {
+                    $newdata[$i]['id'] = $alllinks[$nowname]['id'];
+                    $updateset[] = &$newdata[$i];
+                } else {
+                    $newset[] = &$newdata[$i];
+                }
+            }
+        }
+
+        // batch insert and update
+        if (count($newset) > 0) {
+            $this->batchInsertLinks($newset);
+            $this->logActivity($this->_uid, $this->_netid, "added links from file", $filename, count($newset));
+        }
+        $updatecount = 0;
+        if (count($updateset) > 0) {
+            $updatecount = $this->batchUpdateGraphAnno($updateset);
+            $this->logActivity($this->_uid, $this->_netid, "updated links from file", $filename, $updatecount);
+        }
+
+        return $msgs . " -- links: added " . count($newset) . " / updated " . $updatecount . " / skipped $numskipped\n";
     }
 
 }

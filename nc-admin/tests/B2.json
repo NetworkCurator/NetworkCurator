@@ -1,0 +1,310 @@
+{
+    "network": [
+        {
+            "name": "net-zulu",
+            "title": "Polyol Pathway 2",
+            "content": "Organism: Homo sapiens\n\nWhen glucose is unused, it is metabolized via the polyol pathway. This pathway consists of two main enzymatic steps. First, glucose is reduced to sorbitol by aldose reductase. In this step, NADPH is oxidized to NADP+. The next step is the oxidation of sorbitol to D-fructose by sorbitol dehydrogenase.\nFructose can then be phosphorylated by fructokinase and subsequently be metabolized via dihydroxyacetone phosphate or glyceraldehyde to D-glyceraldehyde 3-phosphate, which can be used as a substrate in the process of glycolysis.\nThe sorbitol pathway plays a role in diabetic renal complications because aldose reductase metabolizes the excess of glucose to toxic metabolites that induce hyperfiltration and glomerular dysfunction."
+        }
+    ],
+    "nodes": [
+        {
+            "name": "a4027",
+            "title": "D-Glucose D-Glucose",
+            "class": "Metabolite",
+            "fx": 491,
+            "fy": 97
+        },
+        {
+            "name": "a02f1",
+            "title": "Sorbitol",
+            "class": "Metabolite",
+            "fx": 287,
+            "fy": 97
+        },
+        {
+            "name": "b29e5",
+            "title": "D-Fructose",
+            "class": "Metabolite",
+            "fx": 287.98,
+            "fy": 188.98
+        },
+        {
+            "name": "e285c",
+            "title": "Fructose 1-phosphate",
+            "class": "Metabolite",
+            "fx": 287,
+            "fy": 281
+        },
+        {
+            "name": "bd923",
+            "title": "Dihydroxyacetone phosphate",
+            "class": "Metabolite",
+            "fx": 202,
+            "fy": 386
+        },
+        {
+            "name": "c05e7",
+            "title": "Glyceraldehyde",
+            "class": "Metabolite",
+            "fx": 370,
+            "fy": 386
+        },
+        {
+            "name": "f6cd9",
+            "title": "D-Glyceraldehyde 3-phosphate",
+            "class": "Metabolite",
+            "fx": 287,
+            "fy": 478
+        },
+        {
+            "name": "f61f1",
+            "title": "SORD",
+            "class": "GeneProduct",
+            "fx": 372,
+            "fy": 141
+        },
+        {
+            "name": "a9883",
+            "title": "Fructokinase",
+            "class": "GeneProduct",
+            "fx": 376,
+            "fy": 227
+        },
+        {
+            "name": "c43b6",
+            "title": "ALR2",
+            "class": "GeneProduct",
+            "fx": 395,
+            "fy": 43
+        },
+        {
+            "name": "b6834",
+            "title": "ALDOB",
+            "class": "GeneProduct",
+            "fx": 464,
+            "fy": 340
+        },
+        {
+            "name": "e91ea",
+            "title": "Glycolysis",
+            "class": "Pathway",
+            "fx": 491,
+            "fy": 182
+        },
+        {
+            "name": "fa8dc",
+            "title": "Glycolysis",
+            "class": "Pathway",
+            "fx": 535,
+            "fy": 478
+        },
+        {
+            "name": "a2901",
+            "title": "a2901",
+            "class": "ANCHOR"
+        },
+        {
+            "name": "d40a7",
+            "title": "d40a7",
+            "class": "ANCHOR"
+        },
+        {
+            "name": "fde1d",
+            "title": "fde1d",
+            "class": "ANCHOR"
+        },
+        {
+            "name": "f0e37",
+            "title": "f0e37",
+            "class": "ANCHOR"
+        }
+    ],
+    "links": [
+        {
+            "name": "b31eb",
+            "title": "b31eb",
+            "source": "a4027",
+            "target": "a02f1",
+            "class": "TO-Arrow"
+        },
+        {
+            "name": "a4027_a2901",
+            "title": "a4027_a2901 AAAAAAAAAAAAAAAAAAA",
+            "source": "a4027",
+            "target": "a2901",
+            "class": "ANCHORLINK"
+        },
+        {
+            "name": "a2901_a02f1",
+            "title": "a2901_a02f1",
+            "source": "a2901",
+            "target": "a02f1",
+            "class": "ANCHORLINK"
+        },
+        {
+            "name": "f7c71",
+            "title": "f7c71",
+            "source": "a02f1",
+            "target": "b29e5",
+            "class": "TO-Arrow"
+        },
+        {
+            "name": "a02f1_d40a7",
+            "title": "a02f1_d40a7",
+            "source": "a02f1",
+            "target": "d40a7",
+            "class": "ANCHORLINK"
+        },
+        {
+            "name": "d40a7_b29e5",
+            "title": "d40a7_b29e5",
+            "source": "d40a7",
+            "target": "b29e5",
+            "class": "ANCHORLINK"
+        },
+        {
+            "name": "f6dda",
+            "title": "f6dda",
+            "source": "b29e5",
+            "target": "e285c",
+            "class": "TO-Arrow"
+        },
+        {
+            "name": "b29e5_fde1d",
+            "title": "b29e5_fde1d",
+            "source": "b29e5",
+            "target": "fde1d",
+            "class": "ANCHORLINK"
+        },
+        {
+            "name": "fde1d_e285c",
+            "title": "fde1d_e285c",
+            "source": "fde1d",
+            "target": "e285c",
+            "class": "ANCHORLINK"
+        },
+        {
+            "name": "a2c0b",
+            "title": "a2c0b",
+            "source": "e285c",
+            "target": "bd923",
+            "class": "TO-Arrow"
+        },
+        {
+            "name": "b21bb",
+            "title": "b21bb",
+            "source": "e285c",
+            "target": "c05e7",
+            "class": "TO-Arrow"
+        },
+        {
+            "name": "e285c_f0e37",
+            "title": "e285c_f0e37",
+            "source": "e285c",
+            "target": "f0e37",
+            "class": "ANCHORLINK"
+        },
+        {
+            "name": "f0e37_c05e7",
+            "title": "f0e37_c05e7",
+            "source": "f0e37",
+            "target": "c05e7",
+            "class": "ANCHORLINK"
+        },
+        {
+            "name": "ff7ae",
+            "title": "ff7ae",
+            "source": "bd923",
+            "target": "f6cd9",
+            "class": "TO-Arrow"
+        },
+        {
+            "name": "fc0ff",
+            "title": "fc0ff",
+            "source": "c05e7",
+            "target": "f6cd9",
+            "class": "TO-Arrow"
+        },
+        {
+            "name": "d2d24",
+            "title": "d2d24",
+            "source": "f61f1",
+            "target": "d40a7",
+            "class": "TO-mim-catalysis"
+        },
+        {
+            "name": "dc056",
+            "title": "dc056",
+            "source": "a9883",
+            "target": "fde1d",
+            "class": "TO-mim-catalysis"
+        },
+        {
+            "name": "f6dce",
+            "title": "f6dce",
+            "source": "c43b6",
+            "target": "a2901",
+            "class": "TO-mim-catalysis"
+        },
+        {
+            "name": "cc6fe",
+            "title": "cc6fe",
+            "source": "b6834",
+            "target": "f0e37",
+            "class": "TO-mim-catalysis"
+        },
+        {
+            "name": "a82a0",
+            "title": "a82a0",
+            "source": "f6cd9",
+            "target": "fa8dc",
+            "class": "TO-Arrow"
+        },
+        {
+            "name": "c1b0c",
+            "title": "c1b0c",
+            "source": "a4027",
+            "target": "e91ea",
+            "class": "TO-Arrow"
+        }
+    ],
+    "ontology": [
+        {
+            "name": "Metabolite",
+            "connector": 0,
+            "directional": 0,
+            "title": "Super Metabolite"
+        },
+        {
+            "name": "GeneProduct",
+            "connector": 0,
+            "directional": 0
+        },
+        {
+            "name": "Pathway",
+            "connector": 0,
+            "directional": 0
+        },
+        {
+            "name": "TO-Arrow",
+            "connector": 1,
+            "directional": 1
+        },
+        {
+            "name": "ANCHORLINK",
+            "connector": 1,
+            "directional": 0
+        },
+        {
+            "name": "ANCHOR",
+            "connector": 0,
+            "directional": 0
+        },
+        {
+            "name": "TO-mim-catalysis",
+            "connector": 1,
+            "directional": 1
+        }
+    ]
+}
+

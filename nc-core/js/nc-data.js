@@ -62,7 +62,7 @@ nc.data.importData = function(fgfile, fgdesc) {
         {
             controller: "NCData", 
             action: "importData", 
-            network_name: nc.network,
+            network: nc.network,
             file_name: filename,
             file_desc: filedesc,
             file_content: filedata

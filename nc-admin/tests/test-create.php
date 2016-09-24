@@ -47,7 +47,6 @@ foreach ($newnetworks as $nn) {
     tryreport($NCapi, $params);
 }
 
-
-
 echo "\n";
+
 ?>

@@ -36,7 +36,7 @@ class NCLogger extends NCDB {
             throw new Exception("Missing required parameter user_id");
         }
     }
-   
+
     /**
      * Create an id string that is not already present in a dbtable table
      * 
@@ -139,21 +139,23 @@ class NCLogger extends NCDB {
      * @param type $value
      * @throws Exception
      */
-    public function logActivity($userid, $netid, $action, $targetname, $value) {
-        //if ($this->_log) {
+    public function logActivity($userid, $netid, $action, $target, $value, $maxlen = 128) {
+
+        // perhaps shorten the $value field
+        if (strlen($value) > ($maxlen - 3)) {
+            $value = substr($value, $maxlen) . "...";
+        }
+
         // prepare a statement for activity-logging
-        $sqlact = "INSERT INTO " . NC_TABLE_ACTIVITY . "
+        $sql = "INSERT INTO " . NC_TABLE_ACTIVITY . "
                     (datetime, user_id, network_id, action, target_name, value)
                     VALUES
                     (UTC_TIMESTAMP(), :user_id, :network_id, :action,
                     :target_name, :value)";
-        $stmt = $this->_db->prepare($sqlact);
-        // execute the query with current parameters
         $pp = array('user_id' => $userid, 'network_id' => $netid,
-            'action' => $action, 'target_name' => $targetname,
-            'value' => $value);
-        $stmt->execute($pp);
-        //}
+            'action' => $action, 'target_name' => $target, 'value' => $value);
+        $this->qPE($sql, $pp);
+
         return 1;
     }
 
@@ -191,6 +193,8 @@ class NCLogger extends NCDB {
     }
 
     /**
+     * @deprecated
+     * 
      * Updates the annotext table with some new data.
      * Updating means changing an existing row with anno_id to status=OLD,
      * and inserting a new row with status = active. 
@@ -204,9 +208,12 @@ class NCLogger extends NCDB {
      * 
      * integer 1 upon success
      *      
+     * @deprecated
      */
     protected function updateAnnoText($params) {
-          
+
+        throw new Exception("deprecated in favor of batchUpdateAnno");
+
         $params = $this->subsetArray($params, ["network_id", "datetime", "owner_id",
             "root_id", "parent_id", "anno_id", "anno_text", "anno_type"]);
         $params['user_id'] = $this->_uid;
@@ -226,7 +233,74 @@ class NCLogger extends NCDB {
                     :anno_id, :anno_text, :anno_type, " . NC_ACTIVE . ")";
         $this->qPE($sql, $params);
     }
-   
+
+    /**
+     * Updates the annotext table with some new data.
+     * Updating means changing an existing row with anno_id to status=OLD,
+     * and inserting a new row with status = active. 
+     * 
+     * @param array $batch
+     * 
+     * Array with one or more elements. Each element should be another array
+     * with the following elements:     
+     * network_id, datetime, owner_id, root_id, parent_id, anno_id, anno_text, anno_type
+     * 
+     * @return
+     * 
+     * integer 1 upon success
+     */
+    protected function batchUpdateAnno($batch) {
+
+        $n = count($batch);
+        if ($n == 0) {
+            return;
+        }
+        if ($n > 999000) {
+            throw new Exception("Too many annotations at once");
+        }
+
+        // loop through the batch and make sure each entry has all the required fields
+        for ($i = 0; $i < $n; $i++) {
+            $batch[$i] = $this->subsetArray($batch[$i], ["network_id", "datetime", "owner_id",
+                "root_id", "parent_id", "anno_id", "anno_text", "anno_type"]);
+            $batch[$i]['user_id'] = $this->_uid;
+        }
+
+        $tat = "" . NC_TABLE_ANNOTEXT;
+
+        // create query to set all existing versions of these annotations as old
+        $sql = "UPDATE $tat SET anno_status = " . NC_OLD
+                . " WHERE anno_status = " . NC_ACTIVE . " AND (";
+        $sqlupdate = [];
+        $params = [];
+        for ($i = 0; $i < $n; $i++) {
+            $x = sprintf("%'.06d", $i);
+            $sqlupdate[] = " anno_id = :id_$x ";
+            $params["id_$x"] = $batch[$i]['anno_id'];
+        }
+        $sql .= implode(" OR ", $sqlupdate) . " )";
+        $this->qPE($sql, $params);
+        unset($sqlupdate, $params);
+
+        // next, create query to insert new copies of these annotations
+        $sql = "INSERT INTO $tat "
+                . " (datetime, modified, network_id, owner_id, user_id, root_id, parent_id,"
+                . " anno_id, anno_text, anno_type, anno_status) VALUES ";
+        $sqlinsert = [];
+        $params = [];
+        for ($i = 0; $i < $n; $i++) {
+            $x = sprintf("%'.06d", $i);
+            $sqlinsert[$i] = "(:datetime_$x, UTC_TIMESTAMP(), :network_id_$x, "
+                    . ":owner_id_$x, :user_id_$x, :root_id_$x, :parent_id_$x, :anno_id_$x, "
+                    . ":anno_text_$x, :anno_type_$x, " . NC_ACTIVE . ")";
+            foreach ($this->longkeys($batch[$i], "_$x") as $key => $val) {
+                $params[$key] = $val;
+            }
+        }
+        $sql .= implode(", ", $sqlinsert);
+        $this->qPE($sql, $params);
+    }
+
     /**
      * looks up the permission code for a user on a network (given an id)
      *
@@ -341,7 +415,7 @@ class NCLogger extends NCDB {
      * @throws Exception
      */
     protected function getFullSummaryFromRootId($netid, $rootid, $throw = true) {
- 
+
         // fetch all the summary annotations for a given root (without pivoting)                        
         $sql = "SELECT network_id, datetime, owner_id, root_id, parent_id, 
             anno_id, anno_type, anno_text FROM " . NC_TABLE_ANNOTEXT . "  
@@ -553,6 +627,32 @@ class NCLogger extends NCDB {
             throw new Exception("Missing keys: $missing");
         }
 
+        return $result;
+    }
+
+    /**
+     * creates a new array with longer keys
+     * 
+     * e.g. can use this change a keys like "net" to "net_001"
+     * 
+     * @param array $array
+     * 
+     * associative array
+     * 
+     * @param type $suffix
+     * 
+     * a suffix to append to all keys
+     * 
+     * @return array
+     * 
+     * array of same size as before, but with different keys
+     * 
+     */
+    protected function longkeys($array, $suffix) {
+        $result = [];
+        foreach ($array as $key => $value) {
+            $result[$key . $suffix] = $value;
+        }
         return $result;
     }
 
