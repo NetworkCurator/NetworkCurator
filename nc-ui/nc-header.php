@@ -14,7 +14,8 @@
         <script type='text/javascript' src='<?php echo NC_INCLUDES_PATH; ?>/bootstrap-3.3.7/js/bootstrap.min.js'></script>
         <script type='text/javascript' src='<?php echo NC_INCLUDES_PATH; ?>/showdown-1.4.2/dist/showdown.min.js'></script>
         <script type='text/javascript' src='<?php echo NC_INCLUDES_PATH; ?>/d3-4.2.2/d3.min.js'></script>        
-
+        <script type='text/javascript' src='<?php echo NC_INCLUDES_PATH; ?>/mdalive/mdalive.js'></script>                
+        
         <script type='text/javascript' src='<?php echo NC_JS_PATH; ?>/nc-core.js'></script> 
         <script>
 <?php
@@ -38,7 +39,7 @@ echo "nc.userid='$uid',
         <script type='text/javascript' src='<?php echo NC_JS_PATH; ?>/nc-ui.js'></script>  
         <script type='text/javascript' src='<?php echo NC_JS_PATH; ?>/nc-users.js'></script>         
         <script type='text/javascript' src='<?php echo NC_JS_PATH; ?>/nc-utils.js'></script>        
-
+        
         <link rel='stylesheet' href='<?php echo NC_INCLUDES_PATH; ?>/bootstrap-3.3.7/css/bootstrap.min.css'>        
         <link rel='stylesheet' href='<?php echo NC_CSS_PATH; ?>/nc-core.css'>
         <link rel='stylesheet' media='screen and (max-width: 400px)' href='<?php echo NC_CSS_PATH; ?>/nc-core-small.css' />      

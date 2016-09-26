@@ -513,10 +513,13 @@ nc.ui.AnnoEditBox = function() {
     var curabox = $(html);        
 
     // clicking pen/edit/md hides the div and shows raw md in the textarea
-    curabox.find('a.nc-curation-toolbox-md').click(function() { 
+    curabox.find('a.nc-curation-toolbox-md').click(function() {       
         var thiscurabox = $(this).parent().parent();
-        thiscurabox.find('div.nc-curation-content').hide();
-        thiscurabox.find('textarea,a.nc-submit').show();                                
+        var annoareah = 6+ parseInt(thiscurabox.find('div.nc-curation-content')
+            .css("height").replace("px",""));                        
+        thiscurabox.find('div.nc-curation-content').hide();        
+        thiscurabox.find('textarea').css("height", annoareah).show();                                
+        thiscurabox.find('a.nc-submit').show();
         thiscurabox.find('a.nc-curation-toolbox-preview,a.nc-curation-toolbox-md').toggle();
     });    
     // clicking preview converts textarea md to html, updates the md object in the background
@@ -524,8 +527,12 @@ nc.ui.AnnoEditBox = function() {
         var thiscurabox = $(this).parent().parent();
         var annoareah = 6+ parseInt(thiscurabox.find('textarea').css("height").replace("px",""));                
         var annomd = thiscurabox.find('textarea').hide().val();   
-        thiscurabox.find('div.nc-curation-content').css("min-height", annoareah)
-        .html(nc.mdconverter.makeHtml(annomd)).show();
+        // convert from md to html
+        var annohtml = nc.mdconverter.makeHtml(annomd);        
+        // translate certain code snippets into objects
+        var annohtml2 = mdalive.makeAlive(annohtml);                
+        thiscurabox.find('div.nc-curation-content').css("min-height", annoareah)        
+        .html(annohtml2).show();        
         thiscurabox.find('a.nc-curation-toolbox-preview,a.nc-curation-toolbox-md').toggle();
     });    
     // clicking save sends the md to the server    
@@ -543,13 +550,12 @@ nc.ui.AnnoEditBox = function() {
         thiscurabox.find('div.nc-curation-toolbox').hide();
         thiscurabox.find('a.nc-curation-toolbox-preview').click();        
     });        
-    curabox.find('.nc-curation-content').on("click" , function() {        
-        var thiscurabox = $(this).parent();                
-        if (thiscurabox.parent().hasClass("nc-editable-text-visible")) {
-            thiscurabox.find('.nc-curation-toolbox').show(nc.ui.speed);
-            thiscurabox.find('div.nc-curation-content').hide();
-            thiscurabox.find('textarea,a.nc-submit').show();            
-        }        
+    curabox.find('.nc-curation-content').on("click" , function() {              
+        var thiscurabox = $(this).parent(); 
+        if (!thiscurabox.find('.nc-curation-toolbox').is(":visible")) {            
+            curabox.find('a.nc-curation-toolbox-md').click();            
+            thiscurabox.find('.nc-curation-toolbox').show();                      
+        }    
     });
    
     return curabox;

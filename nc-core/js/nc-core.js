@@ -253,7 +253,7 @@ nc.init.initMarkdown = function() {
         if (nowarea.length>0) {
             // this element is marked as editable and thus should have a textarea 
             // and content div
-            temp.find('textarea.nc-curation-content').html(val);            
+            temp.find('textarea.nc-curation-content').html(val);                         
             temp.find('div.nc-curation-content').html(nc.mdconverter.makeHtml(val));
         } else {
             // element is not marked as editable. Convert and show into this element only
