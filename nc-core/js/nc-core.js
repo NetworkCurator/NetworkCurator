@@ -250,14 +250,17 @@ nc.init.initMarkdown = function() {
     $.each(nc.md, function(key, val) {           
         var temp = $('.nc-md[val="'+key+'"]');
         var nowarea = temp.find('textarea.nc-curation-content');
+        // convert md into html, then into alive html
+        var html = nc.mdconverter.makeHtml(val);
+        var ahtml = mdalive.makeAlive(html);   
         if (nowarea.length>0) {
             // this element is marked as editable and thus should have a textarea 
             // and content div
             temp.find('textarea.nc-curation-content').html(val);                         
-            temp.find('div.nc-curation-content').html(nc.mdconverter.makeHtml(val));
+            temp.find('div.nc-curation-content').html(ahtml);
         } else {
-            // element is not marked as editable. Convert and show into this element only
-            temp.html(nc.mdconverter.makeHtml(val));
+            // element is not marked as editable. Just show it
+            temp.html(ahtml);
         }            
     });        
 }

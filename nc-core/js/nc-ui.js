@@ -520,7 +520,8 @@ nc.ui.AnnoEditBox = function() {
         thiscurabox.find('div.nc-curation-content').hide();        
         thiscurabox.find('textarea').css("height", annoareah).show();                                
         thiscurabox.find('a.nc-submit').show();
-        thiscurabox.find('a.nc-curation-toolbox-preview,a.nc-curation-toolbox-md').toggle();
+        thiscurabox.find('a.nc-curation-toolbox-preview').show();
+        thiscurabox.find('a.nc-curation-toolbox-md').hide();
     });    
     // clicking preview converts textarea md to html, updates the md object in the background
     curabox.find('a.nc-curation-toolbox-preview').click(function() {  
@@ -546,7 +547,7 @@ nc.ui.AnnoEditBox = function() {
     // clicking close triggers preview and makes the toolbox disappear
     curabox.find('a.nc-curation-toolbox-close').click(function() { 
         var thiscurabox = $(this).parent().parent();
-        thiscurabox.find('a.nc-submit').hide(nc.ui.speed);        
+        thiscurabox.find('a.nc-submit').hide();        
         thiscurabox.find('div.nc-curation-toolbox').hide();
         thiscurabox.find('a.nc-curation-toolbox-preview').click();        
     });        
