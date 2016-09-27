@@ -165,6 +165,23 @@ class NCApiCaller {
     }
     
     /**
+     * get title, abstract, content associated with an object
+     * 
+     * @param type $network
+     * @param type $object
+     * @return type
+     */
+    function getSummary($network, $object) {
+        $params = $this->_p;
+        $params['controller'] = 'NCAnnotations';
+        $params['action'] = 'getSummary';
+        $params['network'] = $network;
+        $params['root_id'] = $object;
+        $params = array_merge($params, ['name'=>1, 'title'=>1, 'abstract'=>1, 'content'=>1]);
+        return $this->_caller->sendRequest($params);
+    }
+    
+    /**
      * get Network title and abstract from annotations
      * 
      * @param type $network

@@ -20,7 +20,7 @@ $nettitle = $NCapi->getNetworkTitle($network);
 $netmd = [];
 $netcomments = [];
 
-// get what aspect of the network to view (summary, graph, log, etc)
+// For toolbar - get what aspect of the network to view (summary, graph, log, etc)
 $view = 'summary';
 if (isset($_REQUEST['view'])) {
     $view = strtolower($_REQUEST['view']);
@@ -28,9 +28,18 @@ if (isset($_REQUEST['view'])) {
 if (!in_array($view, array('graph', 'log', 'data', 'permissions', 'ontology'))) {
     $view = 'summary';
 }
-
-// some helper objects used to insert into the menu
+// helper object for writing href in toolbar
 $coreurl = "?network=$network&view=";
+
+
+// identify what graph object to look up
+if (isset($_REQUEST['node'])) {        
+    $view = 'node';    
+} else if (isset($_REQUEST['link'])) {
+    $view = 'link';
+}
+
+
 ?>
 
 <nav class="navbar navbar-default nc-navbar navbar-static-top nc-navbar2">

@@ -552,6 +552,10 @@ nc.ui.AnnoEditBox = function() {
     });        
     curabox.find('.nc-curation-content').on("click" , function() {              
         var thiscurabox = $(this).parent(); 
+        // check if user is allowed to edit this box           
+        if (!nc.curator && thiscurabox.parent().attr("owner")!=nc.userid) {            
+            return;
+        }
         if (thiscurabox.parent().hasClass('nc-editable-text-visible') && 
             !thiscurabox.find('.nc-curation-toolbox').is(":visible")) {            
             thiscurabox.find('a.nc-curation-toolbox-md').click();            
@@ -587,7 +591,7 @@ nc.ui.CommentBox = function(uid, rootid, parentid, annoid, annomd) {
     var commentbox = $(html);
     var commentbody = commentbox.find('.media-body');
     if (annomd=='') {
-        commentbody.append('<div><span class="nc-log-entry-user">Write a new comment</span></div>');
+        commentbody.append('<div class="nc-mb-10"><span class="nc-log-entry-user">Write a new comment</span></div>');
     }
     commentbody.append(nc.ui.AnnoEditBox());
     if (annomd=='') {        
@@ -651,7 +655,8 @@ nc.ui.addCommentBox = function(comdata) { //datetime, ownerid, rootid, parentid,
     commentbox.find('textarea').html(comdata.anno_text);
     commentbox.find('.media-body a.nc-curation-toolbox-preview').click();  
     commentbox.find('div.nc-curation-content').css("min-height", 0);
-    commentbox.find('.media-body').prepend(html).addClass("nc-editable-text").attr("val", comdata.anno_id);      
+    commentbox.find('.media-body').prepend(html).addClass("nc-editable-text")
+    .attr("val", comdata.anno_id).attr("owner", comdata.owner_id);      
     if (comdata.root_id==comdata.parent_id) {        
         cbox.append(commentbox);    
     } else {        

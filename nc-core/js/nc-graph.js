@@ -246,7 +246,8 @@ nc.graph.displayInfo = function(d) {
     var detdiv = $('#'+prefix);
     detdiv.find('.nc-md').html("Loading...");
     detdiv.find('#'+prefix+'-more').click(function() { 
-        window.location.replace("?network="+nc.network+"&object="+d.id);
+        var type = ("source" in d ? "link" : "node");        
+        window.location.replace("?network="+nc.network+"&"+type+"="+d.id);        
     } );
     detdiv.show();
     
@@ -300,7 +301,10 @@ nc.graph.getInfo = function(d) {
             // push the obtained data into the info object (avoids re-fetch later)
             nc.graph.info[d.id] = data['data'];                             
         } else {
-            nc.graph.info[d.id] = {"title": "NA", "abstract": "NA"};            
+            nc.graph.info[d.id] = {
+                "title": "NA", 
+                "abstract": "NA"
+            };            
         }                              
         nc.graph.select(d);
     });
@@ -413,7 +417,7 @@ nc.graph.initSimulation = function() {
             
     // Set up panning and zoom (uses a rect to catch click-drag events)                        
     var svgpan = d3.drag().on("start", nc.graph.panstarted).
-        on("drag", nc.graph.panned).on("end", nc.graph.panended);       
+    on("drag", nc.graph.panned).on("end", nc.graph.panended);       
     var svgzoom = d3.zoom().scaleExtent([0.125, 4])   
     .on("zoom", nc.graph.zoom);  
     
@@ -650,12 +654,12 @@ nc.graph.panned = function() {
     var diffy = thispoint[1]-nc.graph.point[1];
     nc.graph.svg.select("g.nc-svg-content")
     .attr("transform", "translate(" + diffx +","+ diffy +")scale("+nc.graph.point[2]+")");    
-    //.attr("transform", d3.event.transform);
+//.attr("transform", d3.event.transform);
 }
 
 nc.graph.panended = function() {
    
-}
+    }
 
 
 /**
@@ -671,7 +675,7 @@ nc.graph.zoom = function() {
     var sw2 = parseInt(nc.graph.svg.style("width").replace("px",""))/2;
     var sh2 = parseInt(nc.graph.svg.style("height").replace("px",""))/2; 
     var newtrans = [sw2 + (oldtrans[0]-sw2)*(newscale/oldscale), 
-        sh2+(oldtrans[1]-sh2)*(newscale/oldscale), newscale];    
+    sh2+(oldtrans[1]-sh2)*(newscale/oldscale), newscale];    
     // set the new transformation into the content
     nc.graph.svg.select("g.nc-svg-content")
     .attr("transform", "translate(" + newtrans[0] +","+ newtrans[1] +")scale("+newtrans[2]+")")        
@@ -830,7 +834,7 @@ nc.graph.createNode = function() {
                 nc.graph.svg.select('circle[id="'+oldid+'"]')
                 .attr("id", data['data'])
                 .classed('nc-newnode', false).classed('nc-node-highlight', false).
-                    classed(newclass, true).classed('nc-node-highlight', true); 
+                classed(newclass, true).classed('nc-node-highlight', true); 
                 $('#nc-graph-newnode').hide();
             }
         } 
@@ -844,7 +848,7 @@ nc.graph.createNode = function() {
         }, nc.ui.timeout/4);
     }
 
-);    
+    );    
 }
 
 /**
@@ -906,7 +910,7 @@ nc.graph.createLink = function() {
                 nc.graph.svg.select('line[id="'+oldid+'"]')
                 .attr("id", data['data'])
                 .classed('nc-newlink', false).classed('nc-link-highlight', false).
-                    classed(newclass, true).classed('nc-link-highlight', true);    
+                classed(newclass, true).classed('nc-link-highlight', true);    
                 $('#nc-graph-newlink').hide();            
             }
         }                 
@@ -919,7 +923,7 @@ nc.graph.createLink = function() {
         }, nc.ui.timeout/4);
             
     }
-);
+    );
    
     
 }

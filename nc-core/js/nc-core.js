@@ -232,7 +232,7 @@ nc.init.initCuration = function() {
     alleditable.html(box);    
              
     // other functions are for curators only    
-    if (!nc.curator) return;         
+    // if (!nc.curator) return;         
     
     // show curation level ui graphics, add an event to toggle curation on/off
     $('.nc-curator').show();    
@@ -240,8 +240,11 @@ nc.init.initCuration = function() {
     lockbtn.on("click",
         function() {
             lockbtn.find('span.glyphicon-pencil, span.glyphicon-lock').toggleClass('glyphicon-pencil glyphicon-lock');
-            lockbtn.toggleClass("nc-editing nc-looking");            
-            $('.nc-editable-text').toggleClass('nc-editable-text-visible');            
+            lockbtn.toggleClass("nc-editing nc-looking"); 
+            // for curators, all editable components become active,
+            // for non-curators, only those components that are owned by them
+            var targets = (nc.curator ? $('.nc-editable-text') : $('.nc-editable-text[owner="'+nc.userid+'"]'));            
+            targets.toggleClass('nc-editable-text-visible');
         });    
     
     $('.nc-curation-toolbox').css("font-size", $('body').css("font-size"));   

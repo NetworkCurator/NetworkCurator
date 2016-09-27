@@ -122,8 +122,9 @@ mdalive.makeAlive = function(x) {
            
     // identify all the <pre><code> blocks, process each one individually
     var allcodes = newdiv.querySelectorAll('pre code.mdalive');    
-    for (var i = 0; i < allcodes.length; i++) {        
-        var nowcode = allcodes[i];        
+    for (var i = 0; i < allcodes.length; i++) {            
+        var nowcode = allcodes[i]; 
+        var nowpre = nowcode.parentNode;
         var fn = null;
         // loop through the available chart functions and see if one applies        
         for (var cc = 0; cc<mdalive.types.length; cc++) {            
@@ -133,24 +134,23 @@ mdalive.makeAlive = function(x) {
             }            
         }
         // validate the input
-        if (fn != null) {
+        if (fn != null) {            
             // check a proper function is defined
             if (typeof this["lib"][fn]!=="function") {
                 nowpre.innerHTML += "\nmdalive error: undeclared function "+fn;  
                 fn = null;                
             }            
         }
-        if (fn!=null){
+        if (fn!=null){                
             try {                
-                var data = JSON.parse(allcodes[i].innerHTML);
+                var data = JSON.parse(nowcode.innerHTML);
             } catch(e) {
                 nowpre.innerHTML += "\nmdalive error: cannot parse JSON";
-                fn = null;
-            }            
+                fn = null;               
+            }               
         }     
         // try to apply the conversion function
-        if (fn !=null) {
-            var nowpre = nowcode.parentNode;
+        if (fn != null) {            
             var newobj = document.createElement('div');
             newobj.className += "mdalive";         
             try {
@@ -232,9 +232,9 @@ mdalive.fillArguments = function(x, defaults) {
  * Simple barplot using d3 (v4)
  */
 mdalive.lib.barplot001 = function(obj, x) {
-    
+       
     // check required arguments
-    var missing = mdalive.checkArguments(x, ["title", "xlab", "ylab", "names", "values"]);   
+    var missing = mdalive.checkArguments(x, ["title", "xlab", "ylab", "data"]);   
     if (missing!="") {
         throw "missing arguments: "+missing;
     }
@@ -254,42 +254,34 @@ mdalive.lib.barplot001 = function(obj, x) {
     var hinner = h-x.margin[0]-x.margin[2];
     var winner = w-x.margin[1]-x.margin[3];
     
-    // turns names and values into new structure
-    var bardata = [];
-    var numbars = x.names.length;
-    for (var i=0; i<numbars; i++) {
-        bardata.push({
-            name: x.names[i], 
-            value: x.values[i],
-            fill: x.fill[i]
-        });
-    }
-    
+    // turns names and values into new structure    
+    var numbars = x.data.length;        
     // set the svg space
     d3.select(obj).attr("style", "width: "+w+"px; height: "+h+"px");
-           
+         
     // create an svg inside the object
     var svg = d3.select(obj).append("svg")
     .attr("width", w+"px").attr("height", h+"px")    
     .append("g").attr("transform",
         "translate(" + x.margin[3] + "," + x.margin[0] + ")");
-                
+   
     // create x-axis and labels 
     svg.append("text").text(x.xlab).style("text-anchor", "middle")
     .attr("y", hinner).attr("dy", "2.5em")
     .attr("x", winner/2);         
     var xscale = d3.scaleBand().range([0, winner]).padding(0.5/numbars)
-    .domain(x.names.map(function(d) {
-        return d;
+    .domain(x.data.map(function(d) {
+        return d.name;
     }));
     var xaxis = d3.axisBottom(xscale);    
     svg.append("g").attr("transform", "translate(0," + hinner + ")").call(xaxis)
-    .selectAll(".domain, .tick > line").remove();
+    .selectAll(".domain, .tick > line").remove();    
     
+    var yvalues = x.data.map(function(d) {return d.value});    
     // create the y axis and labels
     var yscale = d3.scaleLinear()
     .range([hinner, 0])        
-    .domain([0, Math.max.apply(null, x.values)]);
+    .domain([0, Math.max.apply(null, yvalues)]);
     var yaxis = d3.axisLeft(yscale).ticks(4);    
     svg.append("g").call(yaxis);
     svg.append("text").attr("transform", "rotate(-90)")
@@ -317,9 +309,9 @@ mdalive.lib.barplot001 = function(obj, x) {
         d3.select(this).style("opacity",0.8);
         tooltip.style("opacity", 0);		        
     }
-                    
+          
     // create the barplots rectangles
-    svg.selectAll(".bar").data(bardata).enter().append("rect")
+    svg.selectAll(".bar").data(x.data).enter().append("rect")
     .attr("class", "bar").attr("fill", function(d) {
         return d.fill;
     }).style("opacity", 0.8)
@@ -335,8 +327,7 @@ mdalive.lib.barplot001 = function(obj, x) {
     })
     .on('mouseover', tooltipshow)
     .on('mouseout', tooltiphide)  
-    
-    
+        
     // create a title
     svg.append("text").text(x.title).style("text-anchor", "left")
     .attr("y", 0).attr("dy", "-1.5em")
