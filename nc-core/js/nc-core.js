@@ -48,7 +48,7 @@ var nc = {
 
 
 /* ====================================================================================
- * User interface & interactions
+ * Markdown to html conversion
  * ==================================================================================== */
 
 // markdown converter
@@ -57,6 +57,13 @@ nc.mdconverter = new showdown.Converter({
     tables: true,
     tasklists: true
 });
+
+
+// conversion from markdown to html (sanitized and alive)
+nc.md2html = function(x) {
+    var x2 = nc.mdconverter.makeHtml(x);
+    return mdalive.makeAlive(x2);   
+}
 
 
 /* ====================================================================================
@@ -251,16 +258,15 @@ nc.init.initMarkdown = function() {
         var temp = $('.nc-md[val="'+key+'"]');
         var nowarea = temp.find('textarea.nc-curation-content');
         // convert md into html, then into alive html
-        var html = nc.mdconverter.makeHtml(val);
-        var ahtml = mdalive.makeAlive(html);   
+        var html = nc.md2html(val);        
         if (nowarea.length>0) {
             // this element is marked as editable and thus should have a textarea 
             // and content div
             temp.find('textarea.nc-curation-content').html(val);                         
-            temp.find('div.nc-curation-content').html(ahtml);
+            temp.find('div.nc-curation-content').html(html);
         } else {
             // element is not marked as editable. Just show it
-            temp.html(ahtml);
+            temp.html(html);
         }            
     });        
 }

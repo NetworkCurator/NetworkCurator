@@ -30,7 +30,7 @@ if (!in_array($view, array('graph', 'log', 'data', 'permissions', 'ontology'))) 
 }
 
 // some helper objects used to insert into the menu
-$coreurl = "?page=network&network=$network&view=";
+$coreurl = "?network=$network&view=";
 ?>
 
 <nav class="navbar navbar-default nc-navbar navbar-static-top nc-navbar2">

@@ -529,11 +529,9 @@ nc.ui.AnnoEditBox = function() {
         var annoareah = 6+ parseInt(thiscurabox.find('textarea').css("height").replace("px",""));                
         var annomd = thiscurabox.find('textarea').hide().val();   
         // convert from md to html
-        var annohtml = nc.mdconverter.makeHtml(annomd);        
-        // translate certain code snippets into objects
-        var annohtml2 = mdalive.makeAlive(annohtml);                
+        var annohtml = nc.md2html(annomd);        
         thiscurabox.find('div.nc-curation-content').css("min-height", annoareah)        
-        .html(annohtml2).show();        
+        .html(annohtml).show();        
         thiscurabox.find('a.nc-curation-toolbox-preview,a.nc-curation-toolbox-md').toggle();
     });    
     // clicking save sends the md to the server    

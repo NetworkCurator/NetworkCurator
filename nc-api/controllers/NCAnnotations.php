@@ -166,6 +166,38 @@ class NCAnnotations extends NCLogger {
         return $result;
     }
 
+    /**
+     * @return array
+     * 
+     * associative array with annotations associated with a graph object.
+     * 
+     * This requires params to specify a root_id and the types of items to return.
+     * The params called name, title, abstrat, content are here supposed to be booleans.
+     * Set each to 1 to obtain that piece of data in the response, set 0 otherwise.
+     * 
+     */
+    public function getSummary() {
+        
+        // check that required parameters are defined
+        $params = $this->subsetArray($this->_params, array_merge(["root_id"], 
+            array_keys($this->_annotypes)));            
+
+        // start by getting the full summary data
+        $result = $this->getFullSummaryFromRootId($this->_netid, $params['root_id'], true);
+        
+        // unset some of the items if they are not required
+        foreach (array_keys($this->_annotypes) as $key) {
+            if ($params[$key]!=1) {
+                unset($result[$key]);
+            } else {
+                $result[$key] = $this->subsetArray($result[$key], ['owner_id', 'anno_id', 'anno_text']);
+            }
+        }
+        
+        // send the data back
+        return $result;        
+    }
+    
 }
 
 ?>

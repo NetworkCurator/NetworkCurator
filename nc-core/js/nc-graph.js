@@ -18,6 +18,7 @@ nc.graph = {
     rawlinks: [], // store for raw data on links
     nodes: [], // store active nodes in the viz
     links: [], // store active links in the viz
+    info: {}, // store of downloaded content information about a node/link
     sim: {}, // force simulation 
     svg: {}, // the svg div on the page   
     mode: "select"
@@ -214,7 +215,7 @@ nc.graph.select = function(d) {
             newnodediv.show(); 
         }    
     } else {        
-        $('#nc-graph-details').show();        
+        nc.graph.displayInfo(d);
     }
                     
 }
@@ -228,6 +229,82 @@ nc.graph.unselect = function(d) {
     $('#nc-graph-newnode,#nc-graph-newlink,#nc-graph-details').hide();    
 }
 
+
+/**
+ * @param d
+ * 
+ */
+nc.graph.displayInfo = function(d) {     
+    
+    if (d.id==null) {
+        return;
+    }
+    
+    var prefix = "nc-graph-details";
+    
+    // get the details div and clear its content
+    var detdiv = $('#'+prefix);
+    detdiv.find('.nc-md').html("Loading...");
+    detdiv.find('#'+prefix+'-more').click(function() { 
+        window.location.replace("?network="+nc.network+"&object="+d.id);
+    } );
+    detdiv.show();
+    
+    // perhaps fetch the data from server, or look it up in memory
+    if (!(d.id in nc.graph.info)) {
+        nc.graph.getInfo(d);
+        return;
+    }
+        
+    // if reached here, the graph info has data on this object        
+    var dtitle = nc.graph.info[d.id]['title'];
+    var dabstract = nc.graph.info[d.id]['abstract'];            
+    var nowtitle = nc.md2html(dtitle['anno_text']);
+    detdiv.find('#'+prefix+'-title').html(nowtitle).attr("val", dtitle['anno_id']);
+    var nowabstract = nc.md2html(dabstract['anno_text']);
+    detdiv.find('#'+prefix+'-abstract').html(nowabstract).attr("val", dabstract['anno_id']); 
+            
+    // also fill in the ontology class 
+    detdiv.find('#'+prefix+'-class').html(d['class']);
+        
+}
+
+
+
+/**
+ * Fetch summary data associated with an object id
+ * 
+ * This function does not do any user-interface modifications.
+ * It just fetches the data and stores it into the info object.
+ * Upon completion, it calls nd.graph.select(d) to again select the object and 
+ * actually display the information.
+ * 
+ */
+nc.graph.getInfo = function(d) {    
+    // send a request to server
+    $.post(nc.api, 
+    {
+        controller: "NCAnnotations", 
+        action: "getSummary", 
+        network: nc.network,
+        root_id: d.id,
+        name: 1,
+        title: 1,
+        'abstract': 1,
+        content: 0
+    }, function(data) {                      
+        //alert(data);
+        nc.utils.alert(data);        
+        data = JSON.parse(data);
+        if (nc.utils.checkAPIresult(data)) {
+            // push the obtained data into the info object (avoids re-fetch later)
+            nc.graph.info[d.id] = data['data'];                             
+        } else {
+            nc.graph.info[d.id] = {"title": "NA", "abstract": "NA"};            
+        }                              
+        nc.graph.select(d);
+    });
+}
 
 /* ====================================================================================
  * Node/Link filtering
@@ -336,7 +413,7 @@ nc.graph.initSimulation = function() {
             
     // Set up panning and zoom (uses a rect to catch click-drag events)                        
     var svgpan = d3.drag().on("start", nc.graph.panstarted).
-    on("drag", nc.graph.panned).on("end", nc.graph.panended);       
+        on("drag", nc.graph.panned).on("end", nc.graph.panended);       
     var svgzoom = d3.zoom().scaleExtent([0.125, 4])   
     .on("zoom", nc.graph.zoom);  
     
@@ -573,12 +650,12 @@ nc.graph.panned = function() {
     var diffy = thispoint[1]-nc.graph.point[1];
     nc.graph.svg.select("g.nc-svg-content")
     .attr("transform", "translate(" + diffx +","+ diffy +")scale("+nc.graph.point[2]+")");    
-//.attr("transform", d3.event.transform);
+    //.attr("transform", d3.event.transform);
 }
 
 nc.graph.panended = function() {
    
-    }
+}
 
 
 /**
@@ -594,7 +671,7 @@ nc.graph.zoom = function() {
     var sw2 = parseInt(nc.graph.svg.style("width").replace("px",""))/2;
     var sh2 = parseInt(nc.graph.svg.style("height").replace("px",""))/2; 
     var newtrans = [sw2 + (oldtrans[0]-sw2)*(newscale/oldscale), 
-    sh2+(oldtrans[1]-sh2)*(newscale/oldscale), newscale];    
+        sh2+(oldtrans[1]-sh2)*(newscale/oldscale), newscale];    
     // set the new transformation into the content
     nc.graph.svg.select("g.nc-svg-content")
     .attr("transform", "translate(" + newtrans[0] +","+ newtrans[1] +")scale("+newtrans[2]+")")        
@@ -730,13 +807,14 @@ nc.graph.createNode = function() {
     {
         controller: "NCGraphs", 
         action: "createNewNode", 
-        network_name: nc.network,
-        node_name: newname,
-        node_title: $('#fg-nodetitle input').val(),
-        class_name: newclass
+        network: nc.network,
+        name: newname,
+        title: $('#fg-nodetitle input').val(),
+        'abstract': newname,
+        'content': newname,
+        'class': newclass
     }, function(data) {          
-        nc.utils.alert(data);        
-        //alert(data);
+        nc.utils.alert(data);                
         data = JSON.parse(data);
         if (nc.utils.checkAPIresult(data)) {            
             if (data['success']==false || data['data']==false) {
@@ -752,7 +830,7 @@ nc.graph.createNode = function() {
                 nc.graph.svg.select('circle[id="'+oldid+'"]')
                 .attr("id", data['data'])
                 .classed('nc-newnode', false).classed('nc-node-highlight', false).
-                classed(newclass, true).classed('nc-node-highlight', true); 
+                    classed(newclass, true).classed('nc-node-highlight', true); 
                 $('#nc-graph-newnode').hide();
             }
         } 
@@ -766,12 +844,12 @@ nc.graph.createNode = function() {
         }, nc.ui.timeout/4);
     }
 
-    );    
+);    
 }
 
 /**
-* * Processes the new link form submit action
-*/
+ * * Processes the new link form submit action
+ */
 nc.graph.createLink = function() {
     
     nc.graph.resetForms();
@@ -803,13 +881,15 @@ nc.graph.createLink = function() {
     {
         controller: "NCGraphs", 
         action: "createNewLink", 
-        network_name: nc.network,
-        link_name: newname,
-        link_title: $('#fg-linktitle input').val(),
-        class_name: newclass,
-        source_name: $('#fg-linksource input').val(),
-        target_name: $('#fg-linktarget input').val()
-    }, function(data) {          
+        network: nc.network,
+        name: newname,
+        title: $('#fg-linktitle input').val(),
+        'abstract': newname,
+        'content': newname,
+        'class': newclass,
+        source: $('#fg-linksource input').val(),
+        target: $('#fg-linktarget input').val()
+    }, function(data) {           
         nc.utils.alert(data);                
         data = JSON.parse(data);
         if (nc.utils.checkAPIresult(data)) {            
@@ -826,7 +906,7 @@ nc.graph.createLink = function() {
                 nc.graph.svg.select('line[id="'+oldid+'"]')
                 .attr("id", data['data'])
                 .classed('nc-newlink', false).classed('nc-link-highlight', false).
-                classed(newclass, true).classed('nc-link-highlight', true);    
+                    classed(newclass, true).classed('nc-link-highlight', true);    
                 $('#nc-graph-newlink').hide();            
             }
         }                 
@@ -839,7 +919,7 @@ nc.graph.createLink = function() {
         }, nc.ui.timeout/4);
             
     }
-    );
+);
    
     
 }
@@ -847,8 +927,8 @@ nc.graph.createLink = function() {
 
 
 /**
-* remove a node from the viz (not from the server)
-*/
+ * remove a node from the viz (not from the server)
+ */
 nc.graph.removeNode = function() {    
     // pause the simulation just in case
     nc.graph.simStop();
@@ -878,8 +958,8 @@ nc.graph.removeNode = function() {
 
 
 /**
-* remove a highlighted link from the viz
-*/
+ * remove a highlighted link from the viz
+ */
 nc.graph.removeLink = function() {    
     // pause the simulation just in case
     nc.graph.simStop();

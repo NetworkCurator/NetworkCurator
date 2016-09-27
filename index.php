@@ -30,6 +30,7 @@ if (isset($_REQUEST['page'])) {
 $network = '';
 if (isset($_REQUEST['network'])) {
     $network = $_REQUEST['network'];
+    $page = 'network';
 }
 
 // collect information about the user from the session
@@ -63,6 +64,7 @@ try {
 $iscurator = 0 + ($upermissions >= NC_PERM_CURATE);
 $iscommentator = 0 + ($upermissions >= NC_PERM_COMMENT);
 $iseditor = 0 + ($upermissions >= NC_PERM_EDIT);
+
 
 /* --------------------------------------------------------------------------
  * Create user-viewable page 
