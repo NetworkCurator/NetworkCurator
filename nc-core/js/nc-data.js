@@ -87,14 +87,16 @@ nc.data.sendData = function(filename, filedesc, fileurl) {
             file_name: filename,
             file_desc: filedesc,
             file_content: filedata
-        }, function(data) {                      
-            //alert(data);
+        }, function(data) {                                  
             nc.utils.alert(data);        
-            data = JSON.parse(data);
+            data = JSON.parse(data);            
             if (nc.utils.checkAPIresult(data)) {
-                var ttt = data['data'].replace(/\n/g,"<br/>");                
-                $('#nc-import-response').html(ttt);            
-            } else {
+                if (data['success']==false) {
+                    $('#nc-import-response').html("Error: "+data['errormsg']);            
+                } else {                                        
+                    $('#nc-import-response').html(data['data'].replace(/\n/g,"<br/>"));            
+                }             
+            } else {                
                 $('#nc-import-response').html("something went wrong...");            
             }                        
             btn.toggleClass("btn-default disabled btn-success").html("Submit");
