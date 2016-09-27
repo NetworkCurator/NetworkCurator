@@ -514,9 +514,9 @@ nc.ui.AnnoEditBox = function() {
 
     // clicking pen/edit/md hides the div and shows raw md in the textarea
     curabox.find('a.nc-curation-toolbox-md').click(function() {       
-        var thiscurabox = $(this).parent().parent();
+        var thiscurabox = $(this).parent().parent();        
         var annoareah = 6+ parseInt(thiscurabox.find('div.nc-curation-content')
-            .css("height").replace("px",""));                        
+            .css("height").replace("px",""));                
         thiscurabox.find('div.nc-curation-content').hide();        
         thiscurabox.find('textarea').css("height", annoareah).show();                                
         thiscurabox.find('a.nc-submit').show();
@@ -549,14 +549,16 @@ nc.ui.AnnoEditBox = function() {
         var thiscurabox = $(this).parent().parent();
         thiscurabox.find('a.nc-submit').hide();        
         thiscurabox.find('div.nc-curation-toolbox').hide();
+        thiscurabox.find('textarea').css("height","");
         thiscurabox.find('a.nc-curation-toolbox-preview').click();        
     });        
     curabox.find('.nc-curation-content').on("click" , function() {              
         var thiscurabox = $(this).parent(); 
-        if (!thiscurabox.find('.nc-curation-toolbox').is(":visible")) {            
-            curabox.find('a.nc-curation-toolbox-md').click();            
+        if (thiscurabox.parent().hasClass('nc-editable-text-visible') && 
+            !thiscurabox.find('.nc-curation-toolbox').is(":visible")) {            
+            thiscurabox.find('a.nc-curation-toolbox-md').click();            
             thiscurabox.find('.nc-curation-toolbox').show();                      
-        }    
+        }            
     });
    
     return curabox;
