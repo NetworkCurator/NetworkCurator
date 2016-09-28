@@ -145,3 +145,18 @@ img.nc-comment-response {
 .nc-nav-icon {    
     line-height: 24px;
 }
+
+
+
+
+/* --------------------------------------------------------------------------
+ * Sandbox
+ * -------------------------------------------------------------------------- */
+
+
+#nc-sandbox-preview {
+    border: #aaaaaa 1px solid;
+    border-radius: 4px;
+    min-height: 128px;
+    padding: 8px;
+}

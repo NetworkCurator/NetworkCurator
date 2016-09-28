@@ -39,6 +39,7 @@ echo "nc.userid='$uid',
         <script type='text/javascript' src='<?php echo NC_JS_PATH; ?>/nc-ui.js'></script>  
         <script type='text/javascript' src='<?php echo NC_JS_PATH; ?>/nc-users.js'></script>         
         <script type='text/javascript' src='<?php echo NC_JS_PATH; ?>/nc-utils.js'></script>        
+        <script type='text/javascript' src='<?php echo NC_UI_PATH; ?>/js/nc-sandbox.js'></script>        
         
         <link rel='stylesheet' href='<?php echo NC_INCLUDES_PATH; ?>/bootstrap-3.3.7/css/bootstrap.min.css'>        
         <link rel='stylesheet' href='<?php echo NC_CSS_PATH; ?>/nc-core.css'>

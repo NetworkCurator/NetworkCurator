@@ -86,7 +86,7 @@ if ($page == "login" || $page == "admin") {
 } else if ($page == "network" && $network) {
     // these are pages that require a network name
     include_once "nc-ui/nc-ui-$page.php";
-} else if ($page == "front" || $page == '') {
+} else if ($page == "front") {
     include_once "nc-ui/nc-ui-front.php";
 } else {
     include_once "nc-ui/nc-ui-custom.php";
