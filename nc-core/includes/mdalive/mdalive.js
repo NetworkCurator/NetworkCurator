@@ -243,9 +243,12 @@ mdalive.lib.barplot001 = function(obj, x) {
     var optional = {
         "size": [200, 200], 
         "margin": [40, 20, 30, 50],
-        "fill": []
+        "offset": ["2.5em", "2.5em"]
     };
     mdalive.fillArguments(x, optional);        
+    for (var i=0; i<4; i++) {
+        x.margin[i] = +x.margin[i];
+    }
     
     // dimensions of entire svg
     var w = +x.size[0];
@@ -267,7 +270,7 @@ mdalive.lib.barplot001 = function(obj, x) {
    
     // create x-axis and labels 
     svg.append("text").text(x.xlab).style("text-anchor", "middle")
-    .attr("y", hinner).attr("dy", "2.5em")
+    .attr("y", hinner).attr("dy", x.offset[0])
     .attr("x", winner/2);         
     var xscale = d3.scaleBand().range([0, winner]).padding(0.5/numbars)
     .domain(x.data.map(function(d) {
@@ -289,7 +292,7 @@ mdalive.lib.barplot001 = function(obj, x) {
     svg.append("text").attr("transform", "rotate(-90)")
     .attr("y", 0)
     .attr("x",0 - (h-x.margin[0]-x.margin[2])/2)
-    .attr("dy", "-2em")
+    .attr("dy", x.offset[1])
     .style("text-anchor", "middle")
     .text(x.ylab);
       
@@ -301,9 +304,9 @@ mdalive.lib.barplot001 = function(obj, x) {
     
     // functions to show/hide the tooltip div
     var tooltipshow = function(d) {          
-        d3.select(this).style("opacity",1);
+        d3.select(this).style("opacity",1);        
         tooltip.html("<b>"+d.name+":</b> "+d.value)
-        .style("left", (x.margin[3]+xscale(d.name)) + "px")		
+        .style("left", (+x.margin[3]+xscale(d.name)) + "px")		
         .style("top", -h +(yscale(d.value)) + "px")
         .style("opacity", .9);	
     }
@@ -353,11 +356,17 @@ mdalive.lib.scatterplot001 = function(obj, x) {
     var optional = {
         "size": [200, 200], 
         "margin": [40, 20, 40, 50],
-        "r": 3,
+        "radius": 3,
         "color": "#0000cc",        
         "padding": 0.1
     };
     mdalive.fillArguments(x, optional);        
+    x.r = +x.r
+    x.padding = +x.padding
+    for (var i=0; i<4; i++) {
+        x.margin[i] = +x.margin[i];
+    }
+    
     
     // dimensions of entire svg
     var w = +x.size[0];
@@ -378,7 +387,7 @@ mdalive.lib.scatterplot001 = function(obj, x) {
         "translate(" + x.margin[3] + "," + x.margin[0] + ")");
     
     var getXYlim = function(rawlim) {
-        var rawrange = rawlim[1]-rawlim[0];
+        var rawrange = +rawlim[1]-rawlim[0];
         rawlim[0] = rawlim[0]-(rawrange*x.padding);
         rawlim[1] = rawlim[1]+(rawrange*x.padding);
         return rawlim;        
@@ -386,15 +395,15 @@ mdalive.lib.scatterplot001 = function(obj, x) {
     
     // get simple array representations of the x and y coordinates    
     var xvalues = x.data.map(function(d) {
-        return d.x;
+        return +d.x;
     }); 
     var xlim = getXYlim([Math.min.apply(null, xvalues), Math.max.apply(null, xvalues)]);    
     var yvalues = x.data.map(function(d) {
-        return d.y;
+        return +d.y;
     });    
     var ylim = getXYlim([Math.min.apply(null, yvalues), Math.max.apply(null, yvalues)]);
     var zvalues = x.data.map(function(d) {
-        return d.z;
+        return +d.z;
     });
     var zmax = Math.max.apply(null, zvalues);    
     
@@ -408,7 +417,7 @@ mdalive.lib.scatterplot001 = function(obj, x) {
     var tooltipshow = function(d) {          
         d3.select(this).style("opacity",1);
         tooltip.html("<b>"+d.name+":</b> ("+d.x+", "+d.y+")")
-        .style("left", (x.margin[3]+xscale(d.x)) + "px")		
+        .style("left", (+x.margin[3]+xscale(d.x)) + "px")		
         .style("top", -h +(yscale(d.y)) + "px")
         .style("opacity", .9);	
     }
@@ -454,7 +463,7 @@ mdalive.lib.scatterplot001 = function(obj, x) {
         return yscale(d.y);
     })
     .attr("r", function(d) {
-        return x.r;         
+        return x.radius;         
     })
     .on('mouseover', tooltipshow)
     .on('mouseout', tooltiphide);  

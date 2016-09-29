@@ -38,7 +38,7 @@
                 <input type="file">                
             </div>
             <div id="fg-importmsg" class="form-group">
-                <label>Description:</label>        
+                <label>Description (required):</label>        
                 <input type="text" class="form-control" placeholder="Description">         
             </div>
             <button type="submit" class="btn btn-success submit">Submit</button>            

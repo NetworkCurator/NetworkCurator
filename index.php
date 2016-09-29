@@ -32,6 +32,9 @@ if (isset($_REQUEST['network'])) {
     $network = $_REQUEST['network'];
     $page = 'network';
 }
+if (count($_REQUEST)==0) {
+    $page = "front";
+}
 
 // collect information about the user from the session
 session_start();
