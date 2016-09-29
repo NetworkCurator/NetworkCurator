@@ -32,9 +32,6 @@ if (isset($_REQUEST['network'])) {
     $network = $_REQUEST['network'];
     $page = 'network';
 }
-if (count($_REQUEST)==0) {
-    $page = "front";
-}
 
 // collect information about the user from the session
 session_start();
@@ -89,7 +86,7 @@ if ($page == "login" || $page == "admin") {
 } else if ($page == "network" && $network) {
     // these are pages that require a network name
     include_once "nc-ui/nc-ui-$page.php";
-} else if ($page == "front") {
+} else if ($page == "front" || $page=='') {
     include_once "nc-ui/nc-ui-front.php";
 } else {
     include_once "nc-ui/nc-ui-custom.php";

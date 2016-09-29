@@ -23,29 +23,29 @@ if ($sandbox != "index") {
 
         <h2>Markdown</h2>
         
-        <p>Markdown is a markup language. It is used on the network pages to 
-           convert plain-text into styled content.</p>
+        <p>Markdown is a markup language. Use it on the network pages to 
+           convert plain text into styled html.</p>
         
         <div class="list-group nc-mt-10">
-            <a href="?sandbox=markdown" class="list-group-item list-group-item-action">
+            <a href="?page=sandbox&sandbox=markdown" class="list-group-item list-group-item-action">
                 <h5 class="list-group-item-heading">markdown</h5>
-                <p class="list-group-item-text">Practice formatting text using markdown.</p>
+                <p class="list-group-item-text">Practice using markdown to format descriptions and comments.</p>
             </a>            
         </div>
         
         <h2>Markdown-alive</h2>
 
-        <p>Markdown-alive is an extension of markdown. It is used to create dynamic and interactive 
-            content, for example data charts.</p>             
+        <p>Markdown-alive is an extension of markdown. Use it to create rich content, for example
+            data charts.</p>
                 
         <div class="list-group nc-mt-10">
-            <a href="?sandbox=barplot001" class="list-group-item list-group-item-action">
+            <a href="?page=sandbox&sandbox=barplot001" class="list-group-item list-group-item-action">
                 <h5 class="list-group-item-heading">barplot001</h5>
-                <p class="list-group-item-text">Create and customize simple bar plots.</p>
+                <p class="list-group-item-text">Create simple bar plots.</p>
             </a>
-            <a href="?sandbox=scatterplot001" class="list-group-item list-group-item-action">
+            <a href="?page=sandbox&sandbox=scatterplot001" class="list-group-item list-group-item-action">
                 <h5 class="list-group-item-heading">scatterplot001</h5>
-                <p class="list-group-item-text">Create and customize simple scatter plots.</p>
+                <p class="list-group-item-text">Create simple scatter plots.</p>
             </a>           
         </div>
 
