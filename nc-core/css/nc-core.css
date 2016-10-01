@@ -181,7 +181,9 @@ span.nc-comment {
     padding-top: 8px;
     padding-left: 0px;
 }
-
+span[val=nc-classname] {
+    cursor: pointer;
+}
 
 
 /* ------------------------------------------------------------------------------------
@@ -266,7 +268,7 @@ textarea {
 
 .nc-deprecated {
     opacity: 0.6;
-    text-decoration: line-through;
+    /* text-decoration: line-through; */
 }
 
 
@@ -405,6 +407,14 @@ ol {
     margin-right: 4px;     
 }
 
+.nc-style {
+    width: 100%;   
+}
+.nc-style textarea {
+    resize: both;    
+    margin-top: 8px;      
+    margin-bottom: 12px;
+}
 
 /* ------------------------------------------------------------------------------------
  * Graph editor

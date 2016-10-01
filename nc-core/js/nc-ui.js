@@ -18,7 +18,8 @@ nc.ui = {};
  * ==================================================================================== */
 
 // speed determines animations like fade-outs
-nc.ui.speed = 'normal';
+nc.ui.speed = 500;
+nc.ui.fast = 200;
 // timeout used when making a user wait on purpose 
 // (e.g. between updates or to temporarily indicate the output of an action)
 nc.ui.timeout = 2000;
@@ -150,41 +151,50 @@ nc.ui.ClassTreeWidget = function(classdata, islink) {
     } while (addagain<Object.keys(classdata).length);
                 
     // create functions that respond to events on the tree
+    // clicking a class name to see the summary page
+    root.on("click", 'span[val="nc-classname"]', function() {
+        var classid = $(this).parent().attr("val");
+        window.location.replace("?network="+nc.network+"&object="+classid);
+    });
     // submitting a new class
-    root.delegate("form.nc-classcreate", "submit", function() {                
+    root.on("submit", "form.nc-classcreate", function() {                
         var newclassname = $(this).find("input").val();            
         var isdirectional = +$(this).find("input.form-check-input").is(":checked");        
         nc.ontology.createClass(newclassname, islink, isdirectional); 
     });  
     // clicking to edit an existing class
-    root.delegate("div.nc-classdisplay button[val='edit']", "click", function() {                        
+    root.on("click", "div.nc-classdisplay button[val='edit']", function() {                        
         var classid = $(this).parent().attr('val');
         // make sure input box shows current classname
         var classname = $(this).parent().find('span.nc-comment[val="nc-classname"]').html();        
         var thisform = root.find("form.nc-classupdate[val='"+classid+"']");
         thisform.find('input').val(classname);
         // toggle visibility of display/form
-        thisform.toggle();        
+        thisform.toggle();                
         root.find("div.nc-classdisplay[val='"+classid+"']").toggle();        
+        root.find('div.nc-style').show(nc.ui.fast);
     });    
     // clicking to remove/deprecate a class
-    root.delegate("div.nc-classdisplay button[val='remove']", "click", function() {                                
+    root.on("click", "div.nc-classdisplay button[val='remove']", function() {                                
         var classid = $(this).parent().attr('val');                      
-        nc.ontology.askConfirmation(classid, 'deprecate');
+        nc.ontology.askConfirmation(classid, 'inactive');
     });
     // clicking to remove/deprecate a class
-    root.delegate("div.nc-classdisplay button[val='activate']", "click", function() {                                
+    root.on("click", "div.nc-classdisplay button[val='activate']", function() {                                
         var classid = $(this).parent().attr('val');                      
-        nc.ontology.askConfirmation(classid, 'activate');
+        nc.ontology.askConfirmation(classid, 'active');
     });
     // clicking to cancel updating an existing class
-    root.delegate("form.nc-classupdate .nc-btn-class-cancel", "click", function() {                                
-        var classid = $(this).attr('val');              
-        root.find("div.nc-classdisplay[val='"+classid+"']").toggle();
-        root.find("form.nc-classupdate[val='"+classid+"']").toggle();                
+    root.on("click", "form.nc-classupdate .nc-btn-class-cancel", function() {                                
+        var classid = $(this).attr('val');           
+        root.find('div.nc-style').hide(nc.ui.fast);        
+        setTimeout(function() {           
+            root.find("div.nc-classdisplay[val='"+classid+"']").toggle();
+            root.find("form.nc-classupdate[val='"+classid+"']").toggle();                            
+        }, nc.ui.fast);        
     });
     // clicking to update the value of an existing class
-    root.delegate("form.nc-classupdate .nc-btn-class-update", "click", function() {        
+    root.on("click", "form.nc-classupdate .nc-btn-class-update", function() {        
         var thisform = $(this).parent().parent();
         var classid=thisform.attr('val');
         var parentid = thisform.parent().parent().attr('val');        
@@ -257,7 +267,7 @@ nc.ui.ClassDisplay = function(classrow) {
     // forms for links include a checkbox for directional links    
     fg += '<span class="nc-comment" val="nc-directional">';
     if (+classrow['directional']) fg+= ' (directional)';    
-    fg += '</span><span class="nc-comment" val="nc-deprecated" style="display: none">[deprecated]</span>';    
+    fg += '</span><span class="nc-comment" val="nc-deprecated" style="display: none">[inactive]</span>';    
     if (nc.curator) { 
         var temp = '<button class="pull-right btn btn-primary btn-sm nc-mw-sm nc-hm-3" ';
         fg += temp +' val="remove">Remove</button>';
@@ -315,7 +325,8 @@ nc.ui.ClassForm = function(classrow) {
         fg += '<div class="form-group">';
         fg+= '<button val="'+classid+'" class="btn btn-primary btn-sm nc-btn-class-update">Update</button>';
         fg+= '<button val="'+classid+'" class="btn btn-primary btn-sm nc-btn-class-cancel">Cancel</button>';
-        fg += '</div>';                           
+        fg += '</div><br/>';
+        fg += '<div class="form-group nc-style"><textarea class="form-control" rows=5></textarea></div>';
     }
     var ff2 = '</div></form>';
               

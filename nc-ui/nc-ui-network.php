@@ -33,11 +33,9 @@ $coreurl = "?network=$network&view=";
 
 
 // identify what graph object to look up
-if (isset($_REQUEST['node'])) {        
-    $view = 'node';    
-} else if (isset($_REQUEST['link'])) {
-    $view = 'link';
-}
+if (isset($_REQUEST['object'])) {        
+    $view = 'object';    
+} 
 
 
 ?>

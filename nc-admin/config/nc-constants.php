@@ -6,6 +6,7 @@ define('NC_NAME',           0);
 define('NC_TITLE',          1);
 define('NC_ABSTRACT',       2);
 define('NC_CONTENT',        3);
+define('NC_SVG',            5);
 define('NC_UNIT',           10);
 define('NC_COMMENT',        20);
 define('NC_SUBCOMMENT',     21);

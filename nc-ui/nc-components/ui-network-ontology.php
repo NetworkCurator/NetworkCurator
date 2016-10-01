@@ -35,7 +35,7 @@ echo ncScriptObject("nc.ontology.links", $linkclasses);
             <p>Click the <b>Move</b> button and drag to build a hierarchy of classes. 
                 Then use the <b>Edit/Update</b> button to register the changes in the database.</p>
             <p>Use the <b>Edit/Update</b> button to change the name associated with a node/link class.</p>        
-            <p>Click the <b>Remove</b> button to deprecate a given class.</p>            
+            <p>Click the <b>Remove</b> button to inactivate a given class.</p>            
         </div>
     </div>
 </div>
@@ -49,13 +49,13 @@ echo ncScriptObject("nc.ontology.links", $linkclasses);
             </div>
             <div class="modal-body">
                 <p>
-                    Are you sure you want to <span id="nc-deprecateconfirm-action">deprecate</span> 
-                    class <b><span id="nc-deprecateconfirm-class" val=""></span></b>?                    
+                    Are you sure you want to mark class <b>'<span id="nc-deprecateconfirm-class" val=""></span>'</b> 
+                    as <span id="nc-deprecateconfirm-action">inactive</span>?                    
                 </p>
                 <p><b>This is important!</b></p>
                 <p val="deprecate">
                     If the class has already been applied to a graph element
-                    this action will deprecate all those elements, too. 
+                    this action will inactivate all those elements, too. 
                     The graph elements will still exist, but will not be visible in the graph.
                     The ontology class will remain visible on this page and can be re-activated later.
                 </p>
@@ -63,7 +63,7 @@ echo ncScriptObject("nc.ontology.links", $linkclasses);
                     If the class has not been used yet, this action will remove it completely.                    
                 </p>
                 <p val="activate">
-                    Activating the deprecated class will make it accessible again on the graph page. 
+                    Activating the class will make it accessible again on the graph page. 
                     Any graph elements using the class will automatically re-appear. 
                 </p>
             </div>

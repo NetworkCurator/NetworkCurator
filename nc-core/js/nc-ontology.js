@@ -115,7 +115,7 @@ nc.ontology.askConfirmation = function(classid, action) {
     var modal = $('#nc-deprecateconfirm-modal');
     modal.find('#nc-deprecateconfirm-action').html(action);
     modal.find('#nc-deprecateconfirm-class').html(classname).attr("val", classid);        
-    if (action=="deprecate") {
+    if (action=="inactive") {
         $('#nc-deprecateconfirm-modal button[val="nc-confirm"]')
         .off("click").on("click", nc.ontology.confirmDeprecate);
         modal.find('p[val="deprecate"]').show();

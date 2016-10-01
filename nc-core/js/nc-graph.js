@@ -87,7 +87,7 @@ nc.graph.initToolbar = function() {
             jsvg.css("cursor", "grab");   
             nc.graph.svg.selectAll('g').attr('cursor', 'default');
             nc.graph.svg.on("click", null);
-            nc.graph.svg.selectAll('g').on('click', nc.graph.displayDetails);
+            //nc.graph.svg.selectAll('g').on('click', nc.graph.displayDetails);
             nc.graph.mode = "select";
         }       
     });
@@ -247,7 +247,7 @@ nc.graph.displayInfo = function(d) {
     detdiv.find('.nc-md').html("Loading...");
     detdiv.find('#'+prefix+'-more').click(function() { 
         var type = ("source" in d ? "link" : "node");        
-        window.location.replace("?network="+nc.network+"&"+type+"="+d.id);        
+        window.location.replace("?network="+nc.network+"&object="+d.id);        
     } );
     detdiv.show();
     
@@ -431,7 +431,6 @@ nc.graph.initSimulation = function() {
     .on("click", nc.graph.unselect);
     //.on("dblClick", nc.graph.simUnpause);    
     
-
     // create a single group g for holding all nodes and links
     nc.graph.svg.append("g").classed("nc-svg-content", true)
     .attr("transform", "translate("+initT[0]+","+initT[1]+")scale("+initT[2]+")");            
@@ -643,6 +642,7 @@ nc.graph.panstarted = function() {
     nc.graph.point = [p[0]-oldtrans[1], p[1]-oldtrans[2], oldtrans[4]];   
 }
 
+
 /**
  * Performs the panning by adjusting the g.nc-svg-content transformation
  */
@@ -656,6 +656,7 @@ nc.graph.panned = function() {
     .attr("transform", "translate(" + diffx +","+ diffy +")scale("+nc.graph.point[2]+")");    
 //.attr("transform", d3.event.transform);
 }
+
 
 nc.graph.panended = function() {
    
