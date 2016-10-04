@@ -11,6 +11,9 @@
 $nodeclasses = $NCapi->getNodeClasses($network);
 $linkclasses = $NCapi->getLinkClasses($network);
 
+echo ncScriptObject("nc.ontology.nodes", $nodeclasses);
+echo ncScriptObject("nc.ontology.links", $linkclasses);
+
 ?>
 
 <div class="row">
@@ -21,11 +24,6 @@ $linkclasses = $NCapi->getLinkClasses($network);
         <h3 class="nc-mt-15">Links</h3>
         <div id="nc-ontology-links" class="nc-ontology-tree">
         </div>
-    
-<?php
-echo ncScriptObject("nc.ontology.nodes", $nodeclasses);
-echo ncScriptObject("nc.ontology.links", $linkclasses);
-?>                            
     </div>
 
     <div class="col-sm-4 nc-mt-10">

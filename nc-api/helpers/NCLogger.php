@@ -19,8 +19,11 @@ class NCLogger extends NCDB {
     protected $_uid; // user_id (or guest)
     protected $_upw; // user_confirmation code (or guest)   
     // some constant for getting annotations types
-    protected $_annotypes = ["name" => NC_NAME, "title" => NC_TITLE, "abstract" => NC_ABSTRACT, "content" => NC_CONTENT];
-
+    protected $_annotypes = ["name" => NC_NAME, "title" => NC_TITLE,
+        "abstract" => NC_ABSTRACT, "content" => NC_CONTENT];
+    protected $_annotypeslong = ["name" => NC_NAME, "title" => NC_TITLE,
+        "abstract" => NC_ABSTRACT, "content" => NC_CONTENT, "symbol" => NC_SYMBOL];
+    
     /**
      * Constructor with connection to database
      * 
@@ -92,14 +95,9 @@ class NCLogger extends NCDB {
             $whereids = implode("%' OR $idcolumn LIKE '", $newids);
             $whereclause = " WHERE $idcolumn LIKE '" . $whereids . "%'";
             $sql = "SELECT $idcolumn FROM $dbtable $whereclause";
-            //echo $sql."\n";
             $stmt = $this->qPE($sql, []);
-            //echo "sososos ";
             $keeplooking = $stmt->fetch();
-            //echo "aakaka "; 
         }
-        //echo "inhere ";
-        //echo implode(", ", $newids);
         return $newids;
     }
 
@@ -323,7 +321,7 @@ class NCLogger extends NCDB {
         $n = count($batch);
         if ($n == 0) {
             return;
-        }        
+        }
         if ($n > $batchsize) {
             throw new Exception("too many annotations");
         }
@@ -352,18 +350,18 @@ class NCLogger extends NCDB {
             $nowtype = array_search($row['anno_type'], $this->_annotypes);
             $nowroot = $row['root_id'];
             if ($batch[$nowroot][$nowtype] != '') {
-                if ($batch[$nowroot][$nowtype] != $row['anno_text']) {                    
+                if ($batch[$nowroot][$nowtype] != $row['anno_text']) {
                     $pp = $row;
                     $pp['anno_text'] = $batch[$nowroot][$nowtype];
                     $pp['user_id'] = $this->_uid;
                     $toupdate[] = $pp;
-                } 
+                }
             }
         }
-        
+
         // pass on the shortlisted items, i.e. perform the db updates
         $this->batchUpdateAnno($toupdate);
-        
+
         // return the number of updated items
         return count($toupdate);
     }
@@ -487,7 +485,7 @@ class NCLogger extends NCDB {
         $sql = "SELECT network_id, datetime, owner_id, root_id, parent_id, 
             anno_id, anno_type, anno_text FROM " . NC_TABLE_ANNOTEXT . "  
                 WHERE network_id = ? AND root_id = ?                  
-                  AND anno_type <= " . NC_CONTENT . " AND anno_status=" . NC_ACTIVE;
+                  AND anno_type <= " . NC_SYMBOL . " AND anno_status=" . NC_ACTIVE;
         $stmt = $this->qPE($sql, [$netid, $rootid]);
         $result = [];
         while ($row = $stmt->fetch()) {
@@ -504,6 +502,9 @@ class NCLogger extends NCDB {
                 case NC_CONTENT:
                     $result['content'] = $row;
                     break;
+                case NC_SYMBOL:
+                    $result['symbol'] = $row;
+                    break;                
                 default:
                     break;
             }
@@ -646,16 +647,18 @@ class NCLogger extends NCDB {
             $x = sprintf("%'.06d", $i);
             // some shorthand to encode data that does not have to be prepped
             $ri = $rootids[$i];
-            foreach ($this->_annotypes as $key => $val) {
-                $nowid = $annoids[$i] . $val;
-                $nowtext = $annosets[$i][$key];
-                if (strlen($nowtext) < 2) {
-                    $nowtext = $annosets[$i]['name'];
-                }
-                // create an entry with value sets for the sql statement
-                $sqlinsert[] = "(UTC_TIMESTAMP(), '$netid', '$uid', '$uid', '$ri', '$ri',
+            foreach ($this->_annotypeslong as $key => $val) {
+                if (array_key_exists($key, $annosets[$i])) {
+                    $nowid = $annoids[$i] . $val;
+                    $nowtext = $annosets[$i][$key];
+                    if (strlen($nowtext) < 2) {
+                        $nowtext = $annosets[$i]['name'];
+                    }
+                    // create an entry with value sets for the sql statement
+                    $sqlinsert[] = "(UTC_TIMESTAMP(), '$netid', '$uid', '$uid', '$ri', '$ri',
                     '$nowid' , :anno_text_$val$x, $val, " . NC_ACTIVE . " )";
-                $params["anno_text_$val$x"] = $nowtext;
+                    $params["anno_text_$val$x"] = $nowtext;
+                }
             }
         }
 

@@ -114,14 +114,15 @@ nc.ui.ClassTreeWidget = function(classdata, islink) {
         connector:+islink, 
         directional:0
     };    
-    var parentsofroot = '<ol class="nc-classtree-children" val=""></ol>';     
+    var parentsofroot = '<ol class="nc-classtree-children nc-classtree-root" val=""></ol>';     
     parentsofroot += nc.ui.ClassForm(rootrow);    
     root.append(parentsofroot);
         
     // set up drag-drop of classes (uses jquery extension "sortable")  
     var oldContainer;
     root.find(".nc-classtree-children").sortable({
-        handle: 'button[val="move"]',
+        //handle: 'button[val="move"]',
+        handle: 'svg',
         afterMove: function (placeholder, container) {
             if(oldContainer != container){
                 if(oldContainer)
@@ -205,12 +206,27 @@ nc.ui.ClassTreeWidget = function(classdata, islink) {
         root.find("div.nc-classdisplay[val='"+classid+"']").toggle();
         root.find("form.nc-classupdate[val='"+classid+"']").toggle();                
     });    
+    // updating the svg textarea
+    root.on("change keyup paste input", "textarea", function() {
+        //alert("in here");
+        var textsvg = $(this).val();        
+        // find the svg component        
+        var thisform  = $(this).parent().parent().parent();
+        var thisid = thisform.attr('val');
+        try {
+            thisform.find('svg[val="'+thisid+'"] defs').empty().append($(textsvg));
+            thisform.find('svg[val="'+thisid+'"]').DOMRefresh();
+        } catch(err) {
+        // don't do anything with the error, just wait for better input
+        }
+    });
     
     // after all the tree is populated, display a subset of the created elements 
     // (others will become activated upon editing of the class)
     root.find("div.nc-classdisplay").show();    
     root.find("form.nc-classcreate[val='']").show();    
 }
+
 
 
 /**
@@ -224,15 +240,25 @@ nc.ui.ClassTreeRowWidget = function(classrow) {
     // create objects for displaying, editing, and adding subclasses
     var adisplay = nc.ui.ClassDisplay(classrow);    
     var aform = nc.ui.ClassForm(classrow);
+    var cid = classrow['class_id'];    
+    var cname = classrow['name'];
     var achildren = '<ol class="nc-classtree-children" val="'+classrow['class_id']+'"></ol>';       
+    var classvg = '<svg class="nc-symbol" val="'+cid+'"><defs></defs>';
+    classvg += '<g transform="translate(18,18)">';
+    if (classrow['connector']==1) {
+        classvg+='<line class="'+cname+'" x1=-17 x2=17 y1=0 y2=0/>';
+    } else {
+        classvg+='<use xlink:href="#'+cname+'"/>';
+    }    
+    classvg+='</g></svg>';
     
     // create the widget from the components
-    var obj= $('<li val="'+classrow['class_id']+'">'+adisplay + aform + achildren+'</li>');                
+    var obj= $('<li val="'+classrow['class_id']+'">'+classvg+ adisplay + aform + achildren+'</li>');                
 
     // modify the object if class is inactive
     if (classrow['status']!=1) {
         obj = nc.ui.toggleClassDisplay(obj);
-    }
+    }    
     
     return obj;
 }
@@ -262,7 +288,7 @@ nc.ui.toggleClassDisplay = function(obj) {
 nc.ui.ClassDisplay = function(classrow) {
     
     // create a div with one label (possible a directional comment) and one button
-    var fg = '<div val="'+classrow['class_id']+'" class="nc-classdisplay">'; 
+    var fg = '<div val="'+classrow['class_id']+'" class="nc-classdisplay">';     
     fg += '<span class="nc-comment" val="nc-classname">'+classrow['name']+'</span>';
     // forms for links include a checkbox for directional links    
     fg += '<span class="nc-comment" val="nc-directional">';
@@ -273,7 +299,7 @@ nc.ui.ClassDisplay = function(classrow) {
         fg += temp +' val="remove">Remove</button>';
         fg += temp +' val="activate" style="display: none">Activate</button>';                       
         fg += temp + ' val="edit">Edit</button>';   
-        fg += temp + ' val="move">Move</button>';               
+    //fg += temp + ' val="move">Move</button>';               
     }
     fg += '</div>'; 
                 
@@ -300,6 +326,7 @@ nc.ui.ClassForm = function(classrow) {
     
     var classid = classrow['class_id'];    
     var classname = classrow['name'];
+    var classsymbol = classrow['symbol'];
     var islink = +classrow['connector'];
     var directional = +classrow['directional'];
      
@@ -326,7 +353,7 @@ nc.ui.ClassForm = function(classrow) {
         fg+= '<button val="'+classid+'" class="btn btn-primary btn-sm nc-btn-class-update">Update</button>';
         fg+= '<button val="'+classid+'" class="btn btn-primary btn-sm nc-btn-class-cancel">Cancel</button>';
         fg += '</div><br/>';
-        fg += '<div class="form-group nc-style"><textarea class="form-control" rows=5></textarea></div>';
+        fg += '<div class="form-group nc-style"><textarea class="form-control" rows=4>'+classsymbol+'</textarea></div>';
     }
     var ff2 = '</div></form>';
               
@@ -343,7 +370,7 @@ nc.ui.ClassForm = function(classrow) {
  * false if not (e.g. if the attempt is made before the parent is in the dom)
  */
 nc.ui.addClassTreeRow = function(classrow) {  
-         
+                  
     // find the root of the relevant tree  
     var root = (+classrow['connector'] ? $('#nc-ontology-links'): $('#nc-ontology-nodes'));
        
@@ -365,7 +392,14 @@ nc.ui.addClassTreeRow = function(classrow) {
         targetdiv.append(newobj);
     }   
     targetdiv.find("li").show(nc.ui.speed);
-    targetdiv.find("div.nc-classdisplay").show(nc.ui.speed);    
+    targetdiv.find("div.nc-classdisplay").show(nc.ui.speed);           
+    
+    // for some reason I don't understand, the svg generation doesn't appear if
+    // the handler is called straigh-away, but it works after a short delay...
+    setTimeout(function() {
+        targetdiv.find('textarea').keyup();
+    }, nc.ui.speed);
+           
     
     return true;
 }

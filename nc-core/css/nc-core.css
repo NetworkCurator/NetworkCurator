@@ -59,7 +59,7 @@ h5 {
 
 /**
  * class set margins
- */
+*/
 .nc-hm-3 {
     margin-left: 3px;
     margin-right: 3px;
@@ -168,22 +168,6 @@ textarea.nc-curation-content {
     padding-top: 80px;
 }
 
-
-
-/* ------------------------------------------------------------------------------------
- * Ontology
- * ------------------------------------------------------------------------------------ */
-
-
-span.nc-comment {
-    position: relative;
-    vertical-align: middle;
-    padding-top: 8px;
-    padding-left: 0px;
-}
-span[val=nc-classname] {
-    cursor: pointer;
-}
 
 
 /* ------------------------------------------------------------------------------------
@@ -311,6 +295,10 @@ form {
  * New nodes 
  * ------------------------------------------------------------------------------------ */
 
+svg#nc-graph-svg rect, svg#nc-graph-svg circle, svg#nc-graph-svg line {
+    /** all: inherit;    **/
+}
+
 .nc-default-node {
     fill: #449944;    
 }
@@ -330,11 +318,11 @@ form {
     stroke-width: 6;    
     stroke-dasharray: 7 5;
 }
-
-.nc-node-highlight {
+.nc-node-highlight {    
     stroke: #000000;
-    stroke-width: 4;    
+    stroke-width: 4;            
 }
+
 .nc-link-highlight {
     stroke: #000000;
 }
@@ -383,14 +371,31 @@ li.aftermove > div:first-child span {
 }
 .nc-classtree-children {
     list-style: none;
-    min-height: 5px; 
-    padding: 5px 0px 0px 25px;    
+    min-height: 4px; 
+    padding: 4px 0px 0px 25px;    
+}
+.nc-classtree-children {
+    margin-top: -4px;
+}
+.nc-classtree-root {
+    padding: 4px 0px 0px 0px;
 }
 ol {
     list-style: none;
 }
-.nc-classdisplay {    
-    padding: 3px 0px;
+.nc-classdisplay, .nc-class-form {
+    display: inline-block;
+    width: -moz-calc(100% - 40px);
+    width: -webkit-calc(100% - 40px);
+    width: -o-calc(100% - 40px);
+    width: calc(100% - 40px);        
+}
+.nc-classdisplay {   
+    padding: 0px 0px;    
+    margin-bottom: 0px;
+}
+.nc-class-form {
+    margin-top: 8px;
 }
 .nc-btn-edit {
     margin-left: 6px;
@@ -400,7 +405,7 @@ ol {
     margin-bottom: 2px;
 }
 .nc-class-form .form-check-inline {    
-    font-weight: 300;    
+    font-weight: 300;        
 }
 .nc-class-form .form-check-input {
     margin-left: 8px; 
@@ -414,6 +419,29 @@ ol {
     resize: both;    
     margin-top: 8px;      
     margin-bottom: 12px;
+}
+
+span.nc-comment {
+    position: relative;
+    vertical-align: middle;
+    /** display: inline-block;**/
+    padding-top: 0px; 
+    margin-top: 0px;
+    padding-left: 0px;
+}
+
+span[val=nc-classname] {
+    cursor: pointer;
+}
+
+svg.nc-symbol {
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;    
+    margin-right: 2px;
+    width: 36px;
+    height: 36px; 
+    cursor: pointer;
 }
 
 /* ------------------------------------------------------------------------------------

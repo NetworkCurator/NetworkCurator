@@ -15,6 +15,9 @@ class NCOntology extends NCLogger {
     protected $_network;
     protected $_netid;
     protected $_uperm;
+    // default symbols for nodes and links
+    protected $_def_node_symbol = ['<rect ', 'x=-7 y=-7 width=14 height=14 rx=3 ry=3 fill="#7777dd" />'];
+    protected $_def_link_symbol = '';
 
     /**
      * Constructor 
@@ -71,10 +74,10 @@ class NCOntology extends NCLogger {
                    AND anno_type = " . NC_NAME . " AND anno_status = " . NC_ACTIVE;
         $stmt = $this->qPE($sql, [$this->_netid, $this->_netid]);
 
-        $result = [];        
+        $result = [];
         while ($row = $stmt->fetch()) {
             $result[$row['class_id']] = $row['class_name'];
-        }                    
+        }
 
         return $result;
     }
@@ -82,7 +85,7 @@ class NCOntology extends NCLogger {
     /**
      * Similar to listOntology with parameter ontology='nodes'
      */
-    public function getNodeOntology($idkeys = true, $fulldetail=false) {
+    public function getNodeOntology($idkeys = true, $fulldetail = false) {
         $this->_params['ontology'] = 'nodes';
         return $this->getOntology($idkeys, $fulldetail);
     }
@@ -90,7 +93,7 @@ class NCOntology extends NCLogger {
     /**
      * Similar to listOntology with parameter ontology='links'
      */
-    public function getLinkOntology($idkeys = true, $fulldetail=false) {
+    public function getLinkOntology($idkeys = true, $fulldetail = false) {
         $this->_params['ontology'] = 'links';
         return $this->getOntology($idkeys, $fulldetail);
     }
@@ -134,22 +137,22 @@ class NCOntology extends NCLogger {
         // prepare some helper sql bits
         $sqlcase = [];
         $sqlgroup = [];
-        $carray = ['name' => NC_NAME, 'title' => NC_TITLE, 'abstract' => NC_ABSTRACT, 'content' => NC_CONTENT];
-        $atypes = array_keys($this->_annotypes);
+        $carray = array_merge($this->_annotypes, ['symbol' => NC_SYMBOL]);
+        $atypes = array_keys($carray);
         if (!$fulldetail) {
-            $atypes = ['name'];
+            $atypes = ['name', 'symbol'];
         }
         foreach ($atypes AS $what) {
             $sqlcase[] = "(CASE WHEN $tac = $carray[$what] THEN $tat ELSE '' END) AS $what";
             $sqlcase[] = "(CASE WHEN $tac = $carray[$what] THEN $tai ELSE '' END) AS " . $what . "_anno_id";
             $sqlgroup[] = "GROUP_CONCAT($what SEPARATOR '') AS " . $what . "";
-            $sqlgroup[] = "GROUP_CONCAT($what" . "_anno_id SEPARATOR '') AS " . $what . "_anno_id";            
+            $sqlgroup[] = "GROUP_CONCAT($what" . "_anno_id SEPARATOR '') AS " . $what . "_anno_id";
             if ($fulldetail) {
                 $sqlcase[] = "(CASE WHEN $tac = $carray[$what] THEN $tad ELSE '' END) AS " . $what . "_datetime";
                 $sqlcase[] = "(CASE WHEN $tac = $carray[$what] THEN $tao ELSE '' END) AS " . $what . "_owner_id";
                 $sqlgroup[] = "GROUP_CONCAT($what" . "_datetime SEPARATOR '') AS " . $what . "_datetime";
                 $sqlgroup[] = "GROUP_CONCAT($what" . "_owner_id SEPARATOR '') AS " . $what . "_owner_id";
-            }            
+            }
         }
         $sqlcase = implode(", ", $sqlcase);
         $sqlgroup = implode(", ", $sqlgroup);
@@ -162,7 +165,7 @@ class NCOntology extends NCLogger {
                 WHERE $tc.network_id = ? 
                   AND $ta.anno_status = " . NC_ACTIVE . "
                   AND $ta.root_id LIKE '" . NC_PREFIX_CLASS . "%' 
-                  AND $tac <=" . NC_CONTENT . " $onto GROUP BY $ta.root_id, $tac";
+                  AND $tac <=" . NC_SYMBOL . " $onto GROUP BY $ta.root_id, $tac";
 
         $sql = "SELECT class_id, parent_id, connector, directional, class_status AS status, $sqlgroup            
             FROM ($innersql) AS T GROUP BY class_id ORDER BY parent_id, name";
@@ -182,7 +185,6 @@ class NCOntology extends NCLogger {
         return $result;
     }
 
-   
     /**
      * Fetches basic class information: id (Cxxxxxx), class parent, node/link (connector),
      * directionality, anno_id for the name, datetime of creation, and owner id. 
@@ -289,6 +291,16 @@ class NCOntology extends NCLogger {
             $parentid = '';
         }
 
+        // append default symbol if now present
+        if ($params['symbol'] == '') {
+            if ($params['connector'] == 0) {
+                $params['symbol'] = $this->_def_node_symbol[0] . ' id="' . $params['name'] . '" '
+                        . $this->_def_node_symbol[1];
+            } else {
+                $params['symbol'] = $this->_def_link_symbol;
+            }
+        }
+
         // if reached here, the class is ok to be inserted
         $newid = $this->makeRandomID(NC_TABLE_CLASSES, "class_id", NC_PREFIX_CLASS, NC_ID_LEN);
 
@@ -357,7 +369,8 @@ class NCOntology extends NCLogger {
         $Q4 = $params['connector'] == $oldinfo['connector'];
         $Q5 = $params['status'] == $oldinfo['class_status'];
         if ($Q1 && $Q2 && $Q3 && $Q4 && $Q5) {
-            throw new Exception("Update is consistent with existing data");
+            //throw new Exception("Update is consistent with existing data");
+            // perhaps the symbol still needs changing
         }
         if (!$Q4) {
             throw new Exception("Cannot toggle connector status");
@@ -402,9 +415,9 @@ class NCOntology extends NCLogger {
             $result = 1;
         }
 
-        // perhaps update the title, abstract, or content
+        // perhaps update the title, abstract, content, or symbol
         $updaterest = false;
-        foreach (['title', 'abstract', 'content'] as $annotype) {
+        foreach (['title', 'abstract', 'content', 'symbol'] as $annotype) {
             if ($params[$annotype] != '') {
                 $updaterest = true;
             }
@@ -412,7 +425,7 @@ class NCOntology extends NCLogger {
         if ($updaterest) {
             $oldfullinfo = $this->getFullSummaryFromRootId($this->_netid, $classid);
             $batchupdate = [];
-            foreach (['title', 'abstract', 'content'] as $annotype) {
+            foreach (['title', 'abstract', 'content', 'symbol'] as $annotype) {
                 if ($params[$annotype] != '' &&
                         $params[$annotype] != $oldfullinfo[$annotype]['anno_text']) {
                     // update this annotation
@@ -422,13 +435,18 @@ class NCOntology extends NCLogger {
                 }
             }
             $this->batchUpdateAnno($batchupdate);
+            if (count($batchupdate) > 0) {
+                $result += 2;
+            }
         }
 
         if (!$Q1 || !$Q3) {
             // update the class structure and log the activity
             $this->updateClassStructure($oldinfo['class_id'], $parentid, $params['directional'], $params['status']);
-            $result +=2;
+            $result +=4;
         }
+
+        return $result;
     }
 
     /**
@@ -456,7 +474,7 @@ class NCOntology extends NCLogger {
 
         // check that required inputs are defined
         $params = $this->subsetArray($this->_params, array_merge(["target", "parent",
-                    "connector", "directional", "status"], array_keys($this->_annotypes)));
+                    "connector", "directional", "symbol", "status"], array_keys($this->_annotypes)));
 
         // make sure the asking user is allowed to curate
         if ($this->_uperm < NC_PERM_CURATE) {
@@ -472,10 +490,13 @@ class NCOntology extends NCLogger {
         $this->dbunlock();
 
         // perform logging based on what actions were performed
-        if ($action % 2 == 1) {
+        if ($action == 1) {
             $this->logActivity($this->_uid, $this->_netid, "updated class name", $params['target'], $params['name']);
         }
-        if ($action > 1) {
+        if ($action == 2 || $action == 3) {
+            $this->logActivity($this->_uid, $this->_netid, "updated class style", $params['target'], $params['name']);
+        }
+        if ($action >= 4) {
             $value = $params['parent'] . "," . $params['directional'] . "," . $params['status'];
             $this->logActivity($this->_uid, $this->_netid, "updated class properties for class", $params['target'], $value);
         }

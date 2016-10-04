@@ -76,6 +76,9 @@ nc.ontology.updateClassProperties = function(classid, classname, parentid, islin
     if (parentid!='') {
         parentname = $('div.nc-classdisplay[val="'+parentid+'"] span[val="nc-classname"]').html();
     }
+    
+    // get the svg style from the page
+    var thissymbol = $('form[val="'+classid+'"] textarea').val();    
               
     $.post(nc.api, {
         controller: "NCOntology", 
@@ -83,9 +86,10 @@ nc.ontology.updateClassProperties = function(classid, classname, parentid, islin
         network: nc.network,
         target: targetname,
         name: classname,
-        title: classname,
+        title: '',
         'abstract': '',
         content: '',
+        symbol: thissymbol,
         status: 1,
         parent: parentname,  
         connector: +islink,

@@ -151,3 +151,20 @@ nc.utils.sortByKey = function(arr, key) {
         }        
     });
 }
+
+
+
+
+/* ====================================================================================
+ * SVG-related hacks
+ * ==================================================================================== */
+
+// hacks to get an SVG to definitely update after its defs are set
+// from: https://jcubic.wordpress.com/2013/06/19/working-with-svg-in-jquery/
+$.fn.xml = function() {
+    return (new XMLSerializer()).serializeToString(this[0]);
+};
+
+$.fn.DOMRefresh = function() {
+    return $($(this.xml()).replaceAll(this));
+};

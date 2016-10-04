@@ -181,7 +181,9 @@ nc.graph.select = function(d) {
     if ("source" in d) {
         nc.graph.svg.select('line[id="'+d.id+'"]').classed('nc-link-highlight', true);
     } else {
-        nc.graph.svg.select('circle[id="'+d.id+'"]').classed('nc-node-highlight', true);
+        nc.graph.svg.select('use[id="'+d.id+'"]').classed('nc-node-highlight', true);
+        //alert("got ");
+        //alert("got "+nc.graph.svg.select('use[id="'+d.id+'"]').size());
     }    
         
     var nowid = d.id;    
@@ -224,7 +226,7 @@ nc.graph.select = function(d) {
  * Remove all highlight styling from components in the graph
  */
 nc.graph.unselect = function(d) {
-    nc.graph.svg.selectAll('circle').classed('nc-node-highlight',false);
+    nc.graph.svg.selectAll('use').classed('nc-node-highlight',false);
     nc.graph.svg.selectAll('line').classed('nc-link-highlight',false);  
     $('#nc-graph-newnode,#nc-graph-newlink,#nc-graph-details').hide();    
 }
@@ -401,16 +403,31 @@ nc.graph.initSimulation = function() {
     // fetch the existing transform and scale, if any
     var initT = nc.graph.getTransformation();
     // reset the svg    
-    nc.graph.svg.selectAll('g,rect').remove();
-   
-    var width = nc.graph.svg.style("width").replace("px","");    
-    var height = nc.graph.svg.style("height").replace("px", "");    
-                
+    nc.graph.svg.selectAll('defs,g,rect').remove();
+          
+    // add ontology definitions as symbols    
+    var temp = $.map($.extend({}, nc.ontology.nodes, nc.ontology.links), function(value) {
+        return [value];
+    });    
+    nc.graph.svg
+    .selectAll("defs").data(temp).enter().append("defs")
+    //.attr("id", function(d) {
+    //    return ""+d.name;
+    //})
+    //.attr("overflow", "visible")
+    .html(function(d) {        
+        return d.symbol;        
+    } );
+          
+    var width = parseInt(nc.graph.svg.style("width"));    
+    var height = parseInt(nc.graph.svg.style("height"));          
+      
     // create new simulation    
     nc.graph.sim = d3.forceSimulation()
-    .force("link", d3.forceLink().id(function(d) {
+    .force("link", d3.forceLink().distance(60).id(function(d) {
         return d.id;
     }))
+    //.force("collide",d3.forceCollide( function(d){return 20 }).iterations(16) )
     .force("charge", d3.forceManyBody())
     .force("center", d3.forceCenter(width / 2, height / 2))
     .velocityDecay(0.6);    
@@ -420,7 +437,7 @@ nc.graph.initSimulation = function() {
     on("drag", nc.graph.panned).on("end", nc.graph.panended);       
     var svgzoom = d3.zoom().scaleExtent([0.125, 4])   
     .on("zoom", nc.graph.zoom);  
-    
+        
     nc.graph.svg.append("rect").classed("nc-svg-background", true)
     .attr("width", "100%").attr("height", "100%")
     .style("fill", "none").style("pointer-events", "all")    
@@ -428,12 +445,11 @@ nc.graph.initSimulation = function() {
     .on("wheel", function() {
         d3.event.preventDefault();
     })
-    .on("click", nc.graph.unselect);
-    //.on("dblClick", nc.graph.simUnpause);    
+    .on("click", nc.graph.unselect);        
     
     // create a single group g for holding all nodes and links
     nc.graph.svg.append("g").classed("nc-svg-content", true)
-    .attr("transform", "translate("+initT[0]+","+initT[1]+")scale("+initT[2]+")");            
+    .attr("transform", "translate("+initT[0]+","+initT[1]+")scale("+initT[2]+")");                                        
             
     if (nc.graph.rawnodes.length>0) {
         nc.graph.simStart();
@@ -465,13 +481,14 @@ nc.graph.simStart = function() {
     .selectAll("line")
     .data(nc.graph.links)
     .enter().append("line")
-    .attr("class", function(d) {
-        if ("class" in d) {
-            return "nc-default-link "+d["class_name"]+" "+d["class"];
-        } else {
-            return "nc-default-link "+d["class_name"];
-        }
-    }) 
+    .attr("class", function(d) {        
+        return "nc-default-link "+d["class"];        
+    })
+    //.selectAll("use")
+    //.data(nc.graph.links).enter().append("use")
+    //.attr("xlink:href", function(d) {
+    //    return "#"+d["class"];
+    //})
     .attr("id", function(d) {
         return d.id;
     })
@@ -480,25 +497,28 @@ nc.graph.simStart = function() {
     // create a var with a set of nodes (used in the tick function)
     var node = nc.graph.svg.select("g.nc-svg-content").append("g")
     .attr("class", "nodes")
-    .selectAll("circle")
-    .data(nc.graph.nodes)
-    .enter().append("circle").attr("r", 9)    
+    //.selectAll("circle")
+    //.data(nc.graph.nodes)
+    //.enter().append("circle").attr("r", 9)    
+    .selectAll("use").data(nc.graph.nodes).enter().append("use")
+    .attr("xlink:href", function(d) {
+        return "#"+d['class'];
+    })
+    //.attr("cx", function(d) {return d.x; })
+    //.attr("cy", function(d) {return d.y; })
     .attr("id", function(d) {        
         return d.id;
     })
-    .attr("class",function(d) {
-        if ("class" in d) {
-            return "nc-default-node "+d["class_name"]+" "+d["class"];
-        } else {
-            return "nc-default-node "+d["class_name"];
-        }
-    })
+    //.attr("class",function(d) {        
+    //    return "nc-default-node "+d["class"];        
+    //})
     .call(nodedrag).on("click", nc.graph.select).on("dblclick", nc.graph.unpin);        
     
     // performed at each simulation step to reposition the nodes and links
     var tick = function() {        
         link.attr("x1", dsourcex).attr("y1", dsourcey).attr("x2", dtargetx).attr("y2", dtargety);    
-        node.attr("cx", dx).attr("cy", dy);    
+        node.attr("x", dx).attr("y", dy); 
+        //node.attr("cx", dx).attr("cy", dy);
     }
     
     nc.graph.sim.nodes(nc.graph.nodes).on("tick", tick);                   

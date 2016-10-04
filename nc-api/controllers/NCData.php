@@ -38,20 +38,19 @@ class NCData extends NCGraphs {
 
         $timer = new NCTimer();
         $timer->recordTime("import start");
-        //echo "ID1 ";
+        
         // check that required inputs are defined
         $params = $this->subsetArray($this->_params, ["file_name", "file_desc", "file_content"]);
-        //echo "ID2 ";
+        
         // make sure the asking user is allowed to curate
         if ($this->_uperm < NC_PERM_EDIT) {
             throw new Exception("Insufficient permissions " . $this->_uperm);
         }
-        //echo "ID3 ";
+        
         $filedata = json_decode($params['file_content'], true);
         $filestring = json_encode($filedata, JSON_PRETTY_PRINT);
         unset($params['file_content']);
-
-        //echo "ID4 ";
+        
         // check if the file data matches the requested network
         if (!array_key_exists('network', $filedata)) {
             throw new Exception('Input file must specify network');
@@ -61,8 +60,7 @@ class NCData extends NCGraphs {
         }
         if ($this->_network != $filedata['network'][0]['name']) {
             throw new Exception('Input file does not match network');
-        }
-        //echo "ID5 ";
+        }        
 
         $this->dblock([NC_TABLE_FILES, NC_TABLE_NODES, NC_TABLE_LINKS,
             NC_TABLE_CLASSES, NC_TABLE_ANNOTEXT, NC_TABLE_ACTIVITY,
@@ -75,7 +73,7 @@ class NCData extends NCGraphs {
         $filepath = $networkdir . "/" . $fileid . ".json";
         file_put_contents($filepath, $filestring);
         chmod($filepath, 0777);
-        //echo "ID6 ";
+        
         // store a record of the file in the db        
         $sql = "INSERT INTO " . NC_TABLE_FILES . "
                    (datetime, file_id, user_id, network_id, file_name, 
@@ -85,16 +83,14 @@ class NCData extends NCGraphs {
         $pp = array_merge(['user_id' => $this->_uid, 'file_id' => $fileid, 'network_id' => $this->_netid,
             'file_type' => 'json', 'file_size' => strlen($filestring)], $params);
         $this->qPE($sql, $pp);
-        //echo "ID7 ";
+        
         // log the upload
         $this->logActivity($this->_uid, $this->_netid, "uploaded data file", $params['file_name'], $params['file_desc']);
-        //echo "ID8 ";
-        // drop certain indexes on the annotation table        
-        //echo "ID9 ";
+        
         // it will be useful to have access to the ontology in full detail        
         $nodeontology = $this->getNodeOntology(false, true);
-        $linkontology = $this->getLinkOntology(false, true);
-        //echo "ID9.5 ";
+        $linkontology = $this->getLinkOntology(false, true);        
+        
         // NOTE: here tried to drop indexes before doing the adding work
         // However, overall the performance seemed better when the indexes were there
         // This is because most "insert" operations are now in batch.
@@ -106,15 +102,15 @@ class NCData extends NCGraphs {
         //    $this->q($sql);
         //} catch (Exception $ex) {
         //    echo "could not drop indexes: " . $ex->getMessage() . "\n";
-        //}
-        //echo "ID10 ";
+        //}        
+        
         $status = "";
         // import ontology, nodes, links
         $timer->recordTime("importSummary");
         if ($this->_uperm >= NC_PERM_CURATE) {
             $status .= $this->importSummary($filedata['network'][0], $params["file_name"]);
         }
-        //echo "ID 20 ";
+        
         $timer->recordTime("importOntology");
         if ($this->_uperm >= NC_PERM_CURATE && array_key_exists('ontology', $filedata)) {
             $status .= $this->importOntology($nodeontology, $linkontology, $filedata['ontology'], $params["file_name"]);
@@ -123,19 +119,17 @@ class NCData extends NCGraphs {
         // re-get the node and link ontology after the adjustments. This time short format
         $nodedict = array_flip($this->getOntologyDictionary("node"));
         $linkdict = array_flip($this->getOntologyDictionary("link"));
-
-        //echo "ID 30 ";
+        
         $timer->recordTime("importNodes");
-        if ($this->_uperm >= NC_PERM_EDIT && array_key_exists('nodes', $filedata)) {
-            //echo "ID 31";
+        if ($this->_uperm >= NC_PERM_EDIT && array_key_exists('nodes', $filedata)) {            
             $status .= $this->importNodes($nodedict, $filedata['nodes'], $params["file_name"]);
-        }
-        //echo "ID 40 ";
+        }        
         $timer->recordTime("importLinks");
         if ($this->_uperm >= NC_PERM_EDIT && array_key_exists('links', $filedata)) {
             $status .= $this->importLinks($linkdict, $filedata['links'], $params["file_name"]);
         }
         $timer->recordTime("unlock");
+        
         // NOTE: required if earlier DROP INDEX
         // $timer->recordTime("indexing");
         //try {
@@ -146,10 +140,8 @@ class NCData extends NCGraphs {
         //    echo "error creating index: " . $ex->getMessage();
         //}
 
-        $this->dbunlock();
-        //echo "ID 60 ";
-        $timer->recordTime("import end");
-        //echo $timer->showTimes();
+        $this->dbunlock();        
+        $timer->recordTime("import end");        
 
         return "$status\n" . $timer->showTimes();
     }
@@ -229,6 +221,7 @@ class NCData extends NCGraphs {
 
         // make sure all entry contain at least some default values for all required parameters        
         $defaults = ["title" => '', "abstract" => '', "content" => '', "class" => '',
+            "symbol"=>'',
             "directional" => 0, "connector" => 0, "parent" => '', "status" => 1];
 
         for ($i = 0; $i < count($newdata); $i++) {
@@ -288,6 +281,7 @@ class NCData extends NCGraphs {
         if (!array_key_exists($classname, $ontology)) {
             // class does not exists, so create from scratch                        
             if ($newentry['status'] > 0) {
+                //print_r($newentry);
                 $this->createNewClassWork($newentry);
                 return "add";
             } else {
@@ -312,7 +306,7 @@ class NCData extends NCGraphs {
             }
             // perhaps adjust title abstract content
             $batchupdate = [];
-            foreach (['title', 'abstract', 'content'] as $type) {
+            foreach (['title', 'abstract', 'content', 'symbol'] as $type) {
                 if (array_key_exists($type, $newentry)) {
                     if ($newentry[$type] != '' && $newentry[$type] != $ontology[$classname][$type]) {
                         // prepare a set of data for updates
@@ -324,7 +318,7 @@ class NCData extends NCGraphs {
                             'anno_id' => $oldentry[$type . '_anno_id'],
                             'root_id' => $classid, 'parent_id' => $classid,
                             'anno_text' => $newentry[$type],
-                            'anno_type' => $this->_annotypes[$type]];
+                            'anno_type' => $this->_annotypeslong[$type]];
                         $batchupdate[] = $pp;
                         $updated = true;
                     }
