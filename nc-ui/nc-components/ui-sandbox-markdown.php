@@ -17,5 +17,6 @@
 </div>
 
 <?php
+$mdaside = "(Type some text here)";
 include_once "ui-sandbox-md.php";
 ?>

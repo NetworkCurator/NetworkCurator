@@ -424,13 +424,12 @@ nc.graph.initSimulation = function() {
       
     // create new simulation    
     nc.graph.sim = d3.forceSimulation()
-    .force("link", d3.forceLink().distance(60).id(function(d) {
+    .force("link", d3.forceLink().distance(45).id(function(d) {
         return d.id;
-    }))
-    //.force("collide",d3.forceCollide( function(d){return 20 }).iterations(16) )
+    }))    
     .force("charge", d3.forceManyBody())
     .force("center", d3.forceCenter(width / 2, height / 2))
-    .velocityDecay(0.6);    
+    .velocityDecay(0.3);    
             
     // Set up panning and zoom (uses a rect to catch click-drag events)                        
     var svgpan = d3.drag().on("start", nc.graph.panstarted).

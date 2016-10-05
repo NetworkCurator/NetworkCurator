@@ -20,7 +20,7 @@ if ($sandbox != "index") {
         <h1>Sandboxes</h1>
 
         <p>Sandboxes are safe areas to experiment with creating content.</p>
-
+                
         <h2>Markdown</h2>
         
         <p>Markdown is a markup language. Use it on the network pages to 
@@ -36,7 +36,11 @@ if ($sandbox != "index") {
         <h2>Markdown-alive</h2>
 
         <p>Markdown-alive is an extension of markdown. Use it to create rich content, for example
-            data charts.</p>
+            data charts.</p>                
+        
+        <p>Each of the sandbox pages below contains a form. Input your data into the form and 
+           the page will generate markdown-alive code along a visual representation. 
+           Use the code within any content box (e.g. abstract or comment) on the NetworkCurator site.</p>
                 
         <div class="list-group nc-mt-10">
             <a href="?page=sandbox&sandbox=barplot001" class="list-group-item list-group-item-action">

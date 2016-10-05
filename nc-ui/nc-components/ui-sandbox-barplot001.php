@@ -13,8 +13,8 @@
     <div class="container">
         <h1>Sandbox: barplot001</h1>
 
-        <p>This sandbox helps generate simple bar charts from raw data. </p>                   
-
+        <p>This sandbox helps generate simple bar charts from raw data.</p>                   
+        
         <h4 class="nc-mt-15">Required parameters</h4>
         <div id="nc-sandbox-required" class="nc-parameters form-horizontal" val="barplot001">
             <?php
@@ -26,9 +26,8 @@
                     <textarea class="form-control" rows="8"></textarea>                     
                 </div>
                 <div class="col-sm-3 nc-tips">
-                    <p>You can paste-in some data from a spreadsheet here. Make sure the columns are 
-                        <b>tab separated</b> and as specified in the caption.</p>
-                    <p>To enter data manually, press the <b>space-bar twice</b> to generate a tab.</p>
+                    <p>You can <b>paste-in data</b> from a spreadsheet here. Columns should contain names, values, and fill colors.</p>
+                    <p>To enter data manually, press the <b>space-bar twice</b> to generate a tab between columns.</p>
                 </div>
                 <div id="nc-temp"></div>
             </div>
@@ -46,6 +45,7 @@
 </div>
 
 <?php
+$mdaside = "(Use this code in an abstract, description, or comment)";
 include_once "ui-sandbox-md.php";
 ?>
 

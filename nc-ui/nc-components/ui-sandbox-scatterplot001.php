@@ -24,9 +24,8 @@
                     <textarea class="form-control" rows="8"></textarea>                     
                 </div>
                 <div class="col-sm-3 nc-tips">
-                    <p>You can paste-in some data from a spreadsheet here. Make sure the columns are 
-                        <b>tab separated</b> and as specified in the caption.</p>
-                    <p>To enter data manually, press the <b>space-bar twice</b> to generate a tab.</p>
+                    <p>You can <b>paste-in data</b> from a spreadsheet here. Columns should contain x coordinates, y coordinates, and names.</p>
+                    <p>To enter data manually, press the <b>space-bar twice</b> to generate a tab between columns.</p>                    
                 </div>
                 <div id="nc-temp"></div>
             </div>
@@ -59,6 +58,7 @@
 
 
 <?php
+$mdaside = "(Use this code in an abstract, description, or comment)";
 include_once "ui-sandbox-md.php";
 ?>
 
