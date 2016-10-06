@@ -38,6 +38,7 @@
             <?php
             include_once "sandbox-components/ui-sandbox-sizemargin.php";
             include_once "sandbox-components/ui-sandbox-offsets.php";
+            include_once "sandbox-components/ui-sandbox-barpadding.php";
             ?>            
         </div>                        
 

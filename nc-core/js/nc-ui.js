@@ -246,9 +246,9 @@ nc.ui.ClassTreeRowWidget = function(classrow) {
     var classvg = '<svg class="nc-symbol" val="'+cid+'"><defs></defs>';
     classvg += '<g transform="translate(18,18)">';
     if (classrow['connector']==1) {
-        classvg+='<line class="'+cname+'" x1=-17 x2=17 y1=0 y2=0/>';
+        classvg+='<line class="nc-default-link '+cname+'" x1=-17 x2=17 y1=0 y2=0/>';
     } else {
-        classvg+='<use xlink:href="#'+cname+'"/>';
+        classvg+='<use xlink:href="#'+cname+'" class="nc-default-node '+cname+'"/>';
     }    
     classvg+='</g></svg>';
     
@@ -273,7 +273,7 @@ nc.ui.ClassTreeRowWidget = function(classrow) {
  * 
  */
 nc.ui.toggleClassDisplay = function(obj) {     
-    obj.find('> div.nc-classdisplay')
+    obj.find('> div.nc-classdisplay, > svg')
     .toggleClass("nc-deprecated")
     .find('button,span.nc-comment[val="nc-deprecated"]').toggle();            
     return obj;
@@ -326,7 +326,7 @@ nc.ui.ClassForm = function(classrow) {
     
     var classid = classrow['class_id'];    
     var classname = classrow['name'];
-    var classsymbol = classrow['symbol'];
+    var classdefs = classrow['defs'];
     var islink = +classrow['connector'];
     var directional = +classrow['directional'];
      
@@ -353,7 +353,7 @@ nc.ui.ClassForm = function(classrow) {
         fg+= '<button val="'+classid+'" class="btn btn-primary btn-sm nc-btn-class-update">Update</button>';
         fg+= '<button val="'+classid+'" class="btn btn-primary btn-sm nc-btn-class-cancel">Cancel</button>';
         fg += '</div><br/>';
-        fg += '<div class="form-group nc-style"><textarea class="form-control" rows=4>'+classsymbol+'</textarea></div>';
+        fg += '<div class="form-group nc-style"><textarea class="form-control" rows=4>'+classdefs+'</textarea></div>';
     }
     var ff2 = '</div></form>';
               

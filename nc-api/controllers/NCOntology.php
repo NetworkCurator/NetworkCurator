@@ -15,9 +15,9 @@ class NCOntology extends NCLogger {
     protected $_network;
     protected $_netid;
     protected $_uperm;
-    // default symbols for nodes and links
-    protected $_def_node_symbol = ['<rect ', 'x=-7 y=-7 width=14 height=14 rx=3 ry=3 fill="#7777dd" />'];
-    protected $_def_link_symbol = '';
+    // default svg defs for nodes and links (for nodes, in two parts, id="" will be inserted in the middle
+    protected $_def_node = ['<circle', 'cx=0 cy=0 r=9 />'];
+    protected $_def_link = '<style type="text/css"></style>';
 
     /**
      * Constructor 
@@ -137,10 +137,10 @@ class NCOntology extends NCLogger {
         // prepare some helper sql bits
         $sqlcase = [];
         $sqlgroup = [];
-        $carray = array_merge($this->_annotypes, ['symbol' => NC_SYMBOL]);
+        $carray = array_merge($this->_annotypes, ['defs' => NC_DEFS]);
         $atypes = array_keys($carray);
         if (!$fulldetail) {
-            $atypes = ['name', 'symbol'];
+            $atypes = ['name', 'defs'];
         }
         foreach ($atypes AS $what) {
             $sqlcase[] = "(CASE WHEN $tac = $carray[$what] THEN $tat ELSE '' END) AS $what";
@@ -165,7 +165,7 @@ class NCOntology extends NCLogger {
                 WHERE $tc.network_id = ? 
                   AND $ta.anno_status = " . NC_ACTIVE . "
                   AND $ta.root_id LIKE '" . NC_PREFIX_CLASS . "%' 
-                  AND $tac <=" . NC_SYMBOL . " $onto GROUP BY $ta.root_id, $tac";
+                  AND $tac <=" . NC_DEFS . " $onto GROUP BY $ta.root_id, $tac";
 
         $sql = "SELECT class_id, parent_id, connector, directional, class_status AS status, $sqlgroup            
             FROM ($innersql) AS T GROUP BY class_id ORDER BY parent_id, name";
@@ -291,13 +291,13 @@ class NCOntology extends NCLogger {
             $parentid = '';
         }
 
-        // append default symbol if now present
-        if ($params['symbol'] == '') {
+        // append default def if now present
+        if ($params['defs'] == '') {
             if ($params['connector'] == 0) {
-                $params['symbol'] = $this->_def_node_symbol[0] . ' id="' . $params['name'] . '" '
-                        . $this->_def_node_symbol[1];
+                $params['defs'] = $this->_def_node[0] . ' id="' . $params['name'] . '" '
+                        . $this->_def_node[1];
             } else {
-                $params['symbol'] = $this->_def_link_symbol;
+                $params['defs'] = $this->_def_link;
             }
         }
 
@@ -370,7 +370,7 @@ class NCOntology extends NCLogger {
         $Q5 = $params['status'] == $oldinfo['class_status'];
         if ($Q1 && $Q2 && $Q3 && $Q4 && $Q5) {
             //throw new Exception("Update is consistent with existing data");
-            // perhaps the symbol still needs changing
+            // perhaps the defs still needs changing
         }
         if (!$Q4) {
             throw new Exception("Cannot toggle connector status");
@@ -415,9 +415,9 @@ class NCOntology extends NCLogger {
             $result = 1;
         }
 
-        // perhaps update the title, abstract, content, or symbol
+        // perhaps update the title, abstract, content, or defs
         $updaterest = false;
-        foreach (['title', 'abstract', 'content', 'symbol'] as $annotype) {
+        foreach (['title', 'abstract', 'content', 'defs'] as $annotype) {
             if ($params[$annotype] != '') {
                 $updaterest = true;
             }
@@ -425,7 +425,7 @@ class NCOntology extends NCLogger {
         if ($updaterest) {
             $oldfullinfo = $this->getFullSummaryFromRootId($this->_netid, $classid);
             $batchupdate = [];
-            foreach (['title', 'abstract', 'content', 'symbol'] as $annotype) {
+            foreach (['title', 'abstract', 'content', 'defs'] as $annotype) {
                 if ($params[$annotype] != '' &&
                         $params[$annotype] != $oldfullinfo[$annotype]['anno_text']) {
                     // update this annotation
@@ -474,7 +474,7 @@ class NCOntology extends NCLogger {
 
         // check that required inputs are defined
         $params = $this->subsetArray($this->_params, array_merge(["target", "parent",
-                    "connector", "directional", "symbol", "status"], array_keys($this->_annotypes)));
+                    "connector", "directional", "defs", "status"], array_keys($this->_annotypes)));
 
         // make sure the asking user is allowed to curate
         if ($this->_uperm < NC_PERM_CURATE) {

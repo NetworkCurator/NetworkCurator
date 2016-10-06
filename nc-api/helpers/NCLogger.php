@@ -22,7 +22,7 @@ class NCLogger extends NCDB {
     protected $_annotypes = ["name" => NC_NAME, "title" => NC_TITLE,
         "abstract" => NC_ABSTRACT, "content" => NC_CONTENT];
     protected $_annotypeslong = ["name" => NC_NAME, "title" => NC_TITLE,
-        "abstract" => NC_ABSTRACT, "content" => NC_CONTENT, "symbol" => NC_SYMBOL];
+        "abstract" => NC_ABSTRACT, "content" => NC_CONTENT, "defs" => NC_DEFS];
     
     /**
      * Constructor with connection to database
@@ -485,7 +485,7 @@ class NCLogger extends NCDB {
         $sql = "SELECT network_id, datetime, owner_id, root_id, parent_id, 
             anno_id, anno_type, anno_text FROM " . NC_TABLE_ANNOTEXT . "  
                 WHERE network_id = ? AND root_id = ?                  
-                  AND anno_type <= " . NC_SYMBOL . " AND anno_status=" . NC_ACTIVE;
+                  AND anno_type <= " . NC_DEFS . " AND anno_status=" . NC_ACTIVE;
         $stmt = $this->qPE($sql, [$netid, $rootid]);
         $result = [];
         while ($row = $stmt->fetch()) {
@@ -502,8 +502,8 @@ class NCLogger extends NCDB {
                 case NC_CONTENT:
                     $result['content'] = $row;
                     break;
-                case NC_SYMBOL:
-                    $result['symbol'] = $row;
+                case NC_DEFS:
+                    $result['defs'] = $row;
                     break;                
                 default:
                     break;

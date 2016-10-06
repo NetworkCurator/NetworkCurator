@@ -28,7 +28,7 @@ nc.sandbox.generateMarkdown = function() {
     // start building an object
     var result = {};
         
-    // conversion function transfers data from obj to result    
+    // conversion function transfers data from a form group to result {}   
     var fg2obj = function() {
         var iname = $(this).attr("val");       
         var iinput = $(this).find("input");   
@@ -50,11 +50,14 @@ nc.sandbox.generateMarkdown = function() {
                 var colnames = ($(this).attr("colnames")).split(" ");                                
                 result[iname] = [];
                 for (var i=0; i<data.length; i++) {
+                    if (data[i]=='') {
+                        data[i]=' \t';
+                    }
                     var dd = {};
                     data[i] = data[i].split("\t");
                     for (var j=0; j<data[i].length; j++) {
-                        now = data[i][j];                       
-                        now = (isNaN(now) || now=='' ? now : +now);
+                        now = data[i][j];
+                        now = (isNaN(now) || now=='' || now==' ' ? now : +now);
                         dd[colnames[j]] = now;
                     }
                     result[iname].push(dd);

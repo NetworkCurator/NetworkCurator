@@ -221,8 +221,7 @@ class NCData extends NCGraphs {
 
         // make sure all entry contain at least some default values for all required parameters        
         $defaults = ["title" => '', "abstract" => '', "content" => '', "class" => '',
-            "symbol"=>'',
-            "directional" => 0, "connector" => 0, "parent" => '', "status" => 1];
+            "defs"=>'', "directional" => 0, "connector" => 0, "parent" => '', "status" => 1];
 
         for ($i = 0; $i < count($newdata); $i++) {
             foreach ($defaults as $key => $value) {
@@ -306,7 +305,7 @@ class NCData extends NCGraphs {
             }
             // perhaps adjust title abstract content
             $batchupdate = [];
-            foreach (['title', 'abstract', 'content', 'symbol'] as $type) {
+            foreach (['title', 'abstract', 'content', 'defs'] as $type) {
                 if (array_key_exists($type, $newentry)) {
                     if ($newentry[$type] != '' && $newentry[$type] != $ontology[$classname][$type]) {
                         // prepare a set of data for updates

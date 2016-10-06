@@ -45,13 +45,18 @@ nc.ontology.createClass = function(classname, islink, isdirectional) {
         if (data['success']==false) {              
             nc.msg('Error', data['errormsg']);                
         } else {                
-            // insert was successful, so append the tree            
+            // insert was successful, so append the tree   
+            var thisdefs = '<circle id="'+classname+'" cx=0 cy=0 r=9 />';
+            if (islink) {
+                thisdefs = '<style type="text/css"></style>';
+            }
             var newrow = {
                 class_id:data['data'], 
                 parent_id:'', 
                 connector:+islink,
                 directional:+isdirectional, 
                 name:classname,
+                defs: thisdefs,
                 status: 1
             };
             nc.ui.addClassTreeRow(newrow, 1);                
@@ -78,7 +83,7 @@ nc.ontology.updateClassProperties = function(classid, classname, parentid, islin
     }
     
     // get the svg style from the page
-    var thissymbol = $('form[val="'+classid+'"] textarea').val();    
+    var thisdefs = $('form[val="'+classid+'"] textarea').val();    
               
     $.post(nc.api, {
         controller: "NCOntology", 
@@ -89,7 +94,7 @@ nc.ontology.updateClassProperties = function(classid, classname, parentid, islin
         title: '',
         'abstract': '',
         content: '',
-        symbol: thissymbol,
+        defs: thisdefs,
         status: 1,
         parent: parentname,  
         connector: +islink,

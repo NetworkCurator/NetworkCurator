@@ -30,9 +30,9 @@ echo ncScriptObject("nc.ontology.links", $linkclasses);
         <div class="nc-tips nc-curator">
             <h4>Tips</h4>        
             <p>Use the <b>Create new class</b> form to create a new type of node or link.</p>
-            <p>Click the <b>Move</b> button and drag to build a hierarchy of classes. 
-                Then use the <b>Edit/Update</b> button to register the changes in the database.</p>
-            <p>Use the <b>Edit/Update</b> button to change the name associated with a node/link class.</p>        
+            <p>Click the <b>symbols</b> and drag to build a hierarchy of classes. 
+                Then use the <b>Edit/Update</b> buttons to register the changes in the database.</p>
+            <p>Use the <b>Edit/Update</b> buttons to modify the appearance of a class.</p>        
             <p>Click the <b>Remove</b> button to inactivate a given class.</p>            
         </div>
     </div>

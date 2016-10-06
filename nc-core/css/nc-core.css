@@ -251,10 +251,11 @@ textarea {
  * ------------------------------------------------------------------------------------ */
 
 .nc-deprecated {
-    opacity: 0.6;
-    /* text-decoration: line-through; */
+    opacity: 0.6;    
 }
-
+svg.nc-deprecated {
+    opacity: 0 !important;
+}
 
 
 /* ------------------------------------------------------------------------------------
@@ -317,14 +318,6 @@ svg#nc-graph-svg rect, svg#nc-graph-svg circle, svg#nc-graph-svg line {
     stroke: #aaaaaa;
     stroke-width: 6;    
     stroke-dasharray: 7 5;
-}
-.nc-node-highlight {    
-    stroke: #000000;
-    stroke-width: 4;            
-}
-
-.nc-link-highlight {
-    stroke: #000000;
 }
 
 .nc-newlink-source {

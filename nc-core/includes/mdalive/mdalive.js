@@ -243,7 +243,8 @@ mdalive.lib.barplot001 = function(obj, x) {
     var optional = {
         "size": [200, 200], 
         "margin": [40, 20, 30, 50],
-        "offset": ["2.5em", "2.5em"]
+        "offset": ["2.5em", "2.5em"],
+        "padding": 0.2
     };
     mdalive.fillArguments(x, optional);        
     for (var i=0; i<4; i++) {
@@ -258,7 +259,7 @@ mdalive.lib.barplot001 = function(obj, x) {
     var winner = w-x.margin[1]-x.margin[3];
     
     // turns names and values into new structure    
-    var numbars = x.data.length;        
+    //var numbars = x.data.length;        
     // set the svg space
     d3.select(obj).attr("style", "width: "+w+"px; height: "+h+"px");
          
@@ -272,7 +273,7 @@ mdalive.lib.barplot001 = function(obj, x) {
     svg.append("text").text(x.xlab).style("text-anchor", "middle")
     .attr("y", hinner).attr("dy", x.offset[0])
     .attr("x", winner/2);         
-    var xscale = d3.scaleBand().range([0, winner]).padding(0.5/numbars)
+    var xscale = d3.scaleBand().range([0, winner]).padding(x.padding)
     .domain(x.data.map(function(d) {
         return d.name;
     }));
