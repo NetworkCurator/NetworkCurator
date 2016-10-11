@@ -86,8 +86,7 @@ nc.graph.initToolbar = function() {
         } else {
             jsvg.css("cursor", "grab");   
             nc.graph.svg.selectAll('g').attr('cursor', 'default');
-            nc.graph.svg.on("click", null);
-            //nc.graph.svg.selectAll('g').on('click', nc.graph.displayDetails);
+            nc.graph.svg.on("click", null);            
             nc.graph.mode = "select";
         }       
     });
@@ -100,14 +99,18 @@ nc.graph.initToolbar = function() {
  * Handlers for graph editing
  * ==================================================================================== */
 
+// invoked by mouse click
 nc.graph.addNode = function() {
     // find the current node type, then add a classed node 
     var whichnode = d3.select('#nc-graph-toolbar button[val="node"]');
     var classid = whichnode.attr('class_id');
     var classname = whichnode.attr('class_name');
-    nc.graph.addClassedNode(nc.graph.getCoord(d3.mouse(this)), classid, classname, "nc-newnode");            
+    var newnode = nc.graph.addClassedNode(nc.graph.getCoord(d3.mouse(this)), classid, classname, "nc-newnode");            
+    nc.graph.select(newnode);
+    return newnode;
 }
 
+// helper function, invoked from addNode()
 nc.graph.addClassedNode = function(point, classid, classname, styleclass) {     
     var newid = "+"+classname+"_"+Date.now(),    
     newnode = {
@@ -125,17 +128,22 @@ nc.graph.addClassedNode = function(point, classid, classname, styleclass) {
     //alert(JSON.stringify(newnode));
     nc.graph.simStop();
     nc.graph.rawnodes.push(newnode);          
-    nc.graph.initSimulation();    
+    nc.graph.initSimulation(); 
+    
+    return newnode;
 }
 
-
+// invoked by mouse events
 nc.graph.addLink = function() {
     var whichlink = d3.select('#nc-graph-toolbar button[val="link"]');    
     var classid = whichlink.attr("class_id");
     var classname =  whichlink.attr("class_name");
-    return nc.graph.addClassedLink(classid, classname, "nc-newlink");
+    var newlink = nc.graph.addClassedLink(classid, classname, "nc-newlink");
+    nc.graph.select(newlink);    
+    return newlink;
 }
 
+// helper function, invoked from addLink()
 nc.graph.addClassedLink = function(classid, classname, styleclass) {   
    
     // identify the temporary link
@@ -260,9 +268,9 @@ nc.graph.displayInfo = function(d) {
     // if reached here, the graph info has data on this object        
     var dtitle = nc.graph.info[d.id]['title'];
     var dabstract = nc.graph.info[d.id]['abstract'];            
-    var nowtitle = nc.md2html(dtitle['anno_text']);
+    var nowtitle = nc.utils.md2html(dtitle['anno_text']);
     detdiv.find('#'+prefix+'-title').html(nowtitle).attr("val", dtitle['anno_id']);
-    var nowabstract = nc.md2html(dabstract['anno_text']);
+    var nowabstract = nc.utils.md2html(dabstract['anno_text']);
     detdiv.find('#'+prefix+'-abstract').html(nowabstract).attr("val", dabstract['anno_id']); 
             
     // also fill in the ontology class 
@@ -631,9 +639,10 @@ nc.graph.dragended = function(d) {
             nc.graph.nodes[dindex].fx = null;
             nc.graph.nodes[dindex].fy = null;    
             break;
-        case "newlink":
-            var newlink = nc.graph.addLink(); // this is here to make links respond to drag events            
-            nc.graph.select(newlink);
+        case "newlink":            
+            // this is here to make links respond to drag events                        
+            var newlink = nc.graph.addLink(); 
+            nc.graph.select(newlink);            
             break;
         case "default":
             break;
@@ -642,7 +651,6 @@ nc.graph.dragended = function(d) {
 
 // for panning it helps to keep track of the pan-start point
 nc.graph.point = [0,0];
-
 /**
  * activates when user drags the background
  */
@@ -952,17 +960,17 @@ nc.graph.removeNode = function() {
     // identify the selected node        
     var nodeid = nc.graph.svg.select("use.nc-node-highlight").attr("id");
          
-    // get rid of the node id from the array
-    nc.graph.nodes = nc.graph.nodes.filter(function(value, index, array) {
+    // get rid of the node id from the array    
+    nc.graph.rawnodes = nc.graph.rawnodes.filter(function(value, index, array) {
         return (value.id!=nodeid);
-    });
+    });    
     // for links, first reset the source and target to simple labels (not arrays)
     // then remove the links that point to the node
-    for (var i=0; i<nc.graph.links.length; i++) {
-        nc.graph.links[i].source = nc.graph.links[i].source.id;
-        nc.graph.links[i].target = nc.graph.links[i].target.id;
+    for (var i=0; i<nc.graph.rawlinks.length; i++) {
+        nc.graph.rawlinks[i].source = nc.graph.rawlinks[i].source.id;
+        nc.graph.rawlinks[i].target = nc.graph.rawlinks[i].target.id;
     }    
-    nc.graph.links = nc.graph.links.filter(function(value, index, array) {
+    nc.graph.rawlinks = nc.graph.rawlinks.filter(function(value, index, array) {
         return (value.source!=nodeid && value.target!=nodeid); 
     });
         
@@ -984,7 +992,7 @@ nc.graph.removeLink = function() {
     var linkid = nc.graph.svg.select("line.nc-link-highlight").attr("id");
              
     // remove the link with that id
-    nc.graph.links = nc.graph.links.filter(function(value, index, array) {
+    nc.graph.rawlinks = nc.graph.rawlinks.filter(function(value, index, array) {
         return (value.id!=linkid); 
     });
         

@@ -46,26 +46,6 @@ var nc = {
 
 
 
-
-/* ====================================================================================
- * Markdown to html conversion
- * ==================================================================================== */
-
-// markdown converter
-nc.mdconverter = new showdown.Converter({
-    headerLevelStart: 1, 
-    tables: true,
-    tasklists: true
-});
-
-
-// conversion from markdown to html (sanitized and alive)
-nc.md2html = function(x) {
-    var x2 = nc.mdconverter.makeHtml(x);
-    return mdalive.makeAlive(x2);   
-}
-
-
 /* ====================================================================================
 * Generic functions 
 * ==================================================================================== */
@@ -261,7 +241,7 @@ nc.init.initMarkdown = function() {
         var temp = $('.nc-md[val="'+key+'"]');
         var nowarea = temp.find('textarea.nc-curation-content');
         // convert md into html, then into alive html
-        var html = nc.md2html(val);        
+        var html = nc.utils.md2html(val);        
         if (nowarea.length>0) {
             // this element is marked as editable and thus should have a textarea 
             // and content div

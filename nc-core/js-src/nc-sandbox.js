@@ -94,7 +94,7 @@ $(document).ready(
         var sandmd = $('#nc-sandbox-md');       
         $("#nc-sandbox-md").on('change keyup paste input', function(){
             var textmd = sandmd.val();
-            sandout.html(nc.md2html(textmd));      
+            sandout.html(nc.utils.md2html(textmd));      
         });        
         // gui toggling
         var sandopt = $('#nc-sandbox-optional').hide();

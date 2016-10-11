@@ -207,9 +207,10 @@ nc.ui.ClassTreeWidget = function(classdata, islink) {
         root.find("form.nc-classupdate[val='"+classid+"']").toggle();                
     });    
     // updating the svg textarea
-    root.on("change keyup paste input", "textarea", function() {
-        //alert("in here");
-        var textsvg = $(this).val();        
+    // on had "change keyup paste input"
+    root.on("change keyup", "textarea", function() {
+        //alert("in here");                
+        var textsvg = nc.utils.sanitize($(this).val(), true);                         
         // find the svg component        
         var thisform  = $(this).parent().parent().parent();
         var thisid = thisform.attr('val');
@@ -574,7 +575,7 @@ nc.ui.AnnoEditBox = function() {
         var annoareah = 6+ parseInt(thiscurabox.find('textarea').css("height").replace("px",""));                
         var annomd = thiscurabox.find('textarea').hide().val();   
         // convert from md to html
-        var annohtml = nc.md2html(annomd);        
+        var annohtml = nc.utils.md2html(annomd);        
         thiscurabox.find('div.nc-curation-content').css("min-height", annoareah)        
         .html(annohtml).show();        
         thiscurabox.find('a.nc-curation-toolbox-preview,a.nc-curation-toolbox-md').toggle();

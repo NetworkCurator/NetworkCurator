@@ -42,7 +42,7 @@ $dblcol = " DOUBLE NOT NULL DEFAULT 0.0";
 $datecol = " DATETIME NOT NULL";
 
 $engine = " ENGINE = InnoDB ";
-//$engine = " ENGINE = MyISAM ";
+
 
 /* --------------------------------------------------------------------------
  * Start installation
@@ -403,9 +403,6 @@ $myconf .= "\n?>";
 file_put_contents("../config/nc-config.php", $myconf);
 echo "ok\n";
 
-
-
-echo "\n";
 ?>
 
 

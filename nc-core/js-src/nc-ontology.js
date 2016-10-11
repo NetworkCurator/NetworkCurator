@@ -83,7 +83,7 @@ nc.ontology.updateClassProperties = function(classid, classname, parentid, islin
     }
     
     // get the svg style from the page
-    var thisdefs = $('form[val="'+classid+'"] textarea').val();    
+    var thisdefs = nc.utils.sanitize($('form[val="'+classid+'"] textarea').val(), true);    
               
     $.post(nc.api, {
         controller: "NCOntology", 

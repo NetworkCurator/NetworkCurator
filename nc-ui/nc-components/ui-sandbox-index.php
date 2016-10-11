@@ -6,7 +6,7 @@
 
 // is the request for a particular sandbox?
 if ($sandbox != "index") {
-    $sandfile = "nc-ui/nc-components/ui-sandbox-$sandbox.php";    
+    $sandfile = "nc-ui/nc-components/sandboxes/ui-sandbox-$sandbox.php";    
     if (file_exists($sandfile)) {
         include_once $sandfile;
         exit();
@@ -43,12 +43,16 @@ if ($sandbox != "index") {
            Use the code within any content box (e.g. abstract or comment) on the NetworkCurator site.</p>
                 
         <div class="list-group nc-mt-10">
-            <a href="?page=sandbox&sandbox=barplot001" class="list-group-item list-group-item-action">
-                <h5 class="list-group-item-heading">barplot001</h5>
-                <p class="list-group-item-text">Create simple bar plots.</p>
+            <a href="?page=sandbox&sandbox=barplot01" class="list-group-item list-group-item-action">
+                <h5 class="list-group-item-heading">barplot01</h5>
+                <p class="list-group-item-text">Create bar plots with vertical bars.</p>
             </a>
-            <a href="?page=sandbox&sandbox=scatterplot001" class="list-group-item list-group-item-action">
-                <h5 class="list-group-item-heading">scatterplot001</h5>
+            <a href="?page=sandbox&sandbox=barplot02" class="list-group-item list-group-item-action">
+                <h5 class="list-group-item-heading">barplot02</h5>
+                <p class="list-group-item-text">Create bar plots with horizontal bars.</p>
+            </a>
+            <a href="?page=sandbox&sandbox=scatterplot01" class="list-group-item list-group-item-action">
+                <h5 class="list-group-item-heading">scatterplot01</h5>
                 <p class="list-group-item-text">Create simple scatter plots.</p>
             </a>           
         </div>

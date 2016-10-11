@@ -141,7 +141,8 @@ nc.utils.checkAPIresult = function(x) {
 nc.utils.sortByKey = function(arr, key) {
     
     return arr.sort(function(a, b) {
-        var x = a[key]; var y = b[key];
+        var x = a[key];
+        var y = b[key];
         if (x<y) {
             return -1;
         } else if (x>y) {
@@ -153,6 +154,59 @@ nc.utils.sortByKey = function(arr, key) {
 }
 
 
+
+/* ====================================================================================
+ * For markdown conversions and html handling
+ * ==================================================================================== */
+
+
+// markdown converter
+nc.utils.mdconverter = new showdown.Converter({
+    headerLevelStart: 1, 
+    tables: true,
+    strikethrough: true,
+    tasklists: true
+});
+
+
+// allowed tags for sanitize-html
+// compare to sanitize-html default, adds svg tags
+nc.utils.allowedTags = ['h3', 'h4', 'h5', 'h6', 'blockquote', 
+    'p', 'a', 'ul', 'ol',
+    'nl', 'li', 'b', 'i', 'strong', 'em', 'strike', 'code', 'hr', 'br', 'div',
+    'table', 'thead', 'caption', 'tbody', 'tr', 'th', 'td', 'pre',   
+    'circle', 'rect', 'line', 'path', 'polyline', 'ellipse', 'polygon', 'marker'];
+nc.utils.allowedAttributes= {
+    code: ['class'],
+    style: ['type'],
+    circle: ['cx', 'cy', 'r', 'id' , 'fill'],
+    rect: ['x', 'y', 'width', 'height', 'id', 'fill'],
+    marker: ['id', 'viewbox', 'refX', 'refY', 'markerWidth', 'markerHeight', 'orient'],
+    line: ['x1', 'x2', 'y1', 'y2', 'id'],
+    path: ['d', 'fill']
+}
+
+
+// conversion from markdown to html (sanitized and alive)
+nc.utils.md2html = function(x) {
+    var x2 = nc.utils.sanitize(nc.utils.mdconverter.makeHtml(x), false);
+    return mdalive.makeAlive(x2);   
+}
+
+
+// sanitize a piece of html
+// x - a string with text (dirty html)
+// allowstyle - logical. Set true to allow the <style> tag.
+nc.utils.sanitize =function(x, allowstyle) {    
+    var oktags = nc.utils.allowedTags.slice(0);
+    if (allowstyle) {
+        oktags.push('style');
+    }    
+    return sanitizeHtml(x, {
+        allowedTags: oktags,
+        allowedAttributes: nc.utils.allowedAttributes 
+    });    
+}
 
 
 /* ====================================================================================
