@@ -2946,7 +2946,7 @@ nc.ui.addCommentBox = function(comdata) { //datetime, ownerid, rootid, parentid,
     html+='</div>';        
     var commentbox = nc.ui.CommentBox(comdata.owner_id, comdata.root_id, 
         comdata.parent_id, comdata.anno_id, comdata.anno_text);    
-    commentbox.find('textarea').html(comdata.anno_text);
+    commentbox.find('textarea').text(comdata.anno_text);
     commentbox.find('.media-body a.nc-curation-toolbox-preview').click();  
     commentbox.find('div.nc-curation-content').css("min-height", 0);
     commentbox.find('.media-body').prepend(html).addClass("nc-editable-text")
