@@ -171,14 +171,15 @@ nc.utils.mdconverter = new showdown.Converter({
 
 // allowed tags for sanitize-html
 // compare to sanitize-html default, adds svg tags
-nc.utils.allowedTags = ['h3', 'h4', 'h5', 'h6', 'blockquote', 
+nc.utils.allowedTags = ['h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 
     'p', 'a', 'ul', 'ol',
     'nl', 'li', 'b', 'i', 'strong', 'em', 'strike', 'code', 'hr', 'br', 'div',
     'table', 'thead', 'caption', 'tbody', 'tr', 'th', 'td', 'pre',   
-    'circle', 'rect', 'line', 'path', 'polyline', 'ellipse', 'polygon', 'marker'];
+    'g', 'circle', 'rect', 'line', 'path', 'polyline', 'ellipse', 'polygon', 'marker'];
 nc.utils.allowedAttributes= {
     code: ['class'],
     style: ['type'],
+    g: ['id', 'transform'],
     circle: ['cx', 'cy', 'r', 'id' , 'fill'],
     rect: ['x', 'y', 'width', 'height', 'id', 'fill'],
     marker: ['id', 'viewbox', 'refX', 'refY', 'markerWidth', 'markerHeight', 'orient'],
@@ -190,7 +191,7 @@ nc.utils.allowedAttributes= {
 // conversion from markdown to html (sanitized and alive)
 nc.utils.md2html = function(x) {
     var x2 = nc.utils.sanitize(nc.utils.mdconverter.makeHtml(x), false);
-    return mdalive.makeAlive(x2);   
+    return makealive.convert(x2);   
 }
 
 

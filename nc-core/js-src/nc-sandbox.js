@@ -1,7 +1,7 @@
 /* 
  * nc-sandbox.js
  * 
- * Interactive md and mdalive sandboxes
+ * Interactive md and makealive sandboxes
  * 
  */
 
@@ -50,17 +50,16 @@ nc.sandbox.generateMarkdown = function() {
                 var colnames = ($(this).attr("colnames")).split(" ");                                
                 result[iname] = [];
                 for (var i=0; i<data.length; i++) {
-                    if (data[i]=='') {
-                        data[i]=' \t';
-                    }
-                    var dd = {};
-                    data[i] = data[i].split("\t");
-                    for (var j=0; j<data[i].length; j++) {
-                        now = data[i][j];
-                        now = (isNaN(now) || now=='' || now==' ' ? now : +now);
-                        dd[colnames[j]] = now;
-                    }
-                    result[iname].push(dd);
+                    if (data[i]!='') {                        
+                        var dd = {};
+                        data[i] = data[i].split("\t");
+                        for (var j=0; j<data[i].length; j++) {
+                            now = data[i][j];
+                            now = (isNaN(now) || now=='' || now==' ' ? now : +now);
+                            dd[colnames[j]] = now;
+                        }
+                        result[iname].push(dd);
+                    }                
                 }
             }
         }
@@ -69,7 +68,7 @@ nc.sandbox.generateMarkdown = function() {
     req.find('.form-group').each( fg2obj);
     opt.find('.form-group').each( fg2obj);
             
-    var mdout = '```mdalive '+req.attr("val")+'\n';
+    var mdout = '```makealive '+req.attr("val")+'\n';
     mdout+=JSON.stringify(result, null, 2)+'\n';
     mdout += '```';
     

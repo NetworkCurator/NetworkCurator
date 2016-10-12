@@ -36,9 +36,9 @@
         <h4 class="nc-sandbox-optional">Optional parameters <span><span class="caret"></span></span></h4>
         <div id="nc-sandbox-optional" class="nc-parameters form-horizontal">
             <?php
-            $defaults = [200, 200, 40, 20, 60, 40];
+            $defaults = [200, 200, 40, 20, 70, 50];
             include_once "sandbox-components/ui-sandbox-sizemargin.php";
-            $defaults = ["-1.5em", "2.5em", "-2em"];
+            $defaults = ["-1.5em", "2.2em", "-2.2em"];
             include_once "sandbox-components/ui-sandbox-offsets.php";
             include_once "sandbox-components/ui-sandbox-barpadding.php";
             ?>            
@@ -49,6 +49,6 @@
 
 <?php
 $mdaside = "(Use this code in an abstract, description, or comment)";
-include_once "ui-sandbox-md.php";
+include_once "sandbox-components/ui-sandbox-md.php";
 ?>
 

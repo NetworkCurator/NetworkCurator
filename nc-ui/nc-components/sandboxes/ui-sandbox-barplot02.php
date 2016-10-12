@@ -49,6 +49,6 @@
 
 <?php
 $mdaside = "(Use this code in an abstract, description, or comment)";
-include_once "ui-sandbox-md.php";
+include_once "sandbox-components/ui-sandbox-md.php";
 ?>
 
