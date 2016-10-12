@@ -30,14 +30,24 @@ nc.graph = {
  * ==================================================================================== */
 
 /**
- * Build a toolbar and deal with node/link classes
+ * Build a toolbar, adjust interface, deal with node/link classes
  */
-nc.graph.initToolbar = function() {
+nc.graph.initInterface = function() {
         
     // check if this is the graph page
     var toolbar = $('#nc-graph-toolbar');
     nc.graph.svg = d3.select('#nc-graph-svg');   
-        
+
+    // add elements into nc.ontology.nodes, nc.ontology.links that related to display    
+    $.each(nc.ontology.nodes, function(key) {
+        nc.ontology.nodes[key].show = 1;
+        nc.ontology.nodes[key].showlabel = 0;
+    })
+    $.each(nc.ontology.links, function(key) {
+        nc.ontology.links[key].show = 1;
+        nc.ontology.links[key].showlabel = 0;
+    })
+
     // get descriptions of the node and link ontology    
     var pushonto = function(x) {
         var result = [];
@@ -46,7 +56,9 @@ nc.graph.initToolbar = function() {
                 id: val['class_id'],
                 label: val['longname'], 
                 val: val['name'],
-                status: val['status']
+                status: val['status'],
+                show: val['show'],
+                showlabel: val['showlabel']
             });
         });        
         return nc.utils.sortByKey(result, 'label');
@@ -61,16 +73,36 @@ nc.graph.initToolbar = function() {
     
     // add buttons to the toolbar, finally!
     toolbar.append(nc.ui.ButtonGroup(['Select']));
-    toolbar.append(nc.ui.DropdownButton("New node:", nodes, "node", false));
-    toolbar.append(nc.ui.DropdownButton("New link:", links, "link", false));     
+    toolbar.append(nc.ui.DropdownButton("New node ", nodes, "node", false));
+    toolbar.append(nc.ui.DropdownButton("New link ", links, "link", false));     
     
     toolbar.find("button").click(function() {
         toolbar.find("button").removeClass("active");         
     })    
     
-    // create behaviors in the svg based on the toolbar
+    // make a button that says view, add a dropdown form to it, add to toolbar    
+    var viewbtn = nc.ui.DropdownOntoView(nodes, links);
+    // add handlers to the checkboxes in the form
+    // attach handling for toggling of the checkboxes
+    viewbtn.find('input[type="checkbox"]').on("change", function() {
+        // identify whether a show element or show label is clicked
+        var showtext = $(this).attr("val")=="showlabel";
+        var classid = $(this).parent().parent().attr("val");
+        var newval = +this.checked;
+        // identify whether classname is a node or link
+        var nowonto = (classid in nc.ontology.nodes ? nc.ontology.nodes : nc.ontology.links);
+        if (showtext) {
+            nowonto[classid].showlabel=newval;  
+        } else {
+            nowonto[classid].show=newval;  
+        }
+        // reinitialize the graph simulation
+        nc.graph.initSimulation(); 
+    });    
+    toolbar.append(viewbtn);
     
-    // create handlers    
+    
+    // create behaviors in the svg based on the toolbar        
     var jsvg = $('#nc-graph-svg');
     jsvg.mouseenter(function() {   
         var newnode = $('#nc-graph-toolbar button[val="node"]');
@@ -91,6 +123,14 @@ nc.graph.initToolbar = function() {
         }       
     });
   
+    // for details box, add buttons for "read more" and to "activate/inactivate"
+    var detailsdiv = $('#nc-graph-details');
+    var readbutton = '<a class="btn btn-default btn-sm" href="#" id="nc-graph-details-more">Read more</a>'      
+    detailsdiv.append(readbutton);
+    if (nc.curator) {
+        var togglebutton = '<a class="btn btn-danger btn-sm nc-btn-mh" id="nc-graph-details-remove">Remove</a>';  
+        detailsdiv.append(togglebutton);
+    }
 }
 
 
@@ -257,6 +297,13 @@ nc.graph.displayInfo = function(d) {
         var type = ("source" in d ? "link" : "node");        
         window.location.replace("?network="+nc.network+"&object="+d.id);        
     } );
+    if (nc.curator) {
+        detdiv.find('#'+prefix+'-remove').click(
+            function() {
+                alert("Feature: todo");
+            });    
+    }
+    
     detdiv.show();
     
     // perhaps fetch the data from server, or look it up in memory
@@ -319,10 +366,26 @@ nc.graph.getInfo = function(d) {
 }
 
 /* ====================================================================================
+ * Node/Link activate/remove
+ * ==================================================================================== */
+
+nc.graph.removeObject = function() {
+
+    }
+
+nc.graph.activateObject = function() {
+    
+    }
+
+
+/* ====================================================================================
  * Node/Link filtering
  * ==================================================================================== */
 
-
+/**
+ * Turns a large set of raw nodes into a smaller set for display.
+ * This enables suppressing some graph info while displaying others.
+ */
 nc.graph.filterNodes = function() {         
         
     // convenience shallow copies of nc.graph objects
@@ -336,7 +399,7 @@ nc.graph.filterNodes = function() {
     for (var i=0; i<nlen; i++) {
         // get input class id
         var iclassid = rawnodes[i].class_id;         
-        if (nonto[iclassid].status>0) {
+        if (nonto[iclassid].status>0 && nonto[iclassid].show>0) {
             nc.graph.nodes[counter] = rawnodes[i];
             counter++;
         }        
@@ -344,8 +407,12 @@ nc.graph.filterNodes = function() {
     
 }
 
-nc.graph.filterLinks = function() {
-    //alert("filtering links "+nc.graph.rawlinks.length);
+/**
+ * Turns a large set of raw links into a smaller set for display.
+ * Analogous to filterNodes.
+ * 
+ */
+nc.graph.filterLinks = function() {    
     
     // some shorthand objects
     var rawlinks = nc.graph.rawlinks;
@@ -356,15 +423,14 @@ nc.graph.filterLinks = function() {
     var goodnodes = {};
     for (var j=0; j<nc.graph.nodes.length; j++) {
         goodnodes[nc.graph.nodes[j].id]= 1;
-    }
-    //alert(JSON.stringify(goodnodes));
+    }    
 
     var counter = 0;
     nc.graph.links = [];    
     //alert(nc.graph.links.length+" "+nc.graph.rawlinks.length);
     for (var i=0; i<llen; i++) {
         var iclassid = rawlinks[i].class_id;        
-        if (lonto[iclassid].status>0) {
+        if (lonto[iclassid].status>0 && lonto[iclassid].show>0) {
             // must also check if source and end nodes should be displayed            
             var isource = rawlinks[i].source;
             var itarget = rawlinks[i].target;
@@ -514,11 +580,26 @@ nc.graph.simStart = function() {
         return "nc-default-node "+d["class"];        
     })
     .call(nodedrag).on("click", nc.graph.select).on("dblclick", nc.graph.unpin);        
-    
+     
+    // create textlabels for nodes (depending on node class settings)
+    var textnodes = nc.graph.nodes.filter(function(z) {         
+        var zcid = z.class_id;        
+        return nc.ontology.nodes[zcid].showlabel>0;        
+    });
+    var nodetext = nc.graph.svg.select("g.nc-svg-content").append("g")
+    .attr("class", "nodetext")
+    .selectAll("text").data(textnodes).enter().append("text")
+    .text(function(d) {
+        return d.name
+    })
+    .attr("dx", "1em")
+    .style("text-anchor", "left");    
+     
     // performed at each simulation step to reposition the nodes and links
     var tick = function() {        
         link.attr("x1", dsourcex).attr("y1", dsourcey).attr("x2", dtargetx).attr("y2", dtargety);    
-        node.attr("x", dx).attr("y", dy);        
+        node.attr("x", dx).attr("y", dy);    
+        nodetext.attr("x", dx).attr("y", dy);
     }
     
     nc.graph.sim.nodes(nc.graph.nodes).on("tick", tick);                   
@@ -639,7 +720,7 @@ nc.graph.dragended = function(d) {
             nc.graph.nodes[dindex].fx = null;
             nc.graph.nodes[dindex].fy = null;    
             break;
-        case "newlink":            
+        case "newlink":
             // this is here to make links respond to drag events                        
             var newlink = nc.graph.addLink(); 
             nc.graph.select(newlink);            
@@ -961,7 +1042,7 @@ nc.graph.removeNode = function() {
     var nodeid = nc.graph.svg.select("use.nc-node-highlight").attr("id");
          
     // get rid of the node id from the array    
-    nc.graph.rawnodes = nc.graph.rawnodes.filter(function(value, index, array) {
+    nc.graph.rawnodes = nc.graph.rawnodes.filter(function(value) {
         return (value.id!=nodeid);
     });    
     // for links, first reset the source and target to simple labels (not arrays)
@@ -970,7 +1051,7 @@ nc.graph.removeNode = function() {
         nc.graph.rawlinks[i].source = nc.graph.rawlinks[i].source.id;
         nc.graph.rawlinks[i].target = nc.graph.rawlinks[i].target.id;
     }    
-    nc.graph.rawlinks = nc.graph.rawlinks.filter(function(value, index, array) {
+    nc.graph.rawlinks = nc.graph.rawlinks.filter(function(value) {
         return (value.source!=nodeid && value.target!=nodeid); 
     });
         

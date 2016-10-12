@@ -11,8 +11,7 @@
 <div id="nc-graph-details" class="nc-graph-details">    
     <h2><div id="nc-graph-details-title" class="nc-editable-text nc-md" val=""></div></h2>    
     <div id="nc-graph-details-class" class="nc-mt-15"></div>    
-    <div id="nc-graph-details-abstract" class="nc-editable-text nc-md nc-mt-15" val=""></div>
-    <a class="nc-mt-15" id="nc-graph-details-more" href="#">Read more</a>
+    <div id="nc-graph-details-abstract" class="nc-editable-text nc-md nc-mt-15" val=""></div>    
 </div> 
 
 <?php

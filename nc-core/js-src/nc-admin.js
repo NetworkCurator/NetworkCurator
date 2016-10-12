@@ -39,10 +39,11 @@ nc.admin.createNetwork = function(fgname, fgtitle, fgdesc) {
     {
         controller: "NCNetworks", 
         action: "createNewNetwork", 
-        network_name: $('#'+fgname+' input').val(),
-        network_title: $('#'+fgtitle+' input').val(),
-        network_desc: networkdesc
-    }, function(data) {          
+        name: $('#'+fgname+' input').val(),
+        title: $('#'+fgtitle+' input').val(),
+        "abstract": networkdesc,
+        "content": ""
+    }, function(data) {         
         nc.utils.alert(data);        
         data = JSON.parse(data);
         if (nc.utils.checkAPIresult(data)) {

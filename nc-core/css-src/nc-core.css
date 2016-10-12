@@ -426,6 +426,10 @@ ol {
     margin-left: 6px;
     margin-right: 6px;
 }
+.nc-btn-mh {
+    margin-left: 6px;
+    margin-right: 6px;
+}
 .nc-class-form {
     margin-bottom: 2px;
 }
@@ -481,10 +485,10 @@ svg.nc-symbol {
     margin-right: 8px;
 }
 .nc-toolbar-group-new button {
-    width: 94px;
+    min-width: 94px;
 }
 .nc-toolbar-group-new button.dropdown-toggle {
-    width: 200px;
+   /**  width: 200px; **/
 }
 .nc-toolbar-group span.caret {
     margin-left: 6px;
@@ -494,6 +498,7 @@ svg.nc-symbol {
     display: none;
     border: solid #ddd 1px;
     padding: 0px 22px;
+    padding-bottom: 1em;
     width: 100%;
     border-radius: 4px !important;
     margin-top: 0px;
@@ -506,7 +511,24 @@ svg.nc-symbol {
     width: 100%;
 }
 
+.nc-dropdown-form {
+    padding: 10px;        
+}
+.nc-dropdown-form td, th {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+.nc-dropdown-form th {
+    padding-top: 1.5em;
+    border-bottom: 1px solid #ddd;
+}    
+.nc-dropdown-form span {
+     white-space: nowrap;
+}
 
+.nc-center {
+    text-align: center;
+}
 
 /* --------------------------------------------------------------------------
  * Boxes with tips/help messages

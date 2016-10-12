@@ -25,6 +25,15 @@ nc.ui.fast = 200;
 nc.ui.timeout = 2000;
 
 
+
+/* ====================================================================================
+ * common html strings
+ * ==================================================================================== */
+
+// a caret span (for dropdowns)
+nc.ui.caret = '<span class="pull-right caret nc-dropdown-caret"></span>';
+
+
 /* ====================================================================================
  * Permissions
  * ==================================================================================== */
@@ -476,6 +485,8 @@ nc.ui.ButtonGroup = function(aa) {
     return $(html);
 }
 
+
+
 /**
  * Create a button with a dropdown list
  * 
@@ -487,12 +498,10 @@ nc.ui.ButtonGroup = function(aa) {
  * 
  */
 nc.ui.DropdownButton=function(atype, aa, aval, withdeprecated) {
-        
-    var caret = '<span class="pull-right caret nc-dropdown-caret"></span>';
-    
+                
     var html = '<div class="btn-group nc-toolbar-group nc-toolbar-group-new" role="group">';    
     html += '<div class="btn-group" role="group">';        
-    html += '<button class="btn btn-primary dropdown-toggle" val="'+aval+'" class_name="" data-toggle="dropdown"><span class="pull-left nc-classname-span">'+atype+' '+'</span>'+caret+'</button>';  
+    html += '<button class="btn btn-primary dropdown-toggle" val="'+aval+'" class_name="" data-toggle="dropdown"><span class="pull-left nc-classname-span">'+atype+' '+'</span>'+nc.ui.caret+'</button>';  
     html += '<ul class="dropdown-menu">';
     for (var i in aa) {        
         var iinclude = true, iclass= "";
@@ -517,10 +526,9 @@ nc.ui.DropdownButton=function(atype, aa, aval, withdeprecated) {
     dropb.find("a").click(function() {
         // find the text and add it        
         var nowid = $(this).attr("class_id");
-        var nowname = $(this).attr("class_name");
-        //alert(nowid+" "+nowname);
+        var nowname = $(this).attr("class_name");        
         var p4 = $(this).parent().parent().parent().parent();
-        p4.find('button.dropdown-toggle').html('<span class="pull-left nc-classname-span">'+atype+' '+nowname +'</span>'+ caret)
+        p4.find('button.dropdown-toggle')
         .addClass('active').attr("class_name", nowname).attr("class_id", nowid); 
         $(this).dropdown("toggle");        
         return false;
@@ -530,18 +538,79 @@ nc.ui.DropdownButton=function(atype, aa, aval, withdeprecated) {
 }
 
 
-
 /* ====================================================================================
- * Curation
+ * Widget for toggling display of nodes/links on graph page
  * ==================================================================================== */
 
 /**
- * Create a div with a toolbox for curation/editing
- * This is used to show/edit page elements (e.g. abstacts) as well as bodies
- * of comments.
  *
- *
+ * nodetypes, linktypes - arrays with object, each object holding id, label, val
+ * 
+ * id - e.g. Cxxxxxx
+ * label - e.g. CLASS:SUBCLASS
+ * val - SUBCLASS (official class name)
+ * show - 0/1 determines whether a node is visible
+ * showlabel - 0/1 determines if a text label is visible
+ * 
  */
+nc.ui.DropdownOntoView = function(nodetypes, linktypes) {
+    
+    // create a button that say view
+    var btnhtml = '<div class="btn-group nc-toolbar-group nc-toolbar-group-new" role="group">';    
+    btnhtml += '<div class="btn-group" role="group">';  
+    btnhtml += '<button class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><span class="pull-left nc-classname-span">View</span> '+nc.ui.caret+'</button>';
+    btnhtml += '<div class="dropdown-menu nc-dropdown-form"></div>';
+    btnhtml += '</div></div>';
+    var viewbtn = $(btnhtml);
+        
+        
+    // helper function displays a table row with class name and two checkboxes
+    // z - object with class data
+    // withlabe - boolean (links don't get showlabel)'
+    var makeOneClassRow = function(z, withlab) {        
+        var zlabs = -1+z.label.split(":").length;        
+        var result = '<tr val="'+z.id+'"><td><span style="padding-left: '+(zlabs*14)+'px">'+z.val+'</span></td>';        
+        var c1 = (z.show==1 ? "checked" : "");
+        result += '<td class="nc-center"><input type="checkbox"'+c1+' val="show"></input></td>';
+        if (withlab) {
+            var c2 = (z.showlabel==1 ? "checked" : "");
+            result+='<td class="nc-center"><input type="checkbox"'+c2+' val="showlabel"></input></td>';
+        } else {
+            result+='<td class="nc-center"></td>';
+        }
+        return result + '</tr>';
+    }
+    
+    // get the dropdown box
+    var viewform = viewbtn.find('.dropdown-menu');    
+    
+    // create rows in a table for node classes
+    var f1 = '<tr><th>Nodes</th><th>Visible</th><th>Names</th></tr>';    
+    for (var i=0; i<nodetypes.length; i++) {
+        f1 += makeOneClassRow(nodetypes[i], true);
+    }        
+    // for link classes
+    var f2 = '<tr><th>Links</th><th>Visible</th><th>Names</th></tr>';    
+    for (var i=0; i<linktypes.length; i++) {
+        f2 += makeOneClassRow(linktypes[i], false);
+    }              
+    viewform.html('<table>'+f1+f2+'</table><br/>');
+            
+    return viewbtn;
+}
+
+
+/* ====================================================================================
+* Curation
+* ==================================================================================== */
+
+/**
+* Create a div with a toolbox for curation/editing
+* This is used to show/edit page elements (e.g. abstacts) as well as bodies
+* of comments.
+*
+*
+*/
 nc.ui.AnnoEditBox = function() {
         
     // write static html to define components of the toolbox
@@ -615,12 +684,12 @@ nc.ui.AnnoEditBox = function() {
 
 
 /* ====================================================================================
- * Comments
- * ==================================================================================== */
+* Comments
+* ==================================================================================== */
 
 /**
- * Creates a box to display a comment or type in a comment
- */
+* Creates a box to display a comment or type in a comment
+*/
 nc.ui.CommentBox = function(uid, rootid, parentid, annoid, annomd) {
     
     // determine if this is a primary comment or a response to a previous comment
@@ -683,10 +752,10 @@ nc.ui.CommentBox = function(uid, rootid, parentid, annoid, annomd) {
 
 
 /**
- * Create one comment box and add it to the nc-comments div
- * @param comdata array with elements datetime, modified, owner_id, root_id, parent_id,
- * anno_id, anno_text
- */
+* Create one comment box and add it to the nc-comments div
+* @param comdata array with elements datetime, modified, owner_id, root_id, parent_id,
+* anno_id, anno_text
+*/
 nc.ui.addCommentBox = function(comdata) { //datetime, ownerid, rootid, parentid, annoid, annotext) {
     
     var cbox = $('#nc-comments');       
@@ -715,8 +784,8 @@ nc.ui.addCommentBox = function(comdata) { //datetime, ownerid, rootid, parentid,
 }
 
 /**
- * 
- */
+* 
+*/
 nc.ui.populateCommentsBox = function(commentarray) {        
     var rootid = $('#nc-comments').attr("val");        
     $.each(commentarray, function(key, val){     
