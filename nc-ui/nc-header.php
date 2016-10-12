@@ -17,7 +17,7 @@
         <script type='text/javascript' src='<?php echo NC_INCLUDES_PATH; ?>/d3-4.2.2/d3.min.js'></script>        
         <script type='text/javascript' src='<?php echo NC_INCLUDES_PATH; ?>/makealive/makealive-lib.min.js'></script>                
         
-        <script type='text/javascript' src='<?php echo NC_JS_PATH; ?>/networkcurator.min.js'></script> 
+        <script type='text/javascript' src='<?php echo NC_JS_PATH; ?>/networkcurator.js'></script> 
 <?php
 $firstname = $_SESSION['user_firstname'];
 $middlename = $_SESSION['user_middlename'];
@@ -35,7 +35,7 @@ nc.commentator=". (int) ($iscommentator == true) . ";
 ?>
         
         <link rel='stylesheet' href='<?php echo NC_INCLUDES_PATH; ?>/bootstrap-3.3.7/css/bootstrap.min.css'>        
-        <link rel='stylesheet' href='<?php echo NC_CSS_PATH; ?>/nc-core.min.css'>     
+        <link rel='stylesheet' href='<?php echo NC_CSS_PATH; ?>/nc-core.css'>     
         <link href="https://fonts.googleapis.com/css?family=Open+Sans|Roboto:300,700" rel="stylesheet">
         <link href='<?php echo NC_UI_PATH; ?>/css/nc-ui.css' rel='stylesheet' type='text/css'>        
         <title>NetworkCurator <?php if ($network) echo ": " . $network; ?></title>

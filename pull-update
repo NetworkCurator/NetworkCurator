@@ -1,0 +1,26 @@
+#!/bin/bash
+
+
+## script to pull an update and build local js and css
+
+git pull
+
+## build dist js
+cd nc-core
+rm -fr js
+mkdir js
+cat js-src/nc-core.js js-src/nc-utils.js \
+    js-src/nc-admin.js \
+    js-src/nc-data.js \
+    js-src/nc-graph.js \
+    js-src/nc-ontology.js \
+    js-src/nc-sandbox.js \
+    js-src/nc-ui.js \
+    js-src/nc-users.js \
+      > js/networkcurator.js
+
+## build dist css
+rm -fr css
+mkdir css
+cat css-src/nc-core.css > css/nc-core.css
+
