@@ -167,6 +167,7 @@ nc.ui.ClassTreeWidget = function(classdata, islink) {
     root.on("click", "div.nc-classdisplay button[val='edit']", function() {                        
         var classid = $(this).parent().attr('val');
         alert(""+JSON.stringify(nc.utils.allowedAttributes));
+        alert(""+JSON.stringify(nc.utils.allowedTags));
         // make sure input box shows current classname
         var classname = $(this).parent().find('span.nc-comment[val="nc-classname"]').html();        
         var thisform = root.find("form.nc-classupdate[val='"+classid+"']");
