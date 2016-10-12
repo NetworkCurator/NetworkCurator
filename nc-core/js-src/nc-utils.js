@@ -182,9 +182,9 @@ nc.utils.allowedAttributes= {
     g: ['id', 'transform'],
     circle: ['cx', 'cy', 'r', 'id' , 'fill'],
     rect: ['x', 'y', 'width', 'height', 'id', 'fill'],
-    marker: ['id', 'viewbox', 'refX', 'refY', 'markerWidth', 'markerHeight', 'orient'],
-    line: ['x1', 'x2', 'y1', 'y2', 'id'],
-    path: ['d', 'fill']
+    marker: ['id', 'viewbox', 'ref*', 'mark*', 'orient'],
+    line: ['x1', 'x2', 'y1', 'y2', 'id', 'strok*'],
+    path: ['d', 'fill', 'strok*']
 }
 
 
@@ -202,13 +202,21 @@ nc.utils.sanitize =function(x, allowstyle) {
     var oktags = nc.utils.allowedTags.slice(0);
     if (allowstyle) {
         oktags.push('style');
-    }    
+    }   
+    //alert("A: "+JSON.stringify(oktags)+" ++++ "+JSON.stringify(nc.utils.allowedAttributes));
     return sanitizeHtml(x, {
         allowedTags: oktags,
         allowedAttributes: nc.utils.allowedAttributes 
     });    
 }
 
+
+var at1 = '<marker id="asd"></marker>';
+var at2 = '<marker id="asd" refX="4"></marker>';
+
+//alert(at1+" "+nc.utils.sanitize(at1));
+//alert(at2+" "+nc.utils.sanitize(at2));
+//alert(at2+" "+sanitizeHtml(at2, {allowedTags: nc.utils.allowedTags, allowedAttributes: nc.utils.allowedAttributes}));
 
 /* ====================================================================================
  * SVG-related hacks

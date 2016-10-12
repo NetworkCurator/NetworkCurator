@@ -83,8 +83,8 @@ nc.ontology.updateClassProperties = function(classid, classname, parentid, islin
     }
     
     // get the svg style from the page
-    var thisdefs = nc.utils.sanitize($('form[val="'+classid+'"] textarea').val(), true);    
-              
+    var thisdefs = nc.utils.sanitize($('form[val="'+classid+'"] textarea').val(), true);          
+      
     $.post(nc.api, {
         controller: "NCOntology", 
         action: "updateClass", 
@@ -99,7 +99,7 @@ nc.ontology.updateClassProperties = function(classid, classname, parentid, islin
         parent: parentname,  
         connector: +islink,
         directional: +isdirectional        
-    }, function(data) {             
+    }, function(data) {        
         nc.utils.alert(data);      
         data = JSON.parse(data);
         if (data['success']==false) {              
