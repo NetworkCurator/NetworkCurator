@@ -140,10 +140,13 @@ class NCLogger extends NCDB {
     public function logActivity($userid, $netid, $action, $target, $value, $maxlen = 128) {
 
         // perhaps shorten the $value field
-        if (strlen($value) > ($maxlen - 3)) {
+        if (strlen($value) > ($maxlen - 4)) {
             $value = substr($value, $maxlen) . "...";
         }
-
+        if (strlen($target) > ($target - 4)) {
+            $target = substr($target, $maxlen) . "...";
+        }
+        
         // prepare a statement for activity-logging
         $sql = "INSERT INTO " . NC_TABLE_ACTIVITY . "
                     (datetime, user_id, network_id, action, target_name, value)

@@ -269,7 +269,7 @@ $sql = "CREATE TABLE $tabname (
   user_id $vc32col,
   network_id $vc32col,    
   action $vc64col,
-  target_name $vc32col,  
+  target_name $vc128col,  
   value $textcol, 
   KEY network_id (network_id, datetime)
 ) $engine COLLATE utf8_unicode_ci";
