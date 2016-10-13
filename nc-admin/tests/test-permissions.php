@@ -36,6 +36,14 @@ $params = array('controller' => 'NCUsers', 'action' => 'updatePermissions',
 tryreport($NCapi, $params);
 
 
+echo "Adjust permissions for bravo on update-class"; 
+$params = array('controller' => 'NCUsers', 'action' => 'updatePermissions',
+        'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
+        'network_name' => 'update-class', 'target_id' => 'bravo', 'permissions' => 4);
+tryreport($NCapi, $params);
+
+
+
 ?>
 
 

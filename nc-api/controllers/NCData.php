@@ -195,6 +195,9 @@ class NCData extends NCGraphs {
     }
 
     /**
+     * invoked from main import routine. Handles high-level import of ontologies.
+     * Starts with an array of newdata (all ontology definitions in an import file)
+     * 
      * 
      * @param array $nodeonto
      * 
@@ -265,7 +268,9 @@ class NCData extends NCGraphs {
         return $msgs . " -- ontology: added $numadded / updated $numupdated / skipped $numskipped\n";
     }
 
-    /**
+    /**     
+     * processes one ontology definition at a time.
+     * 
      * 
      * @param type $newentry
      * @param type $ontology
@@ -280,7 +285,6 @@ class NCData extends NCGraphs {
         if (!array_key_exists($classname, $ontology)) {
             // class does not exists, so create from scratch                        
             if ($newentry['status'] > 0) {
-                //print_r($newentry);
                 $this->createNewClassWork($newentry);
                 return "add";
             } else {
@@ -397,16 +401,16 @@ class NCData extends NCGraphs {
         for ($i = 0; $i < count($newdata); $i++) {
             if (array_key_exists('name', $newdata[$i])) {
                 // move the node either to the update or the create batch (will be processed below)
-                $nowname = $newdata[$i]['name'];
-                if (array_key_exists($nowname, $allnodes)) {
+                $nowname = $newdata[$i]['name'];                
+                if (array_key_exists($nowname, $allnodes)) {                    
                     $updateset[$allnodes[$nowname]['id']] = &$newdata[$i];
-                } else {
+                } else {                    
                     $newset[] = &$newdata[$i];
                 }
             }
         }
-        unset($allnodes);
-
+        unset($allnodes);        
+        
         // batch insert and update
         if (count($newset) > 0) {
             $this->batchInsertNodes($newset);

@@ -22,7 +22,8 @@ foreach ($newclasses as $abc) {
     $params = array('controller' => 'NCOntology', 'action' => 'createNewClass',
         'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
         'network' => 'net-zulu', 'parent' => '', 'connector' => 0,
-        'directional' => 0, 'name' => $abc, 'title'=>$abc, 'abstract'=>'', 'content'=>'');
+        'directional' => 0, 'name' => $abc, 'title'=>$abc, 'abstract'=>'', 'content'=>'', 
+        'defs'=>'');
     tryreport($NCapi, $params);
 }
 
@@ -49,7 +50,7 @@ $params = array('controller' => 'NCOntology', 'action' => 'updateClass',
     'network' => 'net-zulu', 'target' => 'NODE_C', 'name' => 'NODE_C2',
     'title'=>'', 'abstract'=>'', 'content'=>'',
     'parent' => 'NODE_B', 'connector' => 0, 'directional' => 0,
-    'status' => 1);
+    'status' => 1, 'defs'=>'');
 tryreport($NCapi, $params);
 
 echo "Deactivating LINK_C";

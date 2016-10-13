@@ -15,8 +15,8 @@ include_once "test-prep.php";
  * Import small dataset into net-zuli
  * -------------------------------------------------------------------------- */
 
-$filenames = ["A1.json", "B1.json", "B2.json"];
-$networks = ["net-yankee", "net-zulu", "net-zulu"];
+$filenames = ["A1.json", "B1.json", "B2.json", "D1.json", "D2.json"];
+$networks = ["net-yankee", "net-zulu", "net-zulu", "update-class","update-class"];
 
 
 for ($i = 0; $i < count($filenames); $i++) {

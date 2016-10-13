@@ -1,0 +1,53 @@
+{
+    "network": [
+        {
+            "name": "update-class",
+            "title": "test update class",
+            "abstract": "test update class"
+        }
+    ],
+    "ontology": [
+        {
+            "name": "GENE",
+            "connector": 0,
+            "directional": 0
+        },
+        {
+            "name": "STIMULUS",
+            "connector": 0,
+            "directional": 0
+        },
+	{
+            "name": "INC",
+            "connector": 1,
+            "directional": 0
+        }         
+    ],
+    "nodes": [
+        {
+            "name": "ABC",
+            "title": "ABC",
+            "class": "EXPERIMENT"
+        },
+        {
+            "name": "STA",
+            "title": "STA",
+            "class": "STIMULUS"
+        },
+        {
+            "name": "GEN",
+            "title": "GEN",
+            "class": "GENE"
+        }
+    ],
+    "links": [
+        {
+            "name": "L0",
+            "title": "L0",
+            "class": "INC",
+            "source": "ABC",
+            "target": "STA",
+            "directional": 0
+        }
+     ]
+}
