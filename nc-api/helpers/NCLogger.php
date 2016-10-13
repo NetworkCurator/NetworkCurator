@@ -143,7 +143,7 @@ class NCLogger extends NCDB {
         if (strlen($value) > ($maxlen - 4)) {
             $value = substr($value, $maxlen) . "...";
         }
-        if (strlen($target) > ($target - 4)) {
+        if (strlen($target) > ($maxlen - 4)) {
             $target = substr($target, $maxlen) . "...";
         }
         
