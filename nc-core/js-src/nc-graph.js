@@ -741,7 +741,7 @@ nc.graph.simStart = function() {
     nc.graph.sim.force("link").links(nc.graph.links);         
     
     // perhaps add a selection class to one of the nodes
-    if (nc.graph.settings.centernode!='') {        
+    if (nc.graph.settings.centernode!='' && nc.graph.settings.local) {        
         // find the id that corresponds to the center node
         var temp = nc.graph.nodes.filter(function(v) {
             return v.name == nc.graph.settings.centernode
