@@ -592,12 +592,12 @@ nc.graph.initSimulation = function() {
           
     // create an object type for new nodes
     var newnode = '<circle id="nc-newnode" cx=0 cy=0 r=9></circle>';    
-    //var nodeshadow = '<filter id="nc-shadown" height="130%">';
-    //nodeshadow += '<feGaussianBlur in="SourceAlpha" stdDeviation="3"/>';
-    //nodeshadow += '<feOffset dx="2" dy="2" result="offsetblur"/>';
-    //nodeshadow += '<feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>';
-    //nodeshadow += '</filter>';
-           
+    var highlights = '<style type="text/css">';
+    highlights += 'line.nc-link-highlight { stroke: #000000; stroke-width: 4; } ';
+    highlights += 'use.nc-node-highlight { stroke: #000000; stroke-width: 4; } ';
+    highlights += 'use.nc-node-center { stroke: #000000; stroke-width: 4;  stroke-dasharray: 5 3; } ';
+    highlights += '</style>';    
+    
     // add ontology definitions as defs    
     var temp = $.map($.extend({}, nc.ontology.nodes, nc.ontology.links), function(value) {
         return [value];
@@ -607,7 +607,7 @@ nc.graph.initSimulation = function() {
     .html(function(d) {        
         return d.defs;        
     } );
-    nc.graph.svg.append("defs").html(newnode);
+    nc.graph.svg.append("defs").html(highlights+newnode);
           
     var width = parseInt(nc.graph.svg.style("width"));    
     var height = parseInt(nc.graph.svg.style("height"));          

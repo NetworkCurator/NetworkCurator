@@ -585,24 +585,3 @@ svg.nc-symbol {
     display: inline-block;
 }
 
-
-/* ------------------------------------------------------------------------------------
- * highlighting objects in svg
- * ------------------------------------------------------------------------------------ */
-
-line.nc-link-highlight { 
-    stroke: #000000; 
-    stroke-width: 4; 
-}
-
-use.nc-node-highlight { 
-    stroke: #000000; 
-    stroke-width: 4; 
-}
-
-use.nc-node-center {     
-    stroke: #000000; 
-    stroke-width: 4;           
-    stroke-dasharray: 5 3;
-}
-
