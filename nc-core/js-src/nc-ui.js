@@ -233,7 +233,8 @@ nc.ui.ClassTreeWidget = function(classdata, islink) {
     
     // after all the tree is populated, display a subset of the created elements 
     // (others will become activated upon editing of the class)
-    root.find("div.nc-classdisplay").show();    
+    root.find("div.nc-classdisplay textarea").change();    
+    root.find("div.nc-classdisplay").show();        
     root.find("form.nc-classcreate[val='']").show();    
 }
 
@@ -252,8 +253,14 @@ nc.ui.ClassTreeRowWidget = function(classrow) {
     var aform = nc.ui.ClassForm(classrow);
     var cid = classrow['class_id'];    
     var cname = classrow['name'];
+    // get the svg defs from nc.ontology.nodes
+    if (classrow['connector']==1) {
+        var cdefs = nc.utils.sanitize(nc.ontology.links[cid].defs, true);
+    } else {
+        var cdefs = nc.utils.sanitize(nc.ontology.nodes[cid].defs, true);
+    }
     var achildren = '<ol class="nc-classtree-children" val="'+classrow['class_id']+'"></ol>';       
-    var classvg = '<svg class="nc-symbol" val="'+cid+'"><defs></defs>';
+    var classvg = '<svg class="nc-symbol" val="'+cid+'"><defs>'+cdefs+'</defs>';
     classvg += '<g transform="translate(18,18)">';
     if (classrow['connector']==1) {
         classvg+='<line class="nc-default-link '+cname+'" x1=-17 x2=17 y1=0 y2=0/>';
@@ -486,6 +493,21 @@ nc.ui.ButtonGroup = function(aa) {
 }
 
 
+/**
+ * Creates an object that controls a dropdown field
+ * 
+ * @param textlab string that appears in the dropdown button
+ * @param btnval string that goes into the button val atrtibute
+ */
+nc.ui.DropdownGeneric = function(textlab, btnval) {
+    var btnhtml = '<div class="btn-group nc-toolbar-group nc-toolbar-group-new" role="group">';    
+    btnhtml += '<div class="btn-group nc-dropdown-content" role="group">';  
+    btnhtml += '<button class="btn btn-primary dropdown-toggle" val="'+btnval+'" data-toggle="dropdown"><span class="pull-left nc-classname-span">'+textlab+'</span> '+nc.ui.caret+'</button>';
+    //btnhtml += '<div class="dropdown-menu"></div>';
+    btnhtml += '</div></div>';
+    return $(btnhtml);    
+}
+
 
 /**
  * Create a button with a dropdown list
@@ -497,12 +519,13 @@ nc.ui.ButtonGroup = function(aa) {
  * @param withdeprecated, boolean, whether to include items with status!=1
  * 
  */
-nc.ui.DropdownButton=function(atype, aa, aval, withdeprecated) {
-                
-    var html = '<div class="btn-group nc-toolbar-group nc-toolbar-group-new" role="group">';    
-    html += '<div class="btn-group" role="group">';        
-    html += '<button class="btn btn-primary dropdown-toggle" val="'+aval+'" class_name="" data-toggle="dropdown"><span class="pull-left nc-classname-span">'+atype+' '+'</span>'+nc.ui.caret+'</button>';  
-    html += '<ul class="dropdown-menu">';
+nc.ui.DropdownObjectList = function(atype, aa, aval, withdeprecated) {
+
+    // create generic dropdown button structure
+    var dropb = nc.ui.DropdownGeneric(atype, aval);    
+        
+    // create list with objects types
+    var html = '<ul class="dropdown-menu">';    
     for (var i in aa) {        
         var iinclude = true, iclass= "";
         if (aa[i].status!=1) { 
@@ -517,11 +540,9 @@ nc.ui.DropdownButton=function(atype, aa, aval, withdeprecated) {
         }
     }
     html += '</ul>';
-    html += '</div></div>'; // this closes dropdown and btn-group
-    
-    // create object
-    var dropb = $(html);
-    
+        
+    dropb.find('div.nc-dropdown-content').append(html);
+        
     // attach handlers for the dropdown links
     dropb.find("a").click(function() {
         // find the text and add it        
@@ -533,7 +554,7 @@ nc.ui.DropdownButton=function(atype, aa, aval, withdeprecated) {
         $(this).dropdown("toggle");        
         return false;
     });       
-    
+            
     return dropb;
 }
 
@@ -555,15 +576,8 @@ nc.ui.DropdownButton=function(atype, aa, aval, withdeprecated) {
  */
 nc.ui.DropdownOntoView = function(nodetypes, linktypes) {
     
-    // create a button that say view
-    var btnhtml = '<div class="btn-group nc-toolbar-group nc-toolbar-group-new" role="group">';    
-    btnhtml += '<div class="btn-group" role="group">';  
-    btnhtml += '<button class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><span class="pull-left nc-classname-span">View</span> '+nc.ui.caret+'</button>';
-    btnhtml += '<div class="dropdown-menu nc-dropdown-form"></div>';
-    btnhtml += '</div></div>';
-    var viewbtn = $(btnhtml);
-        
-        
+    var viewbtn = nc.ui.DropdownGeneric('View', 'view');
+                    
     // helper function displays a table row with class name and two checkboxes
     // z - object with class data
     // withlabe - boolean (links don't get showlabel)'
@@ -582,7 +596,7 @@ nc.ui.DropdownOntoView = function(nodetypes, linktypes) {
     }
     
     // get the dropdown box
-    var viewform = viewbtn.find('.dropdown-menu');    
+    var viewform = viewbtn.find('div.nc-dropdown-content');        
     
     // create rows in a table for node classes
     var f1 = '<tr><th>Nodes</th><th>Visible</th><th>Names</th></tr>';    
@@ -594,9 +608,44 @@ nc.ui.DropdownOntoView = function(nodetypes, linktypes) {
     for (var i=0; i<linktypes.length; i++) {
         f2 += makeOneClassRow(linktypes[i], false);
     }              
-    viewform.html('<table>'+f1+f2+'</table><br/>');
+    viewform.append('<div class="dropdown-menu nc-dropdown-form"><table>'+f1+f2+'</table><br/></div>');
             
     return viewbtn;
+}
+
+
+/* ====================================================================================
+ * Widget for graph display settings
+ * ==================================================================================== */
+
+/**
+ * Creates a widget with a form holding some graph display settings
+ * 
+ */
+nc.ui.DropdownGraphSettings = function() {
+    var settingsbtn = nc.ui.DropdownGeneric('Settings', 'settings');
+    var settingsform = settingsbtn.find('div.nc-dropdown-content')
+    
+    // contents of the widget form
+    var html = '<table>';
+    html += '<tr><th colspan="3">Display</th></tr>';
+    html += '<tr><td><span>Wide view</span></td><td><input val="wideview" type="checkbox" false></td><td></td></tr>';    
+    html += '<tr><td><span>Hover tooltip</span></td><td><input val="tooltip" type="checkbox" checked></td><td></td></tr>';    
+    html += '<tr><td><span>Inactive objects</span></td><td><input val="inactive" type="checkbox"></td><td></td></tr>';    
+
+    html += '<tr><th colspan="3">Layout</th></tr>';
+    html += '<tr><td><span>Link length</span></td><td><input type="text" val="linklength"></td><td></td></tr>';
+    html += '<tr><td><span>Node strength</span></td><td><input type="text" val="strength"></td><td></td></tr>';
+    html += '<tr><td><span>Velocity decay</span></td><td><input type="text" val="vdecay"></td><td></td></tr>';
+    
+    html += '<tr><th colspan="3">Traversal</th></tr>';
+    html += '<tr><td><span>Local neighborhood</span></td><td><input val="local" type="checkbox" checked></td><td></td></tr>';
+    html += '<tr><td><span>Neighborhood distance</span></td><td><input type="text" val="neighborhood"></td><td></td></tr>';
+    
+    html += '</table><br/>';
+    
+    settingsform.append('<div class="dropdown-menu nc-dropdown-form">'+html+'</div>')
+    return settingsbtn;
 }
 
 

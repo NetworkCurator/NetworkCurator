@@ -26,7 +26,7 @@ echo ncScriptObject("nc.graph.rawlinks", $graphlinks);
     <div id="nc-graph-svg-container" class="col-sm-8">        
         <svg id="nc-graph-svg"></svg>                    
     </div>
-    <div class="col-sm-4">        
+    <div id="nc-graph-side" class="col-sm-4">        
         <?php include_once "ui-network-graph-element.php"; ?>
     </div>
 </div>
@@ -42,6 +42,7 @@ echo ncScriptObject("nc.graph.rawlinks", $graphlinks);
     }
     debugUser = function() {
         alert("curate: "+nc.curator+" edit: "+nc.editor+" comment: "+nc.commentator);
+        alert("settings: "+JSON.stringify(nc.graph.settings));
     }
     debugOntologies = function() {
         $('#nc-debugging').html(JSON.stringify(nc.ontology.nodes)+"<br/><br/>"+JSON.stringify(nc.ontology.links));

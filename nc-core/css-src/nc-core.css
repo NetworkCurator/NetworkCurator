@@ -255,18 +255,36 @@ svg {
     width: 100%;
 }
 #nc-graph-svg-container {
-    border: #ddd solid 1px;    
-    padding: 0 0 0 0;    
-    /* margin: 0px 15px; */
-    /*resize: vertical; */
-    resize: both;
+    border-right: #ddd solid 1px;
+    padding: 0 0 0 0;  
+    /** margin: 0px -30px 15px 15px; */
+    resize: vertical;    
     overflow: hidden;
     height: 480px;
+}
+#nc-graph-svg {
+    margin-left: 15px;
+    border: #ddd solid 1px;    
+}
+#nc-graph-side {
+    /** margin-left: 30px; **/
 }
 textarea {
     resize: vertical;
     overflow: auto;
 }
+
+.tooltip {
+    opacity: 0.9;
+    background-color: #333333; 
+    border-radius: 4px;    
+    color: #fff4f4;
+    padding: 4px 8px;
+    font-size: 100%;
+    font-weight: 600;
+    display: none;    
+}
+
 
 /* ------------------------------------------------------------------------------------
  * Graph editor
@@ -496,7 +514,7 @@ svg.nc-symbol {
 
 .nc-graph-details {
     display: none;
-    border: solid #ddd 1px;
+    /** border: solid #ddd 1px; **/
     padding: 0px 22px;
     padding-bottom: 1em;
     width: 100%;
@@ -524,6 +542,12 @@ svg.nc-symbol {
 }    
 .nc-dropdown-form span {
      white-space: nowrap;
+}
+.nc-dropdown-form input {
+    width: 60px;
+    padding-left: 4px;
+    padding-right: 4px;
+    text-align: center;
 }
 
 .nc-center {
@@ -560,3 +584,25 @@ svg.nc-symbol {
     border-radius: 2px;
     display: inline-block;
 }
+
+
+/* ------------------------------------------------------------------------------------
+ * highlighting objects in svg
+ * ------------------------------------------------------------------------------------ */
+
+line.nc-link-highlight { 
+    stroke: #000000; 
+    stroke-width: 4; 
+}
+
+use.nc-node-highlight { 
+    stroke: #000000; 
+    stroke-width: 4; 
+}
+
+use.nc-node-center {     
+    stroke: #000000; 
+    stroke-width: 4;           
+    stroke-dasharray: 5 3;
+}
+
