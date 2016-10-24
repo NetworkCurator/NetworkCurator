@@ -25,10 +25,10 @@ nc.graph = {
     mode: "select"
 };
 
-// set some default settings
-// for displaying info on the 
+// set default values for display settings
 nc.graph.settings.tooltip = true;
 nc.graph.settings.wideview = false;
+nc.graph.settings.namesize = 12;
 // for tuning the force simulation
 nc.graph.settings.linklength = 45;
 nc.graph.settings.strength = -30;
@@ -100,6 +100,9 @@ nc.graph.initInterface = function() {
     // make a button with graph settings    
     toolbar.append(nc.graph.makeSettingsBtn());
     
+    // make a button with Save buttons
+    toolbar.append(nc.graph.makeSaveBtn());  
+  
     // create behaviors in the svg based on the toolbar        
     var jsvg = $('#nc-graph-svg');
     jsvg.mouseenter(function() {   
@@ -120,7 +123,7 @@ nc.graph.initInterface = function() {
             nc.graph.mode = "select";
         }       
     });
-  
+    
     // for details box, add buttons for "read more" and to "activate/inactivate"
     var detailsdiv = $('#nc-graph-details');
     var readbutton = '<a class="btn btn-default btn-sm" href="#" id="nc-graph-details-more">Read more</a>'      
@@ -201,6 +204,49 @@ nc.graph.makeSettingsBtn = function() {
     })
   
     return settingsbtn;
+}
+
+/**
+ * Helper function to initInterface() - creates a button with save options
+ * 
+ */
+nc.graph.makeSaveBtn = function() {
+    
+    var savebtn = nc.ui.DropdownGraphSave();
+    
+    // attach actions to the save lins
+    savebtn.find('a[val="diagram"]').click(function() {
+        // find dimensions of the svg
+        var width = parseInt(nc.graph.svg.style("width"));    
+        var height = parseInt(nc.graph.svg.style("height"));
+        // create text with svg content
+        var svgdef = '<svg width="'+width+'" height="'+height+'">';
+        var nowview = svgdef+$('#nc-graph-svg').html()+'</svg>';        
+        // save to file
+        var filename = nc.network+"_"+nc.userid+"_network.svg";                
+        nc.utils.saveToFile(nowview, filename);
+    });
+    
+    savebtn.find('a[val="definition"]').click(function() {
+        alert("TO DO: save graph definition");
+    });
+    
+    // save the current visible nodes
+    savebtn.find('a[val="nodes"]').click(function() {        
+        // generate a nodelist (current view only)
+        var nodelist = [];
+        nodelist.push("Node.name\tNode.class");
+        for (var i=0; i<nc.graph.nodes.length; i++) {
+            var nownode = nc.graph.nodes[i];
+            nodelist.push(nownode["name"]+"\t"+nownode["class"]);
+        }
+        nodelist = nodelist.join("\n");                
+        // generate a filename and save
+        var filename = nc.network+"_"+nc.userid+"_nodes.txt";                
+        nc.utils.saveToFile(nodelist, filename);                
+    });
+            
+    return savebtn;
 }
 
 
@@ -552,7 +598,7 @@ nc.graph.filterNeighborhood = function() {
     nc.graph.links = nc.graph.links.filter(function(v) {
         return (v.source.name in oknodes && v.target.name in oknodes);
     }); 
-    //alert("A3 "+JSON.stringify(nc.graph.links));
+//alert("A3 "+JSON.stringify(nc.graph.links));
     
 }
 
@@ -590,25 +636,38 @@ nc.graph.initSimulation = function() {
     // reset the svg    
     nc.graph.svg.selectAll('defs,g,rect,text').remove();
           
-    // create an object type for new nodes
+    // create default definitions for objects
     var newnode = '<circle id="nc-newnode" cx=0 cy=0 r=9></circle>';    
-    var highlights = '<style type="text/css">';
-    highlights += 'line.nc-link-highlight { stroke: #000000; stroke-width: 4; } ';
-    highlights += 'use.nc-node-highlight { stroke: #000000; stroke-width: 4; } ';
-    highlights += 'use.nc-node-center { stroke: #000000; stroke-width: 4;  stroke-dasharray: 5 3; } ';
-    highlights += '</style>';    
-    
+    // create default styles 
+    var ncstyles = 'use.nc-default-node { fill: #449944; }\n';
+    ncstyles += 'line.nc-default-link { stroke: #999999; stroke-width: 5; }\n';    
+    ncstyles += 'line.nc-link-highlight { stroke: #000000; stroke-width: 4; }\n';
+    ncstyles += 'use.nc-node-highlight { stroke: #000000; stroke-width: 4; }\n';
+    ncstyles += 'use.nc-node-center { stroke: #000000; stroke-width: 4;  stroke-dasharray: 5 3; }\n';    
+    ncstyles += 'use.nc-newnode { stroke: #000000; stroke-width: 2; stroke-dasharray: 3 3; fill: #dddddd; }\n';
+    ncstyles += 'line.nc-newlink, line.nc-draggedlink { stroke: #aaaaaa; stroke-width: 6; stroke-dasharray: 7 5; }\n';
+    ncstyles += 'text { text-anchor: middle; }\n';
+    ncstyles += 'text.tooltip { text-anchor: start; }\n';
+
     // add ontology definitions as defs    
     var temp = $.map($.extend({}, nc.ontology.nodes, nc.ontology.links), function(value) {
         return [value];
     });    
-    nc.graph.svg
-    .selectAll("defs").data(temp).enter().append("defs")   
-    .html(function(d) {        
-        return d.defs;        
-    } );
-    nc.graph.svg.append("defs").html(highlights+newnode);
-          
+    var newstyles = "";
+    var nonstyles = "";
+    for (var i=0; i<temp.length; i++) {     
+        var nowdef = $('<div>').html(temp[i].defs)
+        var nowstyle = nowdef.find('style').html();
+        if (nowstyle !== undefined) {
+            newstyles += nowstyle;
+            nowdef.find('style').remove();            
+        } 
+        nonstyles += nowdef.html();                
+    }    
+    nc.graph.svg.append("defs").html(nonstyles+newnode);
+    nc.graph.svg.append("defs").html('<style type="text/css">'+ncstyles+newstyles+'</style>');
+    
+      
     var width = parseInt(nc.graph.svg.style("width"));    
     var height = parseInt(nc.graph.svg.style("height"));          
       
@@ -642,7 +701,7 @@ nc.graph.initSimulation = function() {
             
     if (nc.graph.rawnodes.length>0) {
         nc.graph.simStart();
-    }
+    }    
 }
 
 
@@ -659,9 +718,7 @@ nc.graph.simStart = function() {
     // filter the raw node and raw links    
     nc.graph.filterNodes();
     nc.graph.filterLinks();
-    //alert("before filterNeighborhood");
     nc.graph.filterNeighborhood();
-    //alert("after filterNeighborhood");
            
     // set up node dragging
     var nodedrag = d3.drag().on("start", nc.graph.dragstarted)
@@ -692,8 +749,9 @@ nc.graph.simStart = function() {
             // fetch transformation (allows to undo scaling)
             var nowtrans = nc.graph.getTransformation();
             var nowscale = Math.round(100/nowtrans[2]);
-            tooltip.text(d.name).attr("x", +mp[0]+2).attr("y", +mp[1])
-            .style('display', 'inline-block').style('font-size', nowscale+'%');       
+            tooltip.text(d.name).attr("x", +mp[0]+2).attr("y", +mp[1])            
+            //.style('text-anchor','left')       
+            .style('display', 'inline-block').style('font-size', nowscale+'%');            
         }
     }
     var tooltiphide = function(d) {        
@@ -727,8 +785,11 @@ nc.graph.simStart = function() {
     .text(function(d) {
         return d.name
     })
-    .attr("dx", "1em")
-    .style("text-anchor", "left");    
+    .attr("dx", "0em").attr("dy", "0.3em")
+    .style("font-size", nc.graph.settings.namesize)
+    //.style("text-anchor", "middle")
+    .call(nodedrag)
+    .on('click', nc.graph.selectObject );    
      
     // performed at each simulation step to reposition the nodes and links
     var tick = function() {        

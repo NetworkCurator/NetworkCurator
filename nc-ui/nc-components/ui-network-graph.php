@@ -32,7 +32,7 @@ echo ncScriptObject("nc.graph.rawlinks", $graphlinks);
 </div>
 
 
-
+<!--
 <script>
     debugNodes = function() {
         $('#nc-debugging').html(JSON.stringify(nc.graph.rawnodes)+"<br/><br/>"+JSON.stringify(nc.graph.nodes));
@@ -53,6 +53,7 @@ echo ncScriptObject("nc.graph.rawlinks", $graphlinks);
 <a onclick="javascript:debugLinks(); return false;">Show links </a>
 <a onclick="javascript:debugUser(); return false">Show user data </a>
 <a onclick="javascript:debugOntologies(); return false">Show ontologies </a>
+-->
 <div id="nc-debugging">
     
 </div>

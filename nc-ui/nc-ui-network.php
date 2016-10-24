@@ -47,11 +47,11 @@ if (isset($_REQUEST['object'])) {
                 <li class='<?php if ($view == 'summary') echo 'active'; ?>'>
                     <a href='<?php echo $coreurl . 'summary'; ?>'>Summary</a>
                 </li>
-                <li class='<?php if ($view == 'graph') echo 'active'; ?>'>
-                    <a href='<?php echo $coreurl . 'graph'; ?>'>Graph</a>
-                </li>                
                 <li class='<?php if ($view == 'ontology') echo 'active'; ?>'>
                     <a href='<?php echo $coreurl . 'ontology'; ?>'>Ontology</a>
+                </li>                                
+                <li class='<?php if ($view == 'graph') echo 'active'; ?>'>
+                    <a href='<?php echo $coreurl . 'graph'; ?>'>Graph</a>
                 </li>                
                 <li class='<?php if ($view == 'data') echo 'active'; ?>'>
                     <a href='<?php echo $coreurl . 'data'; ?>'>Data</a>

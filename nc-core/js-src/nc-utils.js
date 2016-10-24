@@ -231,3 +231,34 @@ $.fn.xml = function() {
 $.fn.DOMRefresh = function() {
     return $($(this.xml()).replaceAll(this));
 };
+
+
+
+/* ====================================================================================
+ * Saving blobs
+ * ==================================================================================== */
+
+// function creates a blob file containing text data d
+nc.utils.saveToFile = function (d, filename) {
+
+    // create blob with data
+    var data = new Blob([d], {
+        type: 'text/plain'
+    });
+    
+    // create a handle for the data
+    var fileurl = window.URL.createObjectURL(data);
+        
+    // hack: use an a element to hold a link to the url
+    var templink = document.createElement('a');    
+    templink.setAttribute('download', filename);
+    templink.href = fileurl;    
+    document.body.appendChild(templink);
+
+    // activate the link to trigger download, discard temporary link
+    window.requestAnimationFrame(function () {                        
+        templink.dispatchEvent(new MouseEvent('click'));        
+        document.body.removeChild(templink);        
+    });
+        
+};

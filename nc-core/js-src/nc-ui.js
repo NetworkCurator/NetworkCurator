@@ -632,6 +632,7 @@ nc.ui.DropdownGraphSettings = function() {
     html += '<tr><td><span>Wide view</span></td><td><input val="wideview" type="checkbox" false></td><td></td></tr>';    
     html += '<tr><td><span>Hover tooltip</span></td><td><input val="tooltip" type="checkbox" checked></td><td></td></tr>';    
     html += '<tr><td><span>Inactive objects</span></td><td><input val="inactive" type="checkbox"></td><td></td></tr>';    
+    html += '<tr><td><span>Label size</span></td><td><input val="namesize" type="text"></td><td></td></tr>';    
 
     html += '<tr><th colspan="3">Layout</th></tr>';
     html += '<tr><td><span>Link length</span></td><td><input type="text" val="linklength"></td><td></td></tr>';
@@ -647,6 +648,39 @@ nc.ui.DropdownGraphSettings = function() {
     settingsform.append('<div class="dropdown-menu nc-dropdown-form">'+html+'</div>')
     return settingsbtn;
 }
+
+
+/* ====================================================================================
+ * Widget for graph save options
+ * ==================================================================================== */
+
+/**
+ * Create a button with a dropdown list
+ * 
+ * @param atype string prefix 
+ * @param aa array, each element is assumed to contain a label and val
+ * @param aval string placed in button val field 
+ * (use this to distinguish one dropdown from another) 
+ * @param withdeprecated, boolean, whether to include items with status!=1
+ * 
+ */
+nc.ui.DropdownGraphSave = function() {
+
+    // create generic dropdown button structure
+    var dropb = nc.ui.DropdownGeneric('Save', 'save');    
+        
+    // create list with objects types
+    var html = '<ul class="dropdown-menu">';    
+    html += '<li><a val="diagram" href="#">Network diagram (svg)</a></li>';
+    //html += '<li><a val="definition" href="#">Network definition (json)</a></li>';
+    html += '<li><a val="nodes" href="#">Node list (txt)</a></li>';
+    html += '</ul>';
+        
+    dropb.find('div.nc-dropdown-content').append(html);
+                    
+    return dropb;
+}
+
 
 
 /* ====================================================================================
