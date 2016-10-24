@@ -638,17 +638,17 @@ nc.graph.initSimulation = function() {
           
     // create default definitions for objects
     var newnode = '<circle id="nc-newnode" cx=0 cy=0 r=9></circle>';    
-    // create default styles 
-    var ncstyles = 'use.nc-default-node { fill: #449944; }\n';
-    ncstyles += 'line.nc-default-link { stroke: #999999; stroke-width: 5; }\n';    
-    ncstyles += 'line.nc-link-highlight { stroke: #000000; stroke-width: 4; }\n';
-    ncstyles += 'use.nc-node-highlight { stroke: #000000; stroke-width: 4; }\n';
-    ncstyles += 'use.nc-node-center { stroke: #000000; stroke-width: 4;  stroke-dasharray: 5 3; }\n';    
-    ncstyles += 'use.nc-newnode { stroke: #000000; stroke-width: 2; stroke-dasharray: 3 3; fill: #dddddd; }\n';
-    ncstyles += 'line.nc-newlink, line.nc-draggedlink { stroke: #aaaaaa; stroke-width: 6; stroke-dasharray: 7 5; }\n';
-    ncstyles += 'text { text-anchor: middle; }\n';
-    ncstyles += 'text.tooltip { text-anchor: start; }\n';
-
+    // create default styles (ncstyle0 for defaults, ncstyle1 for high-priority style)
+    var ncstyles0 = 'use.nc-default-node { fill: #449944; }\n';
+    ncstyles0 += 'line.nc-default-link { stroke: #999999; stroke-width: 5; }\n';    
+    ncstyles0 += 'use.nc-newnode { stroke: #000000; stroke-width: 2; stroke-dasharray: 3 3; fill: #dddddd; }\n';
+    ncstyles0 += 'line.nc-newlink, line.nc-draggedlink { stroke: #aaaaaa; stroke-width: 6; stroke-dasharray: 7 5; }\n';
+    ncstyles0 += 'text { text-anchor: middle; }\n';
+    ncstyles0 += 'text.tooltip { text-anchor: start; }\n';    
+    var ncstyles1 = 'line.nc-link-highlight { stroke: #000000; stroke-width: 4; }\n';
+    ncstyles1 += 'use.nc-node-highlight { stroke: #000000; stroke-width: 4; }\n';
+    ncstyles1 += 'use.nc-node-center { stroke: #000000; stroke-width: 4;  stroke-dasharray: 5 3; }\n';    
+    
     // add ontology definitions as defs    
     var temp = $.map($.extend({}, nc.ontology.nodes, nc.ontology.links), function(value) {
         return [value];
@@ -665,7 +665,7 @@ nc.graph.initSimulation = function() {
         nonstyles += nowdef.html();                
     }    
     nc.graph.svg.append("defs").html(nonstyles+newnode);
-    nc.graph.svg.append("defs").html('<style type="text/css">'+ncstyles+newstyles+'</style>');
+    nc.graph.svg.append("defs").html('<style type="text/css">'+ncstyles0+newstyles+ncstyles1+'</style>');
     
       
     var width = parseInt(nc.graph.svg.style("width"));    
