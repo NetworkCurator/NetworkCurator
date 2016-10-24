@@ -18,6 +18,9 @@ nc.graph = {
     rawlinks: [], // store for raw data on links
     nodes: [], // store active nodes in the viz
     links: [], // store active links in the viz
+    svgnodes: [], // access to svg nodes
+    svglinks: [], // access to svg links
+    svgnodetext: [], // access to svg node names textboxes
     info: {}, // store of downloaded content information about a node/link
     settings: {}, // store settings for the simulation
     sim: {}, // force simulation 
@@ -28,8 +31,10 @@ nc.graph = {
 // set default values for display settings
 nc.graph.settings.tooltip = true;
 nc.graph.settings.wideview = false;
+nc.graph.settings.inactive = false;
 nc.graph.settings.namesize = 12;
 // for tuning the force simulation
+nc.graph.settings.forcesim = true;
 nc.graph.settings.linklength = 45;
 nc.graph.settings.strength = -30;
 nc.graph.settings.vdecay = 0.5;
@@ -175,8 +180,8 @@ nc.graph.makeSettingsBtn = function() {
     settingsbtn.find('input').each(function() {
         var nowinput = $(this);
         var nowval = nowinput.attr("val");        
-        if (nowinput.attr("type") == "checkbox") {
-            nowinput.val(nc.graph.settings[nowval]);
+        if (nowinput.attr("type") == "checkbox") {            
+            nowinput.prop('checked', nc.graph.settings[nowval]);
         } else {
             // this is text input
             nowinput.val(nc.graph.settings[nowval]);            
@@ -188,18 +193,34 @@ nc.graph.makeSettingsBtn = function() {
         var nowinput = $(this);                
         var nowsetting = nowinput.attr("val");
         var newval = (nowinput.attr("type")=="checkbox" ? nowinput.is(':checked'): parseFloat(nowinput.val()));        
+        nc.graph.settings[nowinput.attr("val")] = newval; 
         if (nowsetting=="wideview") {
+            // changing the view size does not require restart of the sim
             if (newval) {
                 // make the graph view wide
                 $('#nc-graph-svg-container').removeClass("col-sm-8").addClass("col-sm-12");
             } else {
                 $('#nc-graph-svg-container').removeClass("col-sm-12").addClass("col-sm-8");
             }
-        } else {
-            nc.graph.settings[nowinput.attr("val")] = newval;        
-            nc.graph.initSimulation();
-            nc.graph.simStart();
-            nc.graph.simUnpause();
+        } else if (nowsetting=="forcesim") {  
+            // fixing the layout does not require restart of the sim
+            if (newval) {                                
+                for (var i=0; i<nc.graph.nodes.length; i++) {
+                    nownode = nc.graph.nodes[i];
+                    nownode.fx=null;
+                    nownode.fy=null;
+                }
+                nc.graph.simUnpause();
+            } else {                
+                for (var i=0; i<nc.graph.nodes.length; i++) {
+                    var nownode = nc.graph.nodes[i];
+                    nownode.fx=nownode.x;
+                    nownode.fy=nownode.y;
+                }
+            }
+        } else {        
+            // for other, just remake the simulation
+            nc.graph.initSimulation();            
         }
     })
   
@@ -670,7 +691,7 @@ nc.graph.initSimulation = function() {
       
     var width = parseInt(nc.graph.svg.style("width"));    
     var height = parseInt(nc.graph.svg.style("height"));          
-      
+             
     // create new simulation    
     nc.graph.sim = d3.forceSimulation()
     .force("link", d3.forceLink().distance(nc.graph.settings.linklength).id(function(d) {
@@ -679,7 +700,7 @@ nc.graph.initSimulation = function() {
     .force("charge", d3.forceManyBody().strength(nc.graph.settings.strength).distanceMax(400))
     .force("center", d3.forceCenter(width / 2, height / 2))
     .velocityDecay(nc.graph.settings.vdecay);    
-            
+                        
     // Set up panning and zoom (uses a rect to catch click-drag events)                        
     var svgpan = d3.drag().on("start", nc.graph.panstarted).
     on("drag", nc.graph.panned).on("end", nc.graph.panended);       
@@ -704,6 +725,14 @@ nc.graph.initSimulation = function() {
     }    
 }
 
+// update function for force layout
+nc.graph.tick = function() {
+    // performed at each simulation step to reposition the nodes and links    
+    nc.graph.svglinks.attr("x1", dsourcex).attr("y1", dsourcey).attr("x2", dtargetx).attr("y2", dtargety);    
+    nc.graph.svgnodes.attr("x", dx).attr("y", dy);    
+    nc.graph.svgnodetext.attr("x", dx).attr("y", dy);        
+}
+
 
 /**
  * add elements into the graph svg and run the simulation
@@ -725,7 +754,7 @@ nc.graph.simStart = function() {
     .on("drag", nc.graph.dragged).on("end", nc.graph.dragended);
                      
     // create var with set of links (used in the tick function)
-    var link = nc.graph.svg.select("g.nc-svg-content").append("g")
+    nc.graph.svglinks = nc.graph.svg.select("g.nc-svg-content").append("g")
     .attr("class", "links")
     .selectAll("line")
     .data(nc.graph.links)
@@ -759,7 +788,7 @@ nc.graph.simStart = function() {
     }
     
     // create a var with a set of nodes (used in the tick function)
-    var node = nc.graph.svg.select("g.nc-svg-content").insert("g","text")
+    nc.graph.svgnodes = nc.graph.svg.select("g.nc-svg-content").insert("g","text")
     .attr("class", "nodes")
     .selectAll("use").data(nc.graph.nodes).enter().append("use")
     .attr("xlink:href", function(d) {
@@ -779,26 +808,18 @@ nc.graph.simStart = function() {
         var zcid = z.class_id;        
         return nc.ontology.nodes[zcid].showlabel>0;        
     });
-    var nodetext = nc.graph.svg.select("g.nc-svg-content").append("g")
+    nc.graph.svgnodetext = nc.graph.svg.select("g.nc-svg-content").append("g")
     .attr("class", "nodetext")
     .selectAll("text").data(textnodes).enter().append("text")
     .text(function(d) {
         return d.name
     })
     .attr("dx", "0em").attr("dy", "0.3em")
-    .style("font-size", nc.graph.settings.namesize)
-    //.style("text-anchor", "middle")
+    .style("font-size", nc.graph.settings.namesize+"pt")    
     .call(nodedrag)
     .on('click', nc.graph.selectObject );    
-     
-    // performed at each simulation step to reposition the nodes and links
-    var tick = function() {        
-        link.attr("x1", dsourcex).attr("y1", dsourcey).attr("x2", dtargetx).attr("y2", dtargety);    
-        node.attr("x", dx).attr("y", dy);    
-        nodetext.attr("x", dx).attr("y", dy);
-    }
-    
-    nc.graph.sim.nodes(nc.graph.nodes).on("tick", tick);                   
+         
+    nc.graph.sim.nodes(nc.graph.nodes).on("tick", nc.graph.tick);                   
     nc.graph.sim.force("link").links(nc.graph.links);         
     
     // perhaps add a selection class to one of the nodes
@@ -809,8 +830,8 @@ nc.graph.simStart = function() {
         });        
         nc.graph.svg.select('use[id="'+temp[0].id+'"]').classed("nc-node-center", true);           
     }
-
-    nc.graph.simUnpause();
+    
+    nc.graph.simUnpause();    
 }
 
 
@@ -824,9 +845,16 @@ nc.graph.simStop = function() {
 /**
  * Start/unpause the simulation
  */
-nc.graph.simUnpause = function() {
-    //alert("unpausing");
-    nc.graph.sim.alpha(0.7).restart();
+nc.graph.simUnpause = function() {    
+    nc.graph.sim.alpha(0.7).restart();    
+// but if the simulation is meant to be off, stop it here
+//if (!nc.graph.settings.forcesim) {         
+//    for (var i=0; i<nc.graph.nodes.length; i++) {
+//        var nownode = nc.graph.nodes[i];
+//        nownode.fx=nownode.x;
+//        nownode.fy=nownode.y;            
+//    }         
+//}
 }
 
 var dsourcex = function(d) {
@@ -898,7 +926,7 @@ nc.graph.dragstarted = function(d) {
     
     switch (nc.graph.mode) {
         case "select":
-            if (!d3.event.active) nc.graph.sim.alphaTarget(0.3).restart();    
+            if (!d3.event.active) nc.graph.sim.alphaTarget(0.3).restart();               
             break;
         case "newlink":
             nc.graph.simStop(); 
@@ -909,7 +937,7 @@ nc.graph.dragstarted = function(d) {
             break;
         default:
             break;
-    }
+    }    
 }
 
 /**
@@ -919,9 +947,9 @@ nc.graph.dragged = function(d) {
     var point = d3.mouse(this);    
     switch (nc.graph.mode) {
         case "select":
-            var dindex = d.index;                
+            var dindex = d.index;                  
             nc.graph.nodes[dindex].fx = point[0];
-            nc.graph.nodes[dindex].fy = point[1];           
+            nc.graph.nodes[dindex].fy = point[1];
             break;
         case "newlink":
             var besttarget = nc.graph.findNearestNode(point);            
@@ -947,8 +975,11 @@ nc.graph.dragended = function(d) {
     switch (nc.graph.mode) {
         case "select":
             if (!d3.event.active) nc.graph.sim.alphaTarget(0.0);
-            nc.graph.nodes[dindex].fx = null;
-            nc.graph.nodes[dindex].fy = null;    
+            // for active simulations, reset the fx, for inactive, keep the coordinates fixed
+            if (nc.graph.settings.forcesim) {
+                nc.graph.nodes[dindex].fx = null;
+                nc.graph.nodes[dindex].fy = null;
+            } 
             break;
         case "newlink":
             // this is here to make links respond to drag events                        
@@ -957,7 +988,7 @@ nc.graph.dragended = function(d) {
             break;
         case "default":
             break;
-    }        
+    }          
 }
 
 // for panning it helps to keep track of the pan-start point

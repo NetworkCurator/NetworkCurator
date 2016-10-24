@@ -20,7 +20,7 @@ echo ncScriptObject("nc.graph.rawlinks", $graphlinks);
 
 
 <div class="row">
-    <div id="nc-graph-toolbar" class="col-sm-8"></div>
+    <div id="nc-graph-toolbar" class="col-sm-12"></div>
 </div>
 <div class="row">
     <div id="nc-graph-svg-container" class="col-sm-8">        

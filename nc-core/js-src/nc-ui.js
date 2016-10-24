@@ -629,19 +629,20 @@ nc.ui.DropdownGraphSettings = function() {
     // contents of the widget form
     var html = '<table>';
     html += '<tr><th colspan="3">Display</th></tr>';
-    html += '<tr><td><span>Wide view</span></td><td><input val="wideview" type="checkbox" false></td><td></td></tr>';    
-    html += '<tr><td><span>Hover tooltip</span></td><td><input val="tooltip" type="checkbox" checked></td><td></td></tr>';    
+    html += '<tr><td><span>Wide view</span></td><td><input val="wideview" type="checkbox"></td><td></td></tr>';    
+    html += '<tr><td><span>Hover tooltip</span></td><td><input val="tooltip" type="checkbox"></td><td></td></tr>';    
     html += '<tr><td><span>Inactive objects</span></td><td><input val="inactive" type="checkbox"></td><td></td></tr>';    
-    html += '<tr><td><span>Label size</span></td><td><input val="namesize" type="text"></td><td></td></tr>';    
+    html += '<tr><td><span>Label size</span></td><td><input val="namesize" type="text"></td><td><span class="info">(pt)</span></td></tr>';    
 
     html += '<tr><th colspan="3">Layout</th></tr>';
-    html += '<tr><td><span>Link length</span></td><td><input type="text" val="linklength"></td><td></td></tr>';
-    html += '<tr><td><span>Node strength</span></td><td><input type="text" val="strength"></td><td></td></tr>';
-    html += '<tr><td><span>Velocity decay</span></td><td><input type="text" val="vdecay"></td><td></td></tr>';
+    html += '<tr><td><span>Force layout</span></td><td><input val="forcesim" type="checkbox"></td><td></td></tr>';
+    html += '<tr><td><span>Link length</span></td><td><input type="text" val="linklength"></td><td><span class="info">(au, e.g. [20,100])</span></td></tr>';
+    html += '<tr><td><span>Node strength</span></td><td><input type="text" val="strength"></td><td><span class="info">(au, e.g [-100, -20]</span></td></tr>';
+    html += '<tr><td><span>Velocity decay</span></td><td><input type="text" val="vdecay"></td><td><span class="info">(au, [0,1])</span></td></tr>';
     
     html += '<tr><th colspan="3">Traversal</th></tr>';
     html += '<tr><td><span>Local neighborhood</span></td><td><input val="local" type="checkbox" checked></td><td></td></tr>';
-    html += '<tr><td><span>Neighborhood distance</span></td><td><input type="text" val="neighborhood"></td><td></td></tr>';
+    html += '<tr><td><span>Neighborhood distance</span></td><td><input type="text" val="neighborhood"></td><td><span class="info">(# steps)</span></td></tr>';
     
     html += '</table><br/>';
     

@@ -543,6 +543,9 @@ svg.nc-symbol {
 .nc-dropdown-form span {
      white-space: nowrap;
 }
+span.info {
+    color: #777777;
+}
 .nc-dropdown-form input {
     width: 60px;
     padding-left: 4px;
