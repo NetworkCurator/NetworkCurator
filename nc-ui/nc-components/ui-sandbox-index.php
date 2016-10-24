@@ -5,8 +5,8 @@
  */
 
 // is the request for a particular sandbox?
-if ($sandbox != "index") {
-    $sandfile = "nc-ui/nc-components/sandboxes/ui-sandbox-$sandbox.php";    
+if ($sandbox != "index" && $sandbox != '') {
+    $sandfile = "nc-ui/nc-components/ui-sandbox-generic.php";        
     if (file_exists($sandfile)) {
         include_once $sandfile;
         exit();
@@ -33,13 +33,13 @@ if ($sandbox != "index") {
             </a>            
         </div>
         
-        <h2>Markdown-alive</h2>
+        <h2>Makealive</h2>
 
-        <p>Markdown-alive is an extension of markdown. Use it to create rich content, for example
+        <p><code>Makealive</code> is an extension of markdown. Use it to create rich content, for example
             data charts.</p>                
         
         <p>Each of the sandbox pages below contains a form. Input your data into the form and 
-           the page will generate markdown-alive code along a visual representation. 
+           the page will generate <code>makealive</code> code along a visual representation. 
            Use the code within any content box (e.g. abstract or comment) on the NetworkCurator site.</p>
                 
         <div class="list-group nc-mt-10">
@@ -54,6 +54,14 @@ if ($sandbox != "index") {
             <a href="?page=sandbox&sandbox=scatterplot01" class="list-group-item list-group-item-action">
                 <h5 class="list-group-item-heading">scatterplot01</h5>
                 <p class="list-group-item-text">Create simple scatter plots.</p>
+            </a>           
+            <a href="?page=sandbox&sandbox=venn01" class="list-group-item list-group-item-action">
+                <h5 class="list-group-item-heading">venn01</h5>
+                <p class="list-group-item-text">Create a venn diagram.</p>
+            </a>           
+            <a href="?page=sandbox&sandbox=venn02" class="list-group-item list-group-item-action">
+                <h5 class="list-group-item-heading">venn02</h5>
+                <p class="list-group-item-text">Create a venn diagram with a custom set.</p>
             </a>           
         </div>
 
