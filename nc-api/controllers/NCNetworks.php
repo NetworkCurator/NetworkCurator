@@ -41,7 +41,7 @@ class NCNetworks extends NCLogger {
             $this->_uid = $params['user_id'];
         } else {
             throw new Exception("NCNetworks requires parameter user_id");
-        }                
+        }
     }
 
     /**
@@ -133,7 +133,7 @@ class NCNetworks extends NCLogger {
      * 
      * 
      */
-    public function isPublic() {       
+    public function isPublic() {
         $guestperm = (int) $this->getUserPermissions($this->_netid, "guest");
         return $guestperm > NC_PERM_NONE;
     }
@@ -200,7 +200,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
 
         $tu = "" . NC_TABLE_USERS;
         $tp = "" . NC_TABLE_PERMISSIONS;
-       
+
         // check that requesting user can view this network       
         $uperm = $this->getUserPermissions($this->_netid, $this->_uid);
         if ($uperm < NC_PERM_VIEW) {
@@ -230,7 +230,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
      * @throws Exception
      */
     public function getNetworkMetadata() {
-     
+
         // check if user has permission to view the table        
         if ($this->getUserPermissions($this->_netid, $this->_uid) < NC_PERM_VIEW) {
             throw new Exception("Insufficient permission to view the network");
@@ -278,7 +278,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
      * @throws Exception
      */
     public function getNetworkTitle() {
-     
+
         // check if user has permission to view the table        
         if ($this->getUserPermissions($this->_netid, $this->_uid) < NC_PERM_VIEW) {
             throw new Exception("Insufficient permission to view the network");
@@ -305,7 +305,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
      * @throws Exception
      */
     public function getNetworkActivity() {
- 
+
         // settings for limiting output
         $offset = 0;
         $limit = 50;
@@ -363,7 +363,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
      * 
      */
     public function getActivityLogSize() {
-       
+
         $sql = "SELECT COUNT(*) AS logsize FROM " .
                 NC_TABLE_ACTIVITY . " WHERE network_id = ? ";
         $stmt = $this->qPE($sql, [$this->_netid]);
@@ -373,6 +373,46 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         } else {
             return $result['logsize'];
         }
+    }
+
+    /**
+     * Remove all data related to a network.
+     * Can be invoked only by admin user (mainly for developer use)
+     * 
+     * @return string
+     * 
+     * message with purge summary
+     * 
+     */
+    public function purgeNetwork() {
+
+        // this action only for admin
+        if ($this->_uid !== "admin") {
+            throw new Exception("Insufficient permissions to purge the network");
+        }
+
+        if ($this->_netid ==="") {
+            throw new Exception("Network does not exist");
+        } 
+        
+        // proceed to purge the network
+        
+        // remove all entries from db tables
+        $alltables = [NC_TABLE_PERMISSIONS, NC_TABLE_ANNOTEXT,
+            NC_TABLE_CLASSES, NC_TABLE_FILES, NC_TABLE_ACTIVITY, NC_TABLE_NETWORKS, NC_TABLE_NODES,
+            NC_TABLE_PERMISSIONS];
+        foreach ($alltables as $dbtable) {
+            $sql = "DELETE FROM $dbtable WHERE network_id = ?";            
+            $this->qPE($sql, [$this->_netid]);
+        }        
+        
+        // remove data directory for the network
+        $networkdir = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/networks/" . $this->_netid;        
+        $result = "Removing network ".$this->_network."\nNetwork data is in directory: ".
+                $networkdir."\nAttempt to remove, but please verify manually\n\n";
+        system("rm -fr $networkdir");
+                
+        return $result;
     }
 
 }

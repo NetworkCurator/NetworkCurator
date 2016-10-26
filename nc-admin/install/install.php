@@ -400,7 +400,7 @@ $myconf .= "define('NC_APP_KEY',\t'$ncappkey');\n";
 $myconf .= "\n// Configuration for website\n";
 $myconf .= "define('NC_SITE_NAME',\t'" . NC_SITE_NAME . "');\n";
 $myconf .= "\n?>";
-file_put_contents("../config/nc-config.php", $myconf);
+file_put_contents("../config/nc-config-local.php", $myconf);
 echo "ok\n";
 
 ?>

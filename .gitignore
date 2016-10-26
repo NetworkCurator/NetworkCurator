@@ -8,12 +8,10 @@ nc-core/build-nc
 
 
 ## ignoring local installation details
+nc-admin/*/*local*
 
-nc-admin/config/nc-config.php
-nc-admin/install/*local*
 
 ## ignoring build files
-
 nc-core/js/*
 nc-core/css/*
 
