@@ -210,11 +210,12 @@ nc.init.initCuration = function() {
     var box = nc.ui.AnnoEditBox();
     var alleditable = $('.nc-editable-text');    
     alleditable.html(box);    
-             
-    // other functions are for curators only    
-    // if (!nc.curator) return;         
+    
+    // for guests who only look, no need for any curation ui widgets or handlers
+    if (!nc.commentator) return;
     
     // show curation level ui graphics, add an event to toggle curation on/off
+    // this allows owners of comments to edit their own stuff
     $('.nc-curator').show();    
     var lockbtn = $('#nc-curation-lock');
     lockbtn.on("click",
@@ -228,6 +229,12 @@ nc.init.initCuration = function() {
         });    
     
     $('.nc-curation-toolbox').css("font-size", $('body').css("font-size"));   
+    
+    // certain curator other functions are for curators only    
+    if (!nc.curator) {
+        $('#nc-permissions-tab').hide(); 
+    }
+    
 }
 
 /**

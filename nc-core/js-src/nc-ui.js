@@ -129,26 +129,28 @@ nc.ui.ClassTreeWidget = function(classdata, islink) {
         
     // set up drag-drop of classes (uses jquery extension "sortable")  
     var oldContainer;
-    root.find(".nc-classtree-children").sortable({
-        //handle: 'button[val="move"]',
-        handle: 'svg',
-        afterMove: function (placeholder, container) {
-            if(oldContainer != container){
-                if(oldContainer)
-                    oldContainer.el.removeClass("droptarget");
-                container.el.addClass("droptarget");
-                oldContainer = container;                                       
+    if (nc.curator) {
+        root.find(".nc-classtree-children").sortable({
+            //handle: 'button[val="move"]',
+            handle: 'svg',
+            afterMove: function (placeholder, container) {
+                if(oldContainer != container){
+                    if(oldContainer)
+                        oldContainer.el.removeClass("droptarget");
+                    container.el.addClass("droptarget");
+                    oldContainer = container;                                       
+                }
+            },
+            onDrop: function ($item, container, _super) {
+                container.el.removeClass("droptarget");            
+                _super($item, container);      
+                $item.addClass('aftermove');
+                setTimeout(function() {
+                    $item.removeClass('aftermove');
+                }, nc.ui.timeout/2);
             }
-        },
-        onDrop: function ($item, container, _super) {
-            container.el.removeClass("droptarget");            
-            _super($item, container);      
-            $item.addClass('aftermove');
-            setTimeout(function() {
-                $item.removeClass('aftermove');
-            }, nc.ui.timeout/2);
-        }
-    });
+        });
+    }
      
     // populate the ontology tree
     // uses multiple passes to make all classes display regardless of the order

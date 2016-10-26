@@ -28,9 +28,9 @@ nc.firstname='$firstname',
 nc.middlename='$middlename', 
 nc.lastname='$lastname',
 nc.network='$network',
-nc.curator=". (int) ($iscurator == true) . ",
-nc.editor=". (int) ($iseditor == true) .", 
-nc.commentator=". (int) ($iscommentator == true) . ";
+nc.curator=". (int) ($upermissions >= NC_PERM_CURATE) . ",
+nc.editor=". (int) ($upermissions >= NC_PERM_EDIT) .", 
+nc.commentator=". (int) ($upermissions >= NC_PERM_COMMENT) . ";
 </script>";
 ?>
         
@@ -43,4 +43,4 @@ nc.commentator=". (int) ($iscommentator == true) . ";
 
     <body>
         <div id="page">
-            <div class="container">
+            <div class="container">                                

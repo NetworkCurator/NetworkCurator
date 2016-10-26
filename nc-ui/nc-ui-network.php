@@ -59,7 +59,7 @@ if (isset($_REQUEST['object'])) {
                 <li class='<?php if ($view == 'log') echo 'active'; ?>'>
                     <a href='<?php echo $coreurl . 'log'; ?>'>Log</a>
                 </li>      
-                <li class='nc-curator<?php if ($view == 'permissions') echo ' active'; ?>'
+                <li id="nc-permissions-tab" class='nc-curator<?php if ($view == 'permissions') echo ' active'; ?>'
                     style="display: none">
                     <a href='<?php echo $coreurl . 'permissions'; ?>'>Permissions</a>
                 </li>
