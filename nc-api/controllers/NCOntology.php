@@ -341,6 +341,41 @@ class NCOntology extends NCLogger {
     }
 
     /**
+     * Helper function that can be used to check if a queryid can be a parent of childid.
+     * An id cannot be a parent if itself has the childid as a parent. Uses recursion to 
+     * traverse a complete hierarchy up to the root.
+     * 
+     * @param $queryid
+     * 
+     * id of an ontology node, function will look at this id and all its parents
+     * 
+     * @param $avoidid
+     * 
+     * id that should not be allowed among the parents
+     * 
+     * @return boolean
+     * 
+     * true if the hierarchy is ok, false otherwise
+     */
+    private function canBeParent($parentid, $childid) {        
+                        
+        // edge case for recursion
+        if ($parentid=="") {
+            return true;
+        }
+        
+        // get information about this id
+        $queryrecord = $this->getClassRecord($parentid);
+                        
+        // check for bad hierarchy, or keep checking
+        if ($queryrecord['parent_id']==$childid) {        
+            return false;
+        } else {            
+            return $this->canBeParent($queryrecord['parent_id'], $childid);
+        }
+    }
+    
+    /**
      * 
      * Helper function applies db transformations on an ontology class
      * 
@@ -369,8 +404,7 @@ class NCOntology extends NCLogger {
         $Q4 = $params['connector'] == $oldinfo['connector'];
         $Q5 = $params['status'] == $oldinfo['class_status'];
         if ($Q1 && $Q2 && $Q3 && $Q4 && $Q5) {
-            //throw new Exception("Update is consistent with existing data");
-            // perhaps the defs still needs changing
+            // the class information is mostly the same, but maybe the defs still need change            
         }
         if (!$Q4) {
             throw new Exception("Cannot toggle connector status");
@@ -391,6 +425,11 @@ class NCOntology extends NCLogger {
                 if ($parentinfo['directional'] > $params['directional']) {
                     throw new Exception("Incompatible directional status (parent is a directional link)");
                 }
+            }
+            
+            // make sure there is hierarchy, i.e. none of the parents themselves refer to this class            
+            if (!$this->canBeParent($parentid, $classid)) {
+                throw new Exception("Incorrect hierarchy (ancenstor lists class as a parent)");
             }
         }
 

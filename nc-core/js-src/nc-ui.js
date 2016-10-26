@@ -244,7 +244,7 @@ nc.ui.ClassTreeWidget = function(classdata, islink) {
  * Creates one row in a class tree
  * Row consists of a div with a label and a div below that will hold children
  * 
- * @param classrow - array with components class_id, etc. (see ClassForm)
+ * @param classrow - object with components class_id, etc. 
  */
 nc.ui.ClassTreeRowWidget = function(classrow) {
     
@@ -253,12 +253,14 @@ nc.ui.ClassTreeRowWidget = function(classrow) {
     var aform = nc.ui.ClassForm(classrow);
     var cid = classrow['class_id'];    
     var cname = classrow['name'];
-    // get the svg defs from nc.ontology.nodes
-    if (classrow['connector']==1) {
-        var cdefs = nc.utils.sanitize(nc.ontology.links[cid].defs, true);
-    } else {
-        var cdefs = nc.utils.sanitize(nc.ontology.nodes[cid].defs, true);
-    }
+    // get the svg defs from nc.ontology.nodes    
+    var cdefs = nc.utils.sanitize(classrow.defs);
+    // earlier code looked up cdefs from nc.ontology.link and .nodes (is that needed)?
+    //if (classrow['connector']==1) {
+    //    var cdefs = nc.utils.sanitize(nc.ontology.links[cid].defs, true);
+    //} else {
+    //    var cdefs = nc.utils.sanitize(nc.ontology.nodes[cid].defs, true);
+    //}
     var achildren = '<ol class="nc-classtree-children" val="'+classrow['class_id']+'"></ol>';       
     var classvg = '<svg class="nc-symbol" val="'+cid+'"><defs>'+cdefs+'</defs>';
     classvg += '<g transform="translate(18,18)">';
@@ -315,8 +317,7 @@ nc.ui.ClassDisplay = function(classrow) {
         var temp = '<button class="pull-right btn btn-primary btn-sm nc-mw-sm nc-hm-3" ';
         fg += temp +' val="remove">Remove</button>';
         fg += temp +' val="activate" style="display: none">Activate</button>';                       
-        fg += temp + ' val="edit">Edit</button>';   
-    //fg += temp + ' val="move">Move</button>';               
+        fg += temp + ' val="edit">Edit</button>';       
     }
     fg += '</div>'; 
                 
@@ -381,6 +382,10 @@ nc.ui.ClassForm = function(classrow) {
 /**
  * Create a row in a class tree and insert it into the page
  * 
+ * @param classrow object
+ * 
+ * should hold attributes class_id, parent_id, connector, directional, name, defs, status 
+ * 
  * @return boolean
  * 
  * true if the row was successfully insert
@@ -393,7 +398,7 @@ nc.ui.addClassTreeRow = function(classrow) {
        
     // check if this class already exists
     if (root.find('li[val="'+classrow['class_id']+'"]').length>0) return true;        
-       
+              
     // find the target div where to insert the node    
     var parentid = classrow['parent_id'];        
     var targetdiv = root.find('ol.nc-classtree-children[val="'+parentid+'"]');            
@@ -410,13 +415,11 @@ nc.ui.addClassTreeRow = function(classrow) {
     }   
     targetdiv.find("li").show(nc.ui.speed);
     targetdiv.find("div.nc-classdisplay").show(nc.ui.speed);           
-    
     // for some reason I don't understand, the svg generation doesn't appear if
     // the handler is called straigh-away, but it works after a short delay...
     setTimeout(function() {
         targetdiv.find('textarea').keyup();
-    }, nc.ui.speed);
-           
+    }, nc.ui.speed);           
     
     return true;
 }

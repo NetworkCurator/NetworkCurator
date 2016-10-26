@@ -58,7 +58,7 @@ nc.ontology.createClass = function(classname, islink, isdirectional) {
                 name:classname,
                 defs: thisdefs,
                 status: 1
-            };
+            };            
             nc.ui.addClassTreeRow(newrow, 1);                
         }
     });  
