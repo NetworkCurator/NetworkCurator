@@ -5,7 +5,7 @@
 
 echo "\n";
 echo "NetworkCurator -- fill a table with junk\n\n";
-include_once "../config/nc-config.php";
+include_once "../config/nc-config-local.php";
 include_once "../../nc-api/helpers/nc-db.php";
 include_once "../../nc-api/helpers/nc-generic.php";
 include_once "../../nc-api/helpers/GeneralApiCaller.php";

@@ -11,7 +11,7 @@
     
     
 // load the settings for the website
-include_once "../nc-admin/config/nc-config.php";
+include_once "../nc-admin/config/nc-config-local.php";
 
 // load the api caller class that will handle interactions with nc-api
 include_once "../nc-api/helpers/GeneralApiCaller.php";

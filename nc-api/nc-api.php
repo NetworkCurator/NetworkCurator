@@ -15,7 +15,7 @@
 
 // some settings for the application
 $nowdir = dirname(__FILE__);
-include_once $nowdir . "/../nc-admin/config/nc-config.php";
+include_once $nowdir . "/../nc-admin/config/nc-config-local.php";
 include_once $nowdir . "/../nc-admin/config/nc-constants.php";
 // connectivity to the database and general
 include_once $nowdir . "/helpers/nc-db.php";
