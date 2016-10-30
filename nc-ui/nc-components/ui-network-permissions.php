@@ -32,17 +32,16 @@ if ($ispublic === false) {
 $guestusers = array('guest' => $guestuser);
 ?>
 
-<!-- <h1 class="nc-mt-5">Configuration for network <?php echo $network; ?></h1> -->
-
 <div class="row">
     <div class="col-sm-8">
+                
         <h3 class="nc-mt-15">Public access</h3>    
         <div id="nc-permissions-guest">
         </div>
         <h3 class="nc-mt-15">User permissions</h3>
         <div id="nc-permissions-users">
         </div>
-
+                        
         <script>  
         <?php
         echo "nc.permissions.guest=" . json_encode($guestusers) . ";";
@@ -54,6 +53,12 @@ $guestusers = array('guest' => $guestuser);
         <?php
         // show a button to add users to the network
         include "ui-permissions-adduser.php";
+        ?>
+        
+        <?php         
+        if ($upermissions == NC_PERM_SUPER) {
+            echo '<h3 class="nc-mt-15">Administration</h3><div id="nc-administration"></div>';
+        }        
         ?>
     </div>
     

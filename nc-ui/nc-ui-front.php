@@ -13,6 +13,21 @@ $mynetworks = $NCapi->listNetworks();
 $md = [];
 ?>
 
+<div class="row nc-mt-20">
+    <div class="container">
+        <div class="col-sm-12">
+            <?php
+            if ($uid === "admin") {
+                echo "<h4>Admin links</h4>";
+                echo "<div class='btn-toolbar'>";
+                echo "<a class='btn btn-success' role='button' href='?page=admin&new=network'>Create New Network</a>";
+                echo "<a class='btn btn-success' role='button' href='?page=admin&new=user'>Create New User</a>";
+            } echo "</div>";
+            ?>
+        </div>
+    </div>
+</div>
+
 
 <div class="row">   
     <div class="container">
@@ -36,21 +51,6 @@ $md = [];
     </div>
 </div>
 
-
-<div class="row nc-mt-20">
-    <div class="container">
-        <div class="col-sm-12">
-            <?php
-            if ($uid === "admin") {
-                echo "<h4>Admin links</h4>";
-                echo "<div class='btn-toolbar'>";
-                echo "<a class='btn btn-success' role='button' href='?page=admin&new=network'>Create New Network</a>";
-                echo "<a class='btn btn-success' role='button' href='?page=admin&new=user'>Create New User</a>";
-            } echo "</div>";
-            ?>
-        </div>
-    </div>
-</div>
 
 
 

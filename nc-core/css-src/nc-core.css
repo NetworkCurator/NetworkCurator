@@ -588,3 +588,27 @@ span.info {
     display: inline-block;
 }
 
+
+/* ------------------------------------------------------------------------------------
+ * Sandboxes
+ * ------------------------------------------------------------------------------------ */
+
+div.nc-thumbnail {
+    cursor: pointer;
+    padding: 12px;
+}
+div.nc-thumbnail:hover { 
+    background-color: #f6f6f6;
+}
+.nc-thumbnail a {
+    color: inherit;
+}
+.nc-thumbnail a:hover {
+    text-decoration: none;
+}
+.nc-thumbnail p, .nc-thumbnail h5 {
+    margin-top: 1px;
+    margin-bottom: 1px;
+}
+
+

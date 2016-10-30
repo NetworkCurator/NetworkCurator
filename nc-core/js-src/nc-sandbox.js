@@ -9,6 +9,8 @@ if (typeof nc == "undefined") {
     throw new Error("nc is undefined");
 }
 nc.sandbox = {};
+// json will be used within a special converter function to hold a temporary network definition
+nc.sandbox.json = {};
 
 
 /* ====================================================================================
@@ -28,7 +30,7 @@ nc.sandbox.generateMarkdown = function() {
     // start building an object
     var result = {};
 
-    // helper function converts long text into an array with objcets
+    // helper function converts long text into an array with objects
     var string2matrix = function(sdata, colnames) {
         var data = sdata.split("\n");  
         var result = [];              
@@ -90,12 +92,16 @@ nc.sandbox.generateMarkdown = function() {
     mdout+=JSON.stringify(result, null, 2)+'\n';
     mdout += '```';
     
-    $('#nc-sandbox-md').val(mdout).change();    
+    $('#nc-sandbox-md').val(mdout).change();  
+    
+    if (req.attr("val")=="preparenetwork") {        
+        $('#nc-sandbox-md').hide();    
+    }
 }
 
 
 /* ====================================================================================
- * A converter function to generate sandboxes on-the-fly
+ * A makealive function to generate sandboxes on-the-fly
  * ==================================================================================== */
 
 /**
@@ -122,10 +128,8 @@ makealive.lib.sandbox = function(obj, x) {
     }
     
     // create a html for required and optional components
-    var reqh = '<h4 class="nc-mt-15">Required parameters</h4>';
-    reqh += '<div id="nc-sandbox-required" class="nc-parameters form-horizontal" val="'+funname+'">'        
-    var opth = '<h4 class="nc-sandbox-optional">Optional parameters <span><span class="caret"></span></span></h4>';
-    opth += '<div id="nc-sandbox-optional" class="nc-parameters form-horizontal">';
+    var reqh = '';
+    var opth = '';
     
     // helper function to create a form element for strings, arrays, or data matrices
     var textForm = function(fname, flabel, defvalue) {  
@@ -184,11 +188,192 @@ makealive.lib.sandbox = function(obj, x) {
         }
     }
         
-    // close the required and optional divs
-    reqh += '</div>';
-    opth += '</div>';
+    // create one large html string to place into obj
+    var html = '';
+    if (reqh!="") {
+        html += '<h4 class="nc-mt-15">Required parameters</h4>';
+        html += '<div id="nc-sandbox-required" class="nc-parameters form-horizontal" val="'+funname+'">';
+        html += reqh +'</div>';
+    }
+    if (opth!="") {
+        html += '<h4 class="nc-sandbox-optional">Optional parameters <span><span class="caret"></span></span></h4>';
+        html += '<div id="nc-sandbox-optional" class="nc-parameters form-horizontal">';
+        html += opth+'</div>';
+    }    
+            
+    obj.innerHTML = html;
+}
+
+
+
+/* ====================================================================================
+ * A makealive function to validate network definitions
+ * ==================================================================================== */
+
+/**
+ * makealive conversion function. 
+ * 
+ * Validates ontology, node, link structure in input object x.
+ * Generates output as validation messages a file to download
+ * 
+ * It is helpful in combination with the sandbox capabilities so that
+ * users can copy/paste data into text boxes and then download files that are ready
+ * for upload.
+ * 
+ */
+makealive.lib.preparenetwork = function(obj, x) {
+
+    // define accepted arguments
+    var xargs = [
+    makealive.defArg("name", "string", "Network name", null), 
+    makealive.defArg("title", "string", "Network title", null), 
+    makealive.defArg("ontology", "array:name:connector:directional", "Ontology", null),
+    makealive.defArg("nodes", "array:name:class:title:abstract:content", "Nodes", null),
+    makealive.defArg("links", "array:name:class:source:target:title:abstract:content", "Links", null)    
+    ];
+    
+    // provide info on arguments
+    if (obj===null) return xargs;        
+    
+    // check required arguments, check/fill optional arguments
+    //makealive.checkArgs(x, xargs);                      
+              
+    // ***********************************************************************
+    // helper functions
+    
+    // gets non-unique elements in an array
+    var notunique = function (arr) { 
+        arr.sort();
+        var result = [];
+        for (var i=0; i<arr.length; i++) {
+            if (i>0 && arr[i]==arr[i-1]) {
+                result.push(arr[i]);
+            }
+        }
+        return result;
+    }
+            
+    // ***********************************************************************
+    // done prep, start processing data
+
+    // clear existing network
+    nc.sandbox.json = {};
+
+    var ok = true;
+    obj.innerHTML = "Preparing network definition file...<br/>";    
+    var err = "<br/><b>ERROR</b> ";
+
+    // validate network name
+    if (x.name=="" || x.name.length<2 || nc.utils.checkString(x.name, 1)==0) {
+        ok = false;
+        obj.innerHTML += err+" Invalid network name: "+JSON.stringify(x.name);
+    }
+    
+    // validate ontology definitions
+    var nodeclasses = {};
+    var linkclasses = {};
+    var fullonto = [];
+    if ("ontology" in x) {
+        for (var i=0; i<x.ontology.length; i++) {
+            var nowonto = x.ontology[i];            
+            // check that name exists
+            if (nowonto.name == null || nowonto.name=="" || nc.utils.checkString(nowonto.name, 1)==0) {                
+                obj.innerHTML+= err+"invalid ontology class name: "+JSON.stringify(nowonto.name);
+            } else {                        
+                fullonto.push(nowonto.name);
+                if (nowonto.connector>0) {
+                    linkclasses[nowonto.name] = 1;
+                } else {
+                    nodeclasses[nowonto.name] = 1;
+                }
+            }
+        }        
+        // check for duplicate names
+        var ontonotu = notunique(fullonto);
+        if (ontonotu.length>0) { 
+            ok = false;
+            for (var i=0; i<ontonotu.length; i++) {
+                obj.innerHTML+= err+"duplicate ontology definitions: "+JSON.stringify(ontonotu[i]);
+            }            
+        }
+    }
+                
+    // validate node definitions
+    var nodenames = {};
+    if ("nodes" in x) {
+        for (var i=0; i<x.nodes.length; i++) {
+            var nownode = x.nodes[i];            
+            if (nownode["name"]== null || nownode["name"]=="" || nc.utils.checkString(nownode["name"], 1)==0) {
+                ok = false;
+                obj.innerHTML += err+"invalide node name: "+JSON.stringify(nownode["name"]);
+            } else {
+                nodenames[nownode.name] = 1;
+            }
+            // check that the class exists            
+            if (nownode["class"]== null || nownode["class"]=="" || !(nownode["class"] in nodeclasses)) {
+                ok = false;
+                obj.innerHTML += err+"undefined ontology class: "+JSON.stringify(nownode["class"]);
+            } 
+        }
+    }
+    
+    // validate link definitions    
+    if ("links" in x) {
+        for (var i=0; i<x.links.length; i++) {
+            var nowlink = x.links[i];
+            // check name
+            if (nowlink["name"]== null || nowlink["name"]=="" || nc.utils.checkString(nowlink["name"], 1)==0) {
+                ok = false;
+                obj.innerHTML += err+"invalide node name: "+JSON.stringify(nowlink["name"]);
+            }
+            // check class
+            if (!(nowlink["class"] in linkclasses)) {
+                ok = false;
+                obj.innerHTML += err+"undefined ontology class: "+JSON.stringify(nowlink["class"]);
+            }
+            // check source & target nodes
+            if (nowlink["source"]==null || !(nowlink["source"] in nodenames)) {
+                ok = false;
+                obj.innerHTML += err+"undefined source node: "+JSON.stringify(nowlink["source"]);
+            }
+            if (nowlink["target"] == null || !(nowlink["target"] in nodenames)) {
+                ok = false;
+                obj.innerHTML += err+"undefined target node: "+JSON.stringify(nowlink["target"]);
+            }           
+        }
+    }
+    
+    // at the end of the check, provide a button to download a network definition json file    
+    if (!ok) {
+        return;
+    }
         
-    obj.innerHTML = reqh+opth;
+    // create result object (put it in the global space)
+    nc.sandbox.json.network = [];
+    var network = {};
+    network.name = x.name;
+    network.title = x.title;
+    nc.sandbox.json.network.push(network);
+    nc.sandbox.json.network.title = x.title;
+    nc.sandbox.json.ontology = x.ontology;
+    nc.sandbox.json.nodes = x.nodes;
+    nc.sandbox.json.links = x.links;
+        
+    obj.innerHTML += 'done<br/><br/>';
+    obj.innerHTML += '<a class="btn btn-default" role="button" onclick="javascript:nc.sandbox.downloadJSON()">Download network json file</a>';        
+}
+
+
+// triggers download of nc.sandbox.json 
+nc.sandbox.downloadJSON = function() {
+    if (!("network" in nc.sandbox.json)) {
+        return;
+    }
+    
+    // turn the content of nc.sandbox.json into a string, and trigger download
+    var networkdef = JSON.stringify(nc.sandbox.json, null, '  ');
+    var filename = nc.sandbox.json.network[0].name+".nc.json";
+    nc.utils.saveToFile(networkdef, filename);    
 }
 
 

@@ -36,6 +36,7 @@ class NCNetworks extends NCLogger {
             $this->_netid = $this->getNetworkId($params['network']);
         } else {
             $this->_network = "";
+            $this->_netid = "";
         }
         if (isset($params['user_id'])) {
             $this->_uid = $params['user_id'];
@@ -391,10 +392,13 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
             throw new Exception("Insufficient permissions to purge the network");
         }
 
-        if ($this->_netid ==="") {
+        if ($this->_network == "") {
+            throw new Exception("Missing network name");
+        }
+        if ($this->_netid == "") {
             throw new Exception("Network does not exist");
         } 
-        
+                
         // proceed to purge the network
         
         // remove all entries from db tables
@@ -408,8 +412,8 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         
         // remove data directory for the network
         $networkdir = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/networks/" . $this->_netid;        
-        $result = "Removing network ".$this->_network."\nNetwork data is in directory: ".
-                $networkdir."\nAttempt to remove, but please verify manually\n\n";
+        $result = "Removing network ".$this->_network."\nNetwork data is in directory: ".$this->_netid.
+                "\nAttempt to remove, but please verify manually\n\n";
         system("rm -fr $networkdir");
                 
         return $result;

@@ -13,7 +13,7 @@
         <textarea id="nc-sandbox-md" class="form-control" rows="20"></textarea>                
     </div>        
     <div class="col-sm-6">
-        <label>Preview</label>
+        <label>Result</label>
         <div id="nc-sandbox-preview"></div>
     </div>        
 </div>

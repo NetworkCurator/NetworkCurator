@@ -63,6 +63,30 @@ nc.admin.createNetwork = function(fgname, fgtitle, fgdesc) {
 }
 
 
+/**
+ * Send a request to purge a network
+ * 
+ */
+nc.admin.purgeNetwork = function() {
+    $.post(nc.api, 
+    {
+        controller: "NCNetworks", 
+        action: "purgeNetwork", 
+        network: nc.network        
+    }, function(data) {                         
+        data = JSON.parse(data);
+        if (nc.utils.checkAPIresult(data)) {
+            if (data['success']==false) {
+                nc.msg('Error', data['errormsg']);                
+            } else if (data['success']==true) {                    
+                nc.msg('Result', data['data']);
+            }
+        }
+        location.reload();
+    }
+    ); 
+}
+
 /* ====================================================================================
 * Section on processing user accounts
 * ==================================================================================== */
@@ -91,7 +115,9 @@ nc.admin.createUser = function(fgfirst, fgmiddle, fglast, fgid, fgemail, fgpwd, 
         + nc.utils.checkFormInput(fgid, "user id", 1)
         + nc.utils.checkFormInput(fgpwd, "password", 1)
         + nc.utils.checkFormInput(fgpwd2, "password", 1)
-        + nc.utils.checkFormEmail(fgemail, "email") < 7) { return 0; };                
+        + nc.utils.checkFormEmail(fgemail, "email") < 7) {
+        return 0;
+    };                
     if ($('#'+fgpwd+' input').val() != $('#'+fgpwd2+' input').val()) {
         $('#'+fgpwd2).addClass('has-warning');
         $('#'+fgpwd2+' label').html("Please re-confirm the password:");

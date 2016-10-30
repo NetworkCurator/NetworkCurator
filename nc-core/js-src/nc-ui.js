@@ -35,6 +35,24 @@ nc.ui.caret = '<span class="pull-right caret nc-dropdown-caret"></span>';
 
 
 /* ====================================================================================
+ * Administration
+ * ==================================================================================== */
+
+/**
+ * create html with buttons for network administration
+ * e.g. purge a network
+ */
+nc.ui.AdministrationWidget = function() {    
+    var ans = $('<div></div>');
+    ans.append('<a class="btn btn-danger" role="button">Purge network</a>');    
+    ans.find('a').on('click', function() {
+        nc.admin.purgeNetwork();
+    });
+    return ans;
+}
+
+
+/* ====================================================================================
  * Permissions
  * ==================================================================================== */
 

@@ -2,8 +2,8 @@
 /**
  * Footer at the bottom of each page
  */
-?>
-<?php // the next </div>s closes the "page" divs from nc-header.php ?>
+
+// the next </div>s closes the "page" divs from nc-header.php ?>
 </div>
 
 

@@ -76,12 +76,9 @@ nc.init.all = function() {
     
     nc.init.initNetwork();
     nc.init.initPermissions();
-    nc.init.initLog();
-    //alert("going to initCuration");
-    nc.init.initCuration();
-    //alert("going to initMarkdown");
-    nc.init.initMarkdown();
-    //alert("going to initComments");    
+    nc.init.initLog();    
+    nc.init.initCuration();    
+    nc.init.initMarkdown();    
     nc.init.initComments();        
     nc.init.initOntology();    
     nc.init.initGraph();       
@@ -96,6 +93,10 @@ nc.init.initPermissions = function() {
     // check if this is the permissions page
     var guestperms = $('#nc-permissions-guest');
     var usersperms = $('#nc-permissions-users');
+    var adminnetwork = $('#nc-administration');
+    if (adminnetwork.length>0) {
+        adminnetwork.hide();
+    }
     if (guestperms.length==0 || usersperms.length==0) return;
         
     // creat widgets
@@ -105,6 +106,12 @@ nc.init.initPermissions = function() {
     $('.btn-group .disabled').click(function(event) {
         event.stopPropagation();
     }); 
+    
+    // for super-user, create administration widget    
+    if (adminnetwork.length>0 || nc.curator==1) {
+        adminnetwork.append(nc.ui.AdministrationWidget());
+        adminnetwork.show();
+    }
 }
 
 /**
