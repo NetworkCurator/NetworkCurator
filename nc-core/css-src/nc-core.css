@@ -16,12 +16,10 @@ html {
     min-height: 100%;
 }
 
-
 body {           
     padding-top: 32px;
     margin-bottom: 80px;
 }
-
 
 h1 {
     margin-top: 1em;
@@ -159,6 +157,10 @@ textarea.nc-curation-content {
     height: 100%;
 }
 
+.input-group-btn button {
+    width: 100%;
+    border-radius: 4px !important;
+} 
 
 
 /* ------------------------------------------------------------------------------------
@@ -198,7 +200,26 @@ textarea.nc-curation-content {
     padding-top: 80px;
 }
 
+.nc-nav-icon {    
+    line-height: 24px;
+}
 
+
+#nc-nav-network-title {
+    font-weight: 600;
+    white-space: nowrap;   
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: inherit;
+}
+#nc-nav-network-title:hover {
+    text-decoration: inherit;
+    color: inherit;
+}
+
+.nc-curator > a {
+    color: #d43f3a !important;
+}
 
 /* ------------------------------------------------------------------------------------
  * Comments
@@ -588,6 +609,34 @@ span.info {
     display: inline-block;
 }
 
+/* ------------------------------------------------------------------------------------
+ * Curation/editing
+ * ------------------------------------------------------------------------------------ */
+
+.nc-curation-box a.btn {
+    margin-right: 6px;
+}
+.nc-curation-box textarea {
+    margin-bottom: 6px;
+}
+a.nc-comment-response {
+    color: #777;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+.media {
+    padding-top: 8px;
+    padding-bottom: 8px;    
+}
+img.nc-comment-primary {
+    height: 40p;
+    width: 40px;
+}
+img.nc-comment-response {
+    height: 30p;
+    width: 30px;
+}
+
 
 /* ------------------------------------------------------------------------------------
  * Sandboxes
@@ -611,4 +660,25 @@ div.nc-thumbnail:hover {
     margin-bottom: 1px;
 }
 
+#nc-sandbox-preview {
+    min-height: 128px; 
+    padding: 8px;
+}
 
+.nc-parameters {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+#nc-sandbox-required .col-sm-1, #nc-sandbox-optional .col-sm-1 {
+    padding-right: 4px;
+}
+
+
+/* ------------------------------------------------------------------------------------
+ * Makealive plugins
+ * ------------------------------------------------------------------------------------ */
+
+div.makealive {    
+    overflow: visible;
+}

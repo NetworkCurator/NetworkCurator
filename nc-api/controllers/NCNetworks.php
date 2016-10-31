@@ -70,13 +70,10 @@ class NCNetworks extends NCLogger {
         // check that required parameters are defined
         $params = $this->subsetArray($this->_params, array_keys($this->_annotypes));
 
-        // shorthand variables        
-        $network = $this->_network;
-
         if (strlen($params['name']) < 2) {
             throw new Exception("Network name too short");
         }
-
+        
         // perform tests on whether this user can create new network?
         if ($this->_uid !== "admin") {
             throw new Exception("Insufficient permissions to create a network");
@@ -85,10 +82,10 @@ class NCNetworks extends NCLogger {
         $this->dblock([NC_TABLE_NETWORKS, NC_TABLE_ANNOTEXT, NC_TABLE_ACTIVITY, NC_TABLE_PERMISSIONS]);
 
         // check that the network does not already exist? 
-        if ($this->getNetworkId($network) !== "") {
+        if ($this->getNetworkId($params['name']) != "") {
             throw new Exception("Network name exists");
         }
-
+        
         // if reached here, create the new network
         // find a new ids for the network and annotations                 
         $netid = $this->makeRandomID(NC_TABLE_NETWORKS, 'network_id', NC_PREFIX_NETWORK, NC_ID_LEN);
