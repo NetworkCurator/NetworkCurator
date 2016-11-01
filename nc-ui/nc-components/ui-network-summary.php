@@ -34,17 +34,19 @@ foreach (["title", "content", "abstract"] as $i) {
         <h4 class="nc-mt-10">Commentators</h4>
         <?php echo ncListNames($netmeta['commentators']); ?>
         <hr/>
-
+        
         <h3 class="nc-mt-10 nc-mb-05">Abstract</h3>
         <div id="nc-network-abstract" class="nc-editable-text nc-md"
              val="<?php echo $netmeta['abstract']['anno_id']; ?>"
-             owner="<?php echo $owner; ?>"></div>
+             owner="<?php echo $owner; ?>">
+        </div>        
         <hr/>
 
         <h3 class="nc-mb-10">Description</h3>
         <div id="nc-network-content" class="nc-editable-text nc-md" 
              val="<?php echo $netmeta['content']['anno_id']; ?>"
-             owner="<?php echo $owner; ?>"></div>
+             owner="<?php echo $owner; ?>">        
+        </div>
         <hr/>
 
         <div id="nc-comments" class="media-body" val="<?php echo $netmeta['content']['anno_id']; ?>"></div>        

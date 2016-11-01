@@ -749,7 +749,7 @@ nc.ui.AnnoEditBox = function() {
     curabox.find('a.nc-curation-toolbox-preview').click(function() {  
         var thiscurabox = $(this).parent().parent();
         var annoareah = 6+ parseInt(thiscurabox.find('textarea').css("height").replace("px",""));                
-        var annomd = thiscurabox.find('textarea').hide().val();   
+        var annomd = thiscurabox.find('textarea.nc-curation-content').hide().val();   
         // convert from md to html
         var annohtml = nc.utils.md2html(annomd);        
         thiscurabox.find('div.nc-curation-content').css("min-height", annoareah)        
@@ -758,9 +758,10 @@ nc.ui.AnnoEditBox = function() {
     });    
     // clicking save sends the md to the server    
     curabox.find('a.nc-submit').click(function() {  
-        var thiscurabox = $(this).parent();
-        var annomd = thiscurabox.find('textarea').val(); 
-        var annoid = thiscurabox.parent().attr("val");
+        var thiscurabox = $(this).parent();        
+        var annotext = thiscurabox.find('textarea');        
+        var annomd = thiscurabox.find('textarea.nc-curation-content').val(); 
+        var annoid = thiscurabox.parent().attr("val");   
         nc.updateAnnotationText(annoid, annomd);
         thiscurabox.find('a.nc-curation-toolbox-close').click();
     });    
@@ -772,7 +773,7 @@ nc.ui.AnnoEditBox = function() {
         thiscurabox.find('textarea').css("height","");
         thiscurabox.find('a.nc-curation-toolbox-preview').click();        
     });        
-    curabox.find('.nc-curation-content').on("click" , function() {              
+    curabox.find('.nc-curation-content').on("click" , function() {                     
         var thiscurabox = $(this).parent(); 
         // check if user is allowed to edit this box           
         if (!nc.curator && thiscurabox.parent().attr("owner")!=nc.userid) {            
