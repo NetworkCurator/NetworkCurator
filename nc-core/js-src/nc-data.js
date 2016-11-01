@@ -48,7 +48,7 @@ nc.data.importData = function(fgfile, fgdesc) {
     var confirmmodal = $('#nc-data-modal');
     confirmmodal.find('#nc-dataconfirm-file').html(filename);
     confirmmodal.find('button[val="nc-confirm"]').off("click").click(function() {
-        nc.data.sendData(filename, filedesc, fileurl);
+        nc.data.sendData(filename, filedesc, fileurl, nc.network);
     });
     confirmmodal.find('p[val="download"]').hide();
     confirmmodal.find('p[val="upload"]').show();    
@@ -60,9 +60,12 @@ nc.data.importData = function(fgfile, fgdesc) {
 
 /**
  * Invoked after user confirms upload of data.
- * 
+ * @params filename - string, name of file to upload
+ * @params filedesc - string, short description recorded during upload
+ * @params fileurl - complete url to local file
+ * @param networkname - string, specifies target network
  */
-nc.data.sendData = function(filename, filedesc, fileurl) {
+nc.data.sendData = function(filename, filedesc, fileurl, networkname) {
         
     var btn = $('#nc-import-form button[type="submit"]');
     btn.toggleClass("btn-success btn-default disabled").html("Uploading");
@@ -77,13 +80,12 @@ nc.data.sendData = function(filename, filedesc, fileurl) {
             nc.msg('Error', 'File contents does not appear to be valid JSON');                
             return;
         }
-        
-        //alert("here "+nc.network+" "+filename+" "+filedata);
+                
         $.post(nc.api, 
         {
             controller: "NCData", 
             action: "importData", 
-            network: nc.network,
+            network: networkname,
             file_name: filename,
             file_desc: filedesc,
             file_content: filedata

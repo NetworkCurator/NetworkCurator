@@ -426,7 +426,7 @@ class NCLogger extends NCDB {
         $result = $stmt->fetch();
         if (!$result) {
             if ($throw) {
-                throw new Exception("Network does not exist");
+                throw new Exception("Network does not exist (getNetworkId) $netname");
             }
             return "";
         } else {

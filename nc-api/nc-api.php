@@ -55,6 +55,7 @@ try {
     if (isset($request['source_ip'])) {
         $sourceaddr = $request['source_ip'];        
     }
+    $params['source_ip'] = $sourceaddr;
 
     // get the controller and requested action
     $controller = $params['controller'];

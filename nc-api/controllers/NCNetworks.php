@@ -73,7 +73,7 @@ class NCNetworks extends NCLogger {
         if (strlen($params['name']) < 2) {
             throw new Exception("Network name too short");
         }
-        
+
         // perform tests on whether this user can create new network?
         if ($this->_uid !== "admin") {
             throw new Exception("Insufficient permissions to create a network");
@@ -85,7 +85,7 @@ class NCNetworks extends NCLogger {
         if ($this->getNetworkId($params['name']) != "") {
             throw new Exception("Network name exists");
         }
-        
+
         // if reached here, create the new network
         // find a new ids for the network and annotations                 
         $netid = $this->makeRandomID(NC_TABLE_NETWORKS, 'network_id', NC_PREFIX_NETWORK, NC_ID_LEN);
@@ -101,8 +101,9 @@ class NCNetworks extends NCLogger {
         $sql = "INSERT INTO " . NC_TABLE_NETWORKS . " (network_id, owner_id) VALUES (?, ?)";
         $this->qPE($sql, [$netid, $this->_uid]);
 
-        // create a starting log entry for creation of the network        
+        // create a starting log entry for creation of the network                
         $this->logActivity($this->_uid, $netid, "created network", $params['name'], $params['title']);
+        $this->logAction($this->_uid, $this->_params['source_ip'], "NCNetworks", "createNewNetwork", $netid . ": " . $params['name']);
 
         // create permissions for admin and guest
         $sql = "INSERT INTO " . NC_TABLE_PERMISSIONS . "
@@ -394,25 +395,27 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
         }
         if ($this->_netid == "") {
             throw new Exception("Network does not exist");
-        } 
-                
+        }
+
         // proceed to purge the network
-        
         // remove all entries from db tables
         $alltables = [NC_TABLE_PERMISSIONS, NC_TABLE_ANNOTEXT,
             NC_TABLE_CLASSES, NC_TABLE_FILES, NC_TABLE_ACTIVITY, NC_TABLE_NETWORKS, NC_TABLE_NODES,
             NC_TABLE_PERMISSIONS];
         foreach ($alltables as $dbtable) {
-            $sql = "DELETE FROM $dbtable WHERE network_id = ?";            
+            $sql = "DELETE FROM $dbtable WHERE network_id = ?";
             $this->qPE($sql, [$this->_netid]);
-        }        
-        
+        }
+
         // remove data directory for the network
-        $networkdir = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/networks/" . $this->_netid;        
-        $result = "Removing network ".$this->_network."\nNetwork data is in directory: ".$this->_netid.
+        $networkdir = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/networks/" . $this->_netid;
+        $result = "Removing network " . $this->_network . "\nNetwork data is in directory: " . $this->_netid .
                 "\nAttempt to remove, but please verify manually\n\n";
         system("rm -fr $networkdir");
-                
+
+        // record the action in the site log
+        $this->logAction($this->_uid, $this->_params['source_ip'], "NCNetworks", "purgeNetwork", $this->_netid . ": " . $this->_network);
+
         return $result;
     }
 

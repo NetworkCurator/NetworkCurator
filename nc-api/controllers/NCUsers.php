@@ -85,8 +85,9 @@ class NCUsers extends NCLogger {
 
         // log the activity        
         $fullname = ncFullname($this->_params, $prefix = "target_");
-        $this->logActivity($this->_uid, '', "created user account", $this->_params['target_id'], $fullname);
-
+        $this->logActivity($this->_uid, '', "created user account", $this->_params['target_id'], $fullname);        
+        $this->logAction($this->_uid, $this->_params['source_ip'], "NCUsers", "createNewUser", $this->_params['target_id'] . ": " . $fullname);
+        
         return true;
     }
 
