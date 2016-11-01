@@ -680,6 +680,6 @@ div.nc-thumbnail:hover {
  * ------------------------------------------------------------------------------------ */
 
 div.makealive {    
-    overflow: hidden !important;
-    display: block;
+    height: auto;   
+    overflow: visible;            
 }
