@@ -134,7 +134,7 @@ nc.admin.importNetwork = function(fgfile) {
             if (nc.utils.checkAPIresult(data)) {
                 if (data['success']==false || data['data']==false) {
                     $('#'+fgfile).removeClass('has-warning has-error');                    
-                    $('#'+fgfile+' label').html("Please choose another network name");  
+                    $('#'+fgfile+' label').html("Please choose another network name");                      
                     // that's all, now exit
                 } else if (data['success']==true && data['data']==true) {                    
                     // here invoke function to actually send the data to the server                    

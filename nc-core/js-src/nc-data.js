@@ -68,7 +68,7 @@ nc.data.importData = function(fgfile, fgdesc) {
 nc.data.sendData = function(filename, filedesc, fileurl, networkname) {
         
     var btn = $('#nc-import-form button[type="submit"]');
-    btn.toggleClass("btn-success btn-default disabled").html("Uploading");
+    btn.toggleClass("btn-success btn-default disabled").html("Uploading (please wait)");
     
     // set up file reader and open/read the specified file
     var reader = new FileReader();

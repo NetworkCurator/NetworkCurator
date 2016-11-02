@@ -817,7 +817,7 @@ nc.graph.simStart = function() {
     .attr("dx", "0em").attr("dy", "0.3em")
     .style("font-size", nc.graph.settings.namesize+"pt")    
     .call(nodedrag)
-    .on('click', nc.graph.selectObject );    
+    .on('click', nc.graph.selectObject ).on("dblclick", nc.graph.centerNeighborhood);    
          
     nc.graph.sim.nodes(nc.graph.nodes).on("tick", nc.graph.tick);                   
     nc.graph.sim.force("link").links(nc.graph.links);         

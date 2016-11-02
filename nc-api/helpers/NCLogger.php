@@ -23,7 +23,7 @@ class NCLogger extends NCDB {
         "abstract" => NC_ABSTRACT, "content" => NC_CONTENT];
     protected $_annotypeslong = ["name" => NC_NAME, "title" => NC_TITLE,
         "abstract" => NC_ABSTRACT, "content" => NC_CONTENT, "defs" => NC_DEFS];
-    
+
     /**
      * Constructor with connection to database
      * 
@@ -86,17 +86,28 @@ class NCLogger extends NCDB {
     protected function makeRandomIDSet($dbtable, $idcolumn, $idprefix, $stringlength, $n) {
         $keeplooking = true;
         while ($keeplooking) {
+            //echo "looking ";
             // create a batch of new ids
             $newids = array_pad([""], $n, "");
             for ($i = 0; $i < $n; $i++) {
                 $newids[$i] = $idprefix . makeRandomString($stringlength);
             }
-            // encode the ids into a query against the db
-            $whereids = implode("%' OR $idcolumn LIKE '", $newids);
-            $whereclause = " WHERE $idcolumn LIKE '" . $whereids . "%'";
-            $sql = "SELECT $idcolumn FROM $dbtable $whereclause";
-            $stmt = $this->qPE($sql, []);
-            $keeplooking = $stmt->fetch();
+            // make sure all ids are different
+            $newunique = true;
+            sort($newids);
+            for ($i = 1; $i < $n; $i++) {
+                if ($newids[$i] == $newids[$i - 1]) {
+                    $newunique = false;
+                }
+            }
+            if ($newunique) {
+                // encode the ids into a query against the db
+                $whereids = implode("%' OR $idcolumn LIKE '", $newids);
+                $whereclause = " WHERE $idcolumn LIKE '" . $whereids . "%'";
+                $sql = "SELECT $idcolumn FROM $dbtable $whereclause";
+                $stmt = $this->qPE($sql, []);
+                $keeplooking = $stmt->fetch();
+            }
         }
         return $newids;
     }
@@ -146,7 +157,7 @@ class NCLogger extends NCDB {
         if (strlen($target) > ($maxlen - 4)) {
             $target = substr($target, $maxlen) . "...";
         }
-        
+
         // prepare a statement for activity-logging
         $sql = "INSERT INTO " . NC_TABLE_ACTIVITY . "
                     (datetime, user_id, network_id, action, target_name, value)
@@ -191,48 +202,6 @@ class NCLogger extends NCDB {
         $this->qPE($sql, $params);
 
         return $newid;
-    }
-
-    /**
-     * @deprecated
-     * 
-     * Updates the annotext table with some new data.
-     * Updating means changing an existing row with anno_id to status=OLD,
-     * and inserting a new row with status = active. 
-     * 
-     * @param array $params
-     * 
-     * The function assumes the array contains exactly these elements.
-     * network_id, user_id, root_id, parent_id, anno_id, anno_text, anno_type
-     * 
-     * @return
-     * 
-     * integer 1 upon success
-     *      
-     * @deprecated
-     */
-    protected function updateAnnoText($params) {
-
-        throw new Exception("deprecated in favor of batchUpdateAnno");
-
-        $params = $this->subsetArray($params, ["network_id", "datetime", "owner_id",
-            "root_id", "parent_id", "anno_id", "anno_text", "anno_type"]);
-        $params['user_id'] = $this->_uid;
-
-        $tat = "" . NC_TABLE_ANNOTEXT;
-
-        // set existing annotions as OLD, This becomes the historical record
-        $sql = "UPDATE $tat SET anno_status = " . NC_OLD . "
-                    WHERE network_id = ? AND anno_id = ? AND anno_status = " . NC_ACTIVE;
-        $this->qPE($sql, [$params['network_id'], $params['anno_id']]);
-
-        // insert a new  copy. This becomes the current version
-        $sql = "INSERT INTO $tat
-                    (datetime, modified, network_id, owner_id, user_id, root_id, parent_id,
-                    anno_id, anno_text, anno_type, anno_status) VALUES
-                    (:datetime, UTC_TIMESTAMP(), :network_id, :owner_id, :user_id, :root_id, :parent_id,
-                    :anno_id, :anno_text, :anno_type, " . NC_ACTIVE . ")";
-        $this->qPE($sql, $params);
     }
 
     /**
@@ -507,7 +476,7 @@ class NCLogger extends NCDB {
                     break;
                 case NC_DEFS:
                     $result['defs'] = $row;
-                    break;                
+                    break;
                 default:
                     break;
             }
@@ -550,62 +519,6 @@ class NCLogger extends NCDB {
             throw new Exception("Error fetching anno id");
         }
         return $result['anno_id'];
-    }
-
-    /**
-     * New way of inserting a set of annotation that does not use anno_id lookup
-     * and uses only on insert statement.
-     * 
-     * @param type $netid
-     * @param type 
-
-      $uid
-     * @param type  $rootid
-     * @param type $annoname
-     * @param type $annotitle
-     * @param type $annoabstract
-     * @param type $annocontent
-     * 
-     */
-    protected function insertNewAnnoSet($netid, $uid, $rootid, $annoname, $annotitle, $annoabstract = 'empty', $annocontent = 'empty') {
-
-        throw new Exception("insertNewAnnoSet is deprecated. Use batchInsertAnnoSets instead");
-
-        $annoid = $this->makeRandomID(NC_TABLE_ANNOTEXT, "anno_id", "T", NC_ID_LEN - 1);
-
-        // create an array of parameter values (one set for name, abstrat, title, content)
-        $params = [];
-        foreach (["A", "B", "C", "D"] as $abc) {
-            $params['network_id' . $abc
-                    ] = $netid;
-            $params['owner_id' . $abc
-                    ] = $uid;
-            $params['user_id' . $abc] = $uid;
-            $params['root_id' . $abc] = $rootid;
-            $params['parent_id' . $abc] = $rootid;
-        }
-        $params['anno_idA'] = $annoid . NC_NAME;
-        $params['anno_idB'] = $annoid . NC_TITLE;
-        $params['anno_idC'] = $annoid . NC_ABSTRACT;
-        $params['anno_idD'] = $annoid . NC_CONTENT;
-        $params['anno_textA'] = $annoname;
-        $params['anno_textB'] = $annotitle;
-        $params['anno_textC'] = $annoabstract;
-        $params['anno_textD'] = $annocontent;
-
-        $sql = "INSERT INTO " . NC_TABLE_ANNOTEXT . "
-                    (datetime, network_id, owner_id, user_id, root_id, parent_id,
-                    anno_id, anno_text, anno_type, anno_status) VALUES
-                    (UTC_TIMESTAMP(), :network_idA, :owner_idA, :user_idA, :root_idA, :parent_idA,
-                    :anno_idA, :anno_textA, " . NC_NAME . ", " . NC_ACTIVE . " ),
-                    (UTC_TIMESTAMP(), :network_idB, :owner_idB, :user_idB, :root_idB, :parent_idB,
-                    :anno_idB, :anno_textB, " . NC_TITLE . ", " . NC_ACTIVE . " ),
-                    (UTC_TIMESTAMP(), :network_idC, :owner_idC, :user_idC, :root_idC, :parent_idC,
-                    :anno_idC, :anno_textC, " . NC_ABSTRACT . ", " . NC_ACTIVE . " ),
-                    (UTC_TIMESTAMP(), :network_idD, :owner_idD, :user_idD, :root_idD, :parent_idD,
-                    :anno_idD, :anno_textD, " . NC_CONTENT . ", " . NC_ACTIVE . " ) ";
-
-        $this->qPE($sql, $params);
     }
 
     /**

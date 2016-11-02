@@ -45,8 +45,8 @@ class NCDB {
      * 
      */
     protected function qPE($sql, $arr) {
-        $stmt = $this->_db->prepare($sql);
-        $stmt->execute($arr);
+        $stmt = $this->_db->prepare($sql);        
+        $stmt->execute($arr);        
         return $stmt;
     }
        

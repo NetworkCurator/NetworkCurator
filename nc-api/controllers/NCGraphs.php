@@ -117,7 +117,7 @@ class NCGraphs extends NCOntology {
         // get some ids for all the nodes
         $n = count($nodebatch);
         $nodeids = $this->makeRandomIDSet(NC_TABLE_NODES, 'node_id', NC_PREFIX_NODE, NC_ID_LEN, $n);
-
+                
         // Insert into the nodes table using a straight-up query 
         // (not prepped because all items are generated server-side)
         $sql = "INSERT INTO " . NC_TABLE_NODES . " 
@@ -127,11 +127,11 @@ class NCGraphs extends NCOntology {
             $temp = [$this->_netid, $nodeids[$i], $nodebatch[$i]['class_id'], 1];
             $sqlvalues[] = "('" . implode("', '", $temp) . "')";
         }
-        $sql .= implode(", ", $sqlvalues);        
+        $sql .= implode(", ", $sqlvalues);               
         $this->q($sql);        
-                
+                        
         // insert corresponding to name, title, abstract, content, annotations 
-        $this->batchInsertAnnoSets($this->_netid, $nodebatch, $nodeids);
+        $this->batchInsertAnnoSets($this->_netid, $nodebatch, $nodeids);        
         
         return $nodeids[0];
     }

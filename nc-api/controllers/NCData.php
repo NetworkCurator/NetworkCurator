@@ -13,6 +13,9 @@ include_once "../helpers/NCTimer.php";
  */
 class NCData extends NCGraphs {
 
+    // for batch insertions and updates, restrict number of items in the set
+    private $_atatime = 2;
+
     /**
      * Constructor 
      * 
@@ -38,19 +41,19 @@ class NCData extends NCGraphs {
 
         $timer = new NCTimer();
         $timer->recordTime("import start");
-        
+
         // check that required inputs are defined
         $params = $this->subsetArray($this->_params, ["file_name", "file_desc", "file_content"]);
-        
+
         // make sure the asking user is allowed to curate
         if ($this->_uperm < NC_PERM_EDIT) {
             throw new Exception("Insufficient permissions " . $this->_uperm);
         }
-        
+
         $filedata = json_decode($params['file_content'], true);
         $filestring = json_encode($filedata, JSON_PRETTY_PRINT);
         unset($params['file_content']);
-        
+
         // check if the file data matches the requested network
         if (!array_key_exists('network', $filedata)) {
             throw new Exception('Input file must specify network');
@@ -60,7 +63,7 @@ class NCData extends NCGraphs {
         }
         if ($this->_network != $filedata['network'][0]['name']) {
             throw new Exception('Input file does not match network');
-        }        
+        }
 
         $this->dblock([NC_TABLE_FILES, NC_TABLE_NODES, NC_TABLE_LINKS,
             NC_TABLE_CLASSES, NC_TABLE_ANNOTEXT, NC_TABLE_ACTIVITY,
@@ -73,7 +76,7 @@ class NCData extends NCGraphs {
         $filepath = $networkdir . "/" . $fileid . ".json";
         file_put_contents($filepath, $filestring);
         chmod($filepath, 0777);
-        
+
         // store a record of the file in the db        
         $sql = "INSERT INTO " . NC_TABLE_FILES . "
                    (datetime, file_id, user_id, network_id, file_name, 
@@ -83,14 +86,15 @@ class NCData extends NCGraphs {
         $pp = array_merge(['user_id' => $this->_uid, 'file_id' => $fileid, 'network_id' => $this->_netid,
             'file_type' => 'json', 'file_size' => strlen($filestring)], $params);
         $this->qPE($sql, $pp);
-        
+
         // log the upload
         $this->logActivity($this->_uid, $this->_netid, "uploaded data file", $params['file_name'], $params['file_desc']);
-        
+
+        //echo "I 1 ";
         // it will be useful to have access to the ontology in full detail        
         $nodeontology = $this->getNodeOntology(false, true);
-        $linkontology = $this->getLinkOntology(false, true);        
-        
+        $linkontology = $this->getLinkOntology(false, true);
+        //echo "I 2 ";
         // NOTE: here tried to drop indexes before doing the adding work
         // However, overall the performance seemed better when the indexes were there
         // This is because most "insert" operations are now in batch.
@@ -103,33 +107,35 @@ class NCData extends NCGraphs {
         //} catch (Exception $ex) {
         //    echo "could not drop indexes: " . $ex->getMessage() . "\n";
         //}        
-        
+
         $status = "";
         // import ontology, nodes, links
         $timer->recordTime("importSummary");
         if ($this->_uperm >= NC_PERM_CURATE) {
             $status .= $this->importSummary($filedata['network'][0], $params["file_name"]);
         }
-        
+        //echo "I 3 ";
         $timer->recordTime("importOntology");
         if ($this->_uperm >= NC_PERM_CURATE && array_key_exists('ontology', $filedata)) {
             $status .= $this->importOntology($nodeontology, $linkontology, $filedata['ontology'], $params["file_name"]);
         }
-
+        //echo "I 4 ";
         // re-get the node and link ontology after the adjustments. This time short format
         $nodedict = array_flip($this->getOntologyDictionary("node"));
         $linkdict = array_flip($this->getOntologyDictionary("link"));
-        
+        //echo "I 5 ";
         $timer->recordTime("importNodes");
-        if ($this->_uperm >= NC_PERM_EDIT && array_key_exists('nodes', $filedata)) {            
+        if ($this->_uperm >= NC_PERM_EDIT && array_key_exists('nodes', $filedata)) {
+            //echo "I 6a ";
             $status .= $this->importNodes($nodedict, $filedata['nodes'], $params["file_name"]);
-        }        
+            //echo "I 6z ";
+        }
         $timer->recordTime("importLinks");
         if ($this->_uperm >= NC_PERM_EDIT && array_key_exists('links', $filedata)) {
             $status .= $this->importLinks($linkdict, $filedata['links'], $params["file_name"]);
         }
         $timer->recordTime("unlock");
-        
+
         // NOTE: required if earlier DROP INDEX
         // $timer->recordTime("indexing");
         //try {
@@ -140,8 +146,8 @@ class NCData extends NCGraphs {
         //    echo "error creating index: " . $ex->getMessage();
         //}
 
-        $this->dbunlock();        
-        $timer->recordTime("import end");        
+        $this->dbunlock();
+        $timer->recordTime("import end");
 
         return "$status\n" . $timer->showTimes();
     }
@@ -164,11 +170,11 @@ class NCData extends NCGraphs {
     private function importSummary($netdata, $filename) {
 
         // prepare the netdata into a format understood by batchCheckUpdateAnno
-        $batchcheck = [$this->_netid=>$netdata];        
+        $batchcheck = [$this->_netid => $netdata];
         $changecounter = $this->batchCheckUpdateAnno($this->_netid, $batchcheck);
-        
+
         // log activity if anything happened
-        if ($changecounter > 0) {            
+        if ($changecounter > 0) {
             $this->logActivity($this->_uid, $this->_netid, "applied annotation changes from file", $filename, $changecounter);
         }
 
@@ -224,7 +230,7 @@ class NCData extends NCGraphs {
 
         // make sure all entry contain at least some default values for all required parameters        
         $defaults = ["title" => '', "abstract" => '', "content" => '', "class" => '',
-            "defs"=>'', "directional" => 0, "connector" => 0, "parent" => '', "status" => 1];
+            "defs" => '', "directional" => 0, "connector" => 0, "parent" => '', "status" => 1];
 
         for ($i = 0; $i < count($newdata); $i++) {
             foreach ($defaults as $key => $value) {
@@ -268,7 +274,7 @@ class NCData extends NCGraphs {
         return $msgs . " -- ontology: added $numadded / updated $numupdated / skipped $numskipped\n";
     }
 
-    /**     
+    /**
      * processes one ontology definition at a time.
      * 
      * 
@@ -401,24 +407,33 @@ class NCData extends NCGraphs {
         for ($i = 0; $i < count($newdata); $i++) {
             if (array_key_exists('name', $newdata[$i])) {
                 // move the node either to the update or the create batch (will be processed below)
-                $nowname = $newdata[$i]['name'];                
-                if (array_key_exists($nowname, $allnodes)) {                    
+                $nowname = $newdata[$i]['name'];
+                if (array_key_exists($nowname, $allnodes)) {
                     $updateset[$allnodes[$nowname]['id']] = &$newdata[$i];
-                } else {                    
+                } else {
                     $newset[] = &$newdata[$i];
                 }
             }
         }
-        unset($allnodes);        
-        
+        unset($allnodes);
+
         // batch insert and update
         if (count($newset) > 0) {
-            $this->batchInsertNodes($newset);
+            //echo "inserting new nodes ".count($newset)."! <br/>";
+            for ($i = 0; $i < count($newset); $i+=$this->_atatime) {
+                $tempset = array_slice($newset, $i, $this->_atatime);
+                $this->batchInsertNodes($tempset);
+            }
+
             $this->logActivity($this->_uid, $this->_netid, "added nodes from file", $filename, count($newset));
         }
         $updatecount = 0;
         if (count($updateset) > 0) {
-            $updatecount = $this->batchCheckUpdateAnno($this->_netid, $updateset);
+            //echo "updating nodes ".count($updateset)."! <br/>";
+            for ($i = 0; $i < count($newset); $i+=$this->_atatime) {
+                $tempset = array_slice($updateset, $i, $this->_atatime);
+                $updatecount += $this->batchCheckUpdateAnno($this->_netid, $tempset);
+            }
             $this->logActivity($this->_uid, $this->_netid, "updated nodes from file", $filename, $updatecount);
         }
 
@@ -526,12 +541,20 @@ class NCData extends NCGraphs {
 
         // batch insert and update
         if (count($newset) > 0) {
-            $this->batchInsertLinks($newset);
+            //echo "inserting new nodes ".count($newset)."! <br/>";
+            for ($i = 0; $i < count($newset); $i+=$this->_atatime) {
+                $tempset = array_slice($newset, $i, $this->_atatime);
+                $this->batchInsertLinks($tempset);
+            }
             $this->logActivity($this->_uid, $this->_netid, "added links from file", $filename, count($newset));
         }
         $updatecount = 0;
         if (count($updateset) > 0) {
-            $updatecount = $this->batchCheckUpdateAnno($this->_netid, $updateset);
+            //echo "inserting new nodes ".count($newset)."! <br/>";
+            for ($i = 0; $i < count($updateset); $i+=$this->_atatime) {
+                $tempset = array_slice($updateset, $i, $this->_atatime);
+                $updatecount += $this->batchCheckUpdateAnno($this->_netid, $tempset);
+            }
             $this->logActivity($this->_uid, $this->_netid, "updated links from file", $filename, $updatecount);
         }
 
