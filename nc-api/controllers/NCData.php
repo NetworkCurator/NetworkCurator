@@ -14,7 +14,7 @@ include_once "../helpers/NCTimer.php";
 class NCData extends NCGraphs {
 
     // for batch insertions and updates, restrict number of items in the set
-    private $_atatime = 4000;
+    private $_atatime = 5000;
 
     /**
      * Constructor 
@@ -50,8 +50,7 @@ class NCData extends NCGraphs {
             throw new Exception("Insufficient permissions " . $this->_uperm);
         }
 
-        $filedata = json_decode($params['file_content'], true);
-        $filestring = json_encode($filedata, JSON_PRETTY_PRINT);
+        $filedata = json_decode($params['file_content'], true);        
         unset($params['file_content']);
 
         // check if the file data matches the requested network
@@ -65,30 +64,13 @@ class NCData extends NCGraphs {
             throw new Exception('Input file does not match network');
         }
 
+        // save the data onto disk
+        $this->importJSON($filedata, $params);
+        
         $this->dblock([NC_TABLE_FILES, NC_TABLE_NODES, NC_TABLE_LINKS,
             NC_TABLE_CLASSES, NC_TABLE_ANNOTEXT, NC_TABLE_ACTIVITY,
             NC_TABLE_ANNOTEXT . " AS nodenameT", NC_TABLE_ANNOTEXT . " AS classnameT",
             NC_TABLE_ANNOTEXT . " AS linknameT"]);
-
-        // store the file on disk
-        $networkdir = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/networks/" . $this->_netid;
-        $fileid = $this->makeRandomID(NC_TABLE_FILES, 'file_id', NC_PREFIX_FILE, NC_ID_LEN);
-        $filepath = $networkdir . "/" . $fileid . ".json";
-        file_put_contents($filepath, $filestring);
-        chmod($filepath, 0777);
-
-        // store a record of the file in the db        
-        $sql = "INSERT INTO " . NC_TABLE_FILES . "
-                   (datetime, file_id, user_id, network_id, file_name, 
-                   file_type, file_desc, file_size) VALUES 
-                   (UTC_TIMESTAMP(), :file_id, :user_id, :network_id, :file_name,
-                   :file_type, :file_desc, :file_size)";
-        $pp = array_merge(['user_id' => $this->_uid, 'file_id' => $fileid, 'network_id' => $this->_netid,
-            'file_type' => 'json', 'file_size' => strlen($filestring)], $params);
-        $this->qPE($sql, $pp);
-
-        // log the upload
-        $this->logActivity($this->_uid, $this->_netid, "uploaded data file", $params['file_name'], $params['file_desc']);
 
         //echo "I 1 ";
         // it will be useful to have access to the ontology in full detail        
@@ -152,6 +134,41 @@ class NCData extends NCGraphs {
         return "$status\n" . $timer->showTimes();
     }
 
+    /**
+     * Helper function takes data as text and saves the information onto disk
+     * 
+     * @param $filedata php object with the file contents
+     * @param $params controller parameters passed on from importData
+     * 
+     */
+    private function importJSON($filedata, $params) {
+        
+        $filestring = json_encode($filedata, JSON_PRETTY_PRINT);
+        $this->dblock([NC_TABLE_FILES, NC_TABLE_ACTIVITY]);
+
+        // store the file on disk
+        $networkdir = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/networks/" . $this->_netid;
+        $fileid = $this->makeRandomID(NC_TABLE_FILES, 'file_id', NC_PREFIX_FILE, NC_ID_LEN);
+        $filepath = $networkdir . "/" . $fileid . ".json";
+        file_put_contents($filepath, $filestring);
+        chmod($filepath, 0777);
+
+        // store a record of the file in the db        
+        $sql = "INSERT INTO " . NC_TABLE_FILES . "
+                   (datetime, file_id, user_id, network_id, file_name, 
+                   file_type, file_desc, file_size) VALUES 
+                   (UTC_TIMESTAMP(), :file_id, :user_id, :network_id, :file_name,
+                   :file_type, :file_desc, :file_size)";
+        $pp = array_merge(['user_id' => $this->_uid, 'file_id' => $fileid, 'network_id' => $this->_netid,
+            'file_type' => 'json', 'file_size' => strlen($filestring)], $params);
+        $this->qPE($sql, $pp);
+
+        // log the upload
+        $this->logActivity($this->_uid, $this->_netid, "uploaded data file", $params['file_name'], $params['file_desc']);
+        $this->dbunlock();
+        
+    }
+    
     /**
      * Helper function adjusts title, abstract, description of entire network
      * 
