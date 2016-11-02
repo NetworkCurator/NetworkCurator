@@ -2,7 +2,7 @@
 
 include_once "NCGraphs.php";
 include_once "NCOntology.php";
-include_once "../helpers/NCTimer.php";
+include_once dirname(__FILE__)."/../helpers/NCTimer.php";
 
 /**
  * Class handling requests for data import and export

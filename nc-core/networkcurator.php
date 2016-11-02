@@ -9,7 +9,6 @@
  * 
  */
     
-    
 // load the settings for the website
 include_once "../nc-admin/config/nc-config-local.php";
 
