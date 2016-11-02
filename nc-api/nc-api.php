@@ -31,7 +31,7 @@ try {
     $db = connectDB(NC_DB_SERVER, NC_DB_NAME, NC_DB_ADMIN, NC_DB_ADMIN_PASSWD);
 
     // get the settings from the API request    
-    $request = base64_decode($_REQUEST['request']);
+    $request = base64_decode($_REQUEST['data']);
     if ($_REQUEST['app_id'] !== NC_APP_ID) {
         throw new Exception("Invalid app id");
     }

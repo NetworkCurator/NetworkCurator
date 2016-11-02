@@ -44,9 +44,9 @@ class GeneralApiCaller {
 
         // redefine the parameters array so that it will be accepted by the api        
         $params = array();
-        $params['request'] = $request;
+        $params['data'] = $request;
         $params['app_id'] = $this->_app_id;
-
+        
         //initialize and setup the curl handler
         $handle = curl_init();
         curl_setopt($handle, CURLOPT_URL, $this->_api_url);
