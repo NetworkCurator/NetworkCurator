@@ -39,6 +39,9 @@ class NCData extends NCGraphs {
      */
     public function importData() {
 
+        echo "reached import";
+        return "reached import";
+        
         $timer = new NCTimer();
         $timer->recordTime("import start");
 
