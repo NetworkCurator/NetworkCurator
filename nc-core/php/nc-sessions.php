@@ -49,6 +49,7 @@ function ncSignout() {
     $_SESSION['uid'] = "guest";
     $_SESSION['upw'] = "guest";
     $_SESSION['firstname'] = "guest";
+    $_SESSION['middlename'] = "";
     $_SESSION['lastname'] = "";
 
     // remove the site cookies
