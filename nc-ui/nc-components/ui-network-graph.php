@@ -3,7 +3,6 @@
  * Page with network graph
  * 
  */
-include_once "nc-core/php/nc-helper-classes.php";
 
 // get all the classes for the network
 $nodeclasses = $NCapi->getNodeClasses($network);
