@@ -89,7 +89,8 @@ nc.data.sendData = function(filename, filedesc, fileurl, networkname) {
             file_name: filename,
             file_desc: filedesc,
             file_content: filedata
-        }, function(data) {                                  
+        }, function(data) { 
+            alert(data);
             nc.utils.alert(data);        
             data = JSON.parse(data);            
             if (nc.utils.checkAPIresult(data)) {

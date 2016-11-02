@@ -14,7 +14,7 @@ include_once "../helpers/NCTimer.php";
 class NCData extends NCGraphs {
 
     // for batch insertions and updates, restrict number of items in the set
-    private $_atatime = 2;
+    private $_atatime = 4000;
 
     /**
      * Constructor 
