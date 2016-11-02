@@ -38,7 +38,7 @@ class NCData extends NCGraphs {
      * @throws Exception
      */
     public function importData() {
-
+                
         echo "reached import";
         return "reached import";
         
@@ -46,7 +46,7 @@ class NCData extends NCGraphs {
         $timer->recordTime("import start");
 
         // check that required inputs are defined
-        $params = $this->subsetArray($this->_params, ["file_name", "file_desc", "file_content"]);
+        $params = $this->subsetArray($this->_params, ["file_name", "file_desc", "data"]);
 
         // make sure the asking user is allowed to curate
         if ($this->_uperm < NC_PERM_EDIT) {

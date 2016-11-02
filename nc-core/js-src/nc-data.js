@@ -88,7 +88,7 @@ nc.data.sendData = function(filename, filedesc, fileurl, networkname) {
             network: networkname,
             file_name: filename,
             file_desc: filedesc,
-            file_content: filedata
+            data: filedata
         }, function(data) { 
             alert(data);
             nc.utils.alert(data);        
