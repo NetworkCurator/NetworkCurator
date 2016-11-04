@@ -1,6 +1,6 @@
 <?php
 
-include_once dirname(__FILE__)."/../helpers/NCTimer.php";
+include_once dirname(__FILE__) . "/../helpers/NCTimer.php";
 include_once "NCOntology.php";
 
 /*
@@ -24,7 +24,7 @@ class NCGraphs extends NCOntology {
     public function __construct($db, $params) {
         parent::__construct($db, $params);
     }
-    
+
     /**
      * Translate between a node name to a node id
      * 
@@ -94,7 +94,68 @@ class NCGraphs extends NCOntology {
 
         return $nodeid;
     }
-   
+
+    /**
+     * Helper function to set the node_status to either NC_ACTIVE or NC_DEPRECATED
+     * 
+     * @param string $nodename
+     * @param integer $newstatus
+     * @return string
+     * 
+     * id code for named node
+     * 
+     */
+    private function toggleNode($nodename, $newstatus) {
+
+        $this->dblock([NC_TABLE_NODES, NC_TABLE_ANNOTEXT]);
+
+        // check if this node name exists        
+        $nodeinfo = $this->getNameAnnoRootId($this->_netid, $nodename, true);
+        $nodeid = $nodeinfo['root_id'];
+
+        // set the node as inactive in the nodes table        
+        $sql = "UPDATE " . NC_TABLE_NODES . " SET node_status = " . $newstatus . " WHERE 
+                     network_id = ? AND node_id = ? ";
+        $this->qPE($sql, [$this->_netid, $nodeid]);
+
+        $this->dbunlock();
+
+        // log entry 
+        $logmsg = "activated node";
+        if ($newstatus == NC_DEPRECATED) {
+            $logmsg = "removed node";
+        }
+        $this->logActivity($this->_uid, $this->_netid, $logmsg, $nodename, $nodeid);
+
+        return $nodeid;
+    }
+
+    /**
+     *  Sets the status of a named node to deprecated
+     * 
+     * @return string
+     * 
+     * id of deprecated node
+     * 
+     */
+    public function removeNode() {      
+        $params = $this->subsetArray($this->_params, ["name"]);      
+        return $this->toggleNode($params['name'], NC_DEPRECATED);
+    }
+
+    /**
+     * Sets the status of a named node to active
+     * 
+     * @return string
+     * 
+     * id of activated node
+     * 
+     */
+    public function activateNode() {
+        $params = $this->subsetArray($this->_params, ["name"]);
+        return $this->toggleNode($params['name'], NC_ACTIVE);
+    }
+
     /**
      * Perform all db actions associated with inserting nodes.
      * Updates the nodes table, creates name/title/abstract/content annotations
@@ -113,11 +174,11 @@ class NCGraphs extends NCOntology {
      * 
      */
     protected function batchInsertNodes($nodebatch) {
-        
+
         // get some ids for all the nodes
         $n = count($nodebatch);
         $nodeids = $this->makeRandomIDSet(NC_TABLE_NODES, 'node_id', NC_PREFIX_NODE, NC_ID_LEN, $n);
-                
+
         // Insert into the nodes table using a straight-up query 
         // (not prepped because all items are generated server-side)
         $sql = "INSERT INTO " . NC_TABLE_NODES . " 
@@ -127,12 +188,12 @@ class NCGraphs extends NCOntology {
             $temp = [$this->_netid, $nodeids[$i], $nodebatch[$i]['class_id'], 1];
             $sqlvalues[] = "('" . implode("', '", $temp) . "')";
         }
-        $sql .= implode(", ", $sqlvalues);               
-        $this->q($sql);        
-                        
+        $sql .= implode(", ", $sqlvalues);
+        $this->q($sql);
+
         // insert corresponding to name, title, abstract, content, annotations 
-        $this->batchInsertAnnoSets($this->_netid, $nodebatch, $nodeids);        
-        
+        $this->batchInsertAnnoSets($this->_netid, $nodebatch, $nodeids);
+
         return $nodeids[0];
     }
 
@@ -181,7 +242,68 @@ class NCGraphs extends NCOntology {
 
         return $linkid;
     }
-   
+
+    /**
+     * Helper function, adjust the status of a named link
+     * 
+     * @param type $linkname
+     * @param type $newstatus
+     * 
+     * @return type
+     * 
+     * id code for the link
+     */
+    private function toggleLink($linkname, $newstatus) {
+
+        $this->dblock([NC_TABLE_LINKS, NC_TABLE_ANNOTEXT]);
+
+        // check if this link name exists        
+        $linkinfo = $this->getNameAnnoRootId($this->_netid, $linkname, true);
+        $linkid = $linkinfo['root_id'];
+
+        // set the link as inactive in the links table
+        $sql = "UPDATE " . NC_TABLE_LINKS . " SET link_status = " . $newstatus . " WHERE 
+                     network_id = ? AND link_id = ? ";
+        $this->qPE($sql, [$this->_netid, $linkid]);
+
+        $this->dbunlock();
+
+        // log entry 
+        $logmsg = "activated link";
+        if ($newstatus == NC_DEPRECATED) {
+            $logmsg = "removed link";
+        }
+        $this->logActivity($this->_uid, $this->_netid, $logmsg, $linkname, $linkid);
+
+        return $linkid;
+    }
+
+    /**
+     * Sets the status of a named link to deprecated
+     * 
+     * @return string
+     * 
+     * id of deprecated link
+     * 
+     */
+    public function removeLink() {        
+        $params = $this->subsetArray($this->_params, ["name"]);
+        return $this->toggleLink($params['name'], NC_DEPRECATED);
+    }
+
+    /**
+     * Sets the status of a named link to active
+     * 
+     * @return string
+     * 
+     * id of deprecated link
+     * 
+     */
+    public function activateLink() {        
+        $params = $this->subsetArray($this->_params, ["name"]);
+        return $this->toggleLink($params['name'], NC_ACTIVE);
+    }
+
     /**
      * Perform all db actions associated with inserting links.
      * Updates the links table, creates name/title/abstract/content annotations
@@ -217,11 +339,11 @@ class NCGraphs extends NCOntology {
         }
         $sql .= implode(", ", $sqlvalues);
         $this->q($sql);
-        
+
         // insert corresponding to name, title, abstract, content, annotations 
         $this->batchInsertAnnoSets($this->_netid, $linkbatch, $linkids);
 
-        return $linkids[0];        
+        return $linkids[0];
     }
 
     /**
@@ -242,14 +364,15 @@ class NCGraphs extends NCOntology {
         $tat = "" . NC_TABLE_ANNOTEXT;
 
         $sql = "SELECT node_id AS id, $tn.class_id AS class_id, 
-                       nodenameT.anno_text AS name, classnameT.anno_text AS class 
+                       nodenameT.anno_text AS name, classnameT.anno_text AS class,
+                       node_status AS status
             FROM $tn JOIN $tat AS nodenameT
                         ON $tn.network_id = nodenameT.network_id AND
                         $tn.node_id = nodenameT.root_id
                      JOIN $tat AS classnameT
                         ON $tn.network_id = classnameT.network_id AND
                          $tn.class_id = classnameT.root_id
-                  WHERE $tn.network_id = ?                       
+                  WHERE $tn.network_id = ?                          
                       AND nodenameT.anno_type = " . NC_NAME . "                      
                       AND nodenameT.anno_status = " . NC_ACTIVE . " 
                       AND classnameT.anno_type = " . NC_NAME . "                      
@@ -285,15 +408,15 @@ class NCGraphs extends NCOntology {
 
         $sql = "SELECT link_id AS id, $tl.class_id AS class_id, 
                        source_id AS source, target_id AS target,
-                       linknameT.anno_text as name, classnameT.anno_text AS class 
+                       linknameT.anno_text AS name, classnameT.anno_text AS class,
+                       link_status AS status
             FROM $tl JOIN $tat AS linknameT
                         ON $tl.network_id = linknameT.network_id AND
                         $tl.link_id = linknameT.root_id
                      JOIN $tat AS classnameT
                         ON $tl.network_id = classnameT.network_id AND
                          $tl.class_id = classnameT.root_id
-                  WHERE $tl.network_id = ? 
-                      AND $tl.link_status = " . NC_ACTIVE . " 
+                  WHERE $tl.network_id = ?                       
                       AND linknameT.anno_type = " . NC_NAME . "                      
                       AND linknameT.anno_status = " . NC_ACTIVE . " 
                       AND classnameT.anno_type = " . NC_NAME . "                      
@@ -311,7 +434,7 @@ class NCGraphs extends NCOntology {
         }
         return $result;
     }
-        
+
 }
 
 ?>

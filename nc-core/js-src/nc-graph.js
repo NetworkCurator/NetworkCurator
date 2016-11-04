@@ -57,12 +57,22 @@ nc.graph.initInterface = function() {
     var toolbar = $('#nc-graph-toolbar');
     nc.graph.svg = d3.select('#nc-graph-svg');   
 
+    // set the status codes to integers
+    $.each(nc.graph.rawnodes, function(key) { 
+        nc.graph.rawnodes[key].status = +nc.graph.rawnodes[key].status;        
+    });
+    $.each(nc.graph.rawlinks, function(key) { 
+        nc.graph.rawlinks[key].status = +nc.graph.rawlinks[key].status;        
+    });
+
     // add elements into nc.ontology.nodes, nc.ontology.links that related to display    
     $.each(nc.ontology.nodes, function(key) {
+        nc.ontology.nodes[key].status = +nc.ontology.nodes[key].status;
         nc.ontology.nodes[key].show = 1;
         nc.ontology.nodes[key].showlabel = 0;
     })
     $.each(nc.ontology.links, function(key) {
+        nc.ontology.links[key].status = +nc.ontology.links[key].status;
         nc.ontology.links[key].show = 1;
         nc.ontology.links[key].showlabel = 0;
     })
@@ -133,7 +143,7 @@ nc.graph.initInterface = function() {
     var detailsdiv = $('#nc-graph-details');
     var readbutton = '<a class="btn btn-default btn-sm" href="#" id="nc-graph-details-more">Read more</a>'      
     detailsdiv.append(readbutton);
-    if (nc.curator) {
+    if (nc.curator) {        
         var togglebutton = '<a class="btn btn-danger btn-sm nc-btn-mh" id="nc-graph-details-remove">Remove</a>';  
         detailsdiv.append(togglebutton);
     }
@@ -429,14 +439,15 @@ nc.graph.displayInfo = function(d) {
     // get the details div and clear its content
     var detdiv = $('#'+prefix);
     detdiv.find('.nc-md').html("Loading...");
-    detdiv.find('#'+prefix+'-more').click(function() { 
-        var type = ("source" in d ? "link" : "node");        
+    detdiv.find('#'+prefix+'-more').click(function() {         
         window.location.replace("?network="+nc.network+"&object="+d.id);        
     } );
     if (nc.curator) {
-        detdiv.find('#'+prefix+'-remove').click(
-            function() {
-                alert("Feature: todo");
+        var type = ("source" in d ? "Link" : "Node");  
+        var removeactivate = (d.status<1 ? "Activate": "Remove");                
+        detdiv.find('#'+prefix+'-remove').html(removeactivate).unbind("click").click(
+            function() {                
+                nc.graph.toggleObject(d.id, d.name, type, d.status);                                
             });    
     }
     
@@ -505,13 +516,46 @@ nc.graph.getInfo = function(d) {
  * Node/Link activate/remove
  * ==================================================================================== */
 
-nc.graph.removeObject = function() {
-
-    }
-
-nc.graph.activateObject = function() {
+/**
+ * Invoked by user clicking to remove/activate a node or link
+ */
+nc.graph.toggleObject = function(objid, objname, objtype, objstatus) {    
     
-    }
+    var action = (objstatus<1 ? "activate": "remove");    
+        
+    $.post(nc.api, 
+    {
+        controller: "NCGraphs", 
+        action: action+objtype,
+        network: nc.network,
+        name: objname        
+    }, function(data) {         
+        data = JSON.parse(data);
+        if (nc.utils.checkAPIresult(data)) {            
+            if (data['success']==false || data['data']==false) {
+                nc.msg('Error', data['errormsg']);
+            } else if (data['success']==true) {                      
+                // success, so adjust the svg, adjust the rawnodes
+                if (objtype=="Link") {
+                    nc.graph.svg.select('line[id="'+objid+'"]').classed('nc-inactive', objstatus==1);                     
+                    for (var i=0; i<nc.graph.rawlinks.length; i++) {
+                        if (nc.graph.rawlinks[i].id==objid) {
+                            nc.graph.rawlinks[i].status = +(objstatus<1);
+                        }
+                    }
+                } else {
+                    nc.graph.svg.select('use[id="'+objid+'"]').classed('nc-inactive', objstatus==1);                     
+                    for (var i=0; i<nc.graph.rawnodes.length; i++) {
+                        if (nc.graph.rawnodes[i].id==objid) {                            
+                            nc.graph.rawnodes[i].status = +(objstatus<1);
+                        }
+                    }
+                }                
+            } // end of if data[] handling
+        }        
+    })
+
+}
 
 
 /* ====================================================================================
@@ -535,19 +579,24 @@ nc.graph.filterNodes = function() {
     for (var i=0; i<nlen; i++) {
         // get input class id
         var iclassid = rawnodes[i].class_id;         
-        if (nonto[iclassid].status>0 && nonto[iclassid].show>0) {
-            nc.graph.nodes[counter] = rawnodes[i];
-            counter++;
-        }        
+        // check if the ontology allows this class to display
+        if (nonto[iclassid].show>0) {
+            // check if the status of the node and ontology is visible
+            if (nc.graph.settings.inactive==1 || 
+                (rawnodes[i].status>0 && nonto[iclassid].status>0)) {                
+                nc.graph.nodes[counter] = rawnodes[i];
+                counter++;
+            }    
+        }    
     }
     
 }
 
 /**
- * Turns a large set of raw links into a smaller set for display.
- * Analogous to filterNodes.
- * 
- */
+* Turns a large set of raw links into a smaller set for display.
+* Analogous to filterNodes.
+* 
+*/
 nc.graph.filterLinks = function() {    
     
     // some shorthand objects
@@ -564,26 +613,31 @@ nc.graph.filterLinks = function() {
     var counter = 0;
     nc.graph.links = [];        
     for (var i=0; i<llen; i++) {
-        var iclassid = rawlinks[i].class_id;        
-        if (lonto[iclassid].status>0 && lonto[iclassid].show>0) {
-            // must also check if source and end nodes should be displayed            
-            var isource = rawlinks[i].source;
-            var itarget = rawlinks[i].target;
-            if ((isource in goodnodes || isource.id in goodnodes) && 
-                (itarget in goodnodes || itarget.id in goodnodes)) {                                
-                nc.graph.links[counter] = nc.graph.rawlinks[i];
-                counter++;
-            }                                    
-        }
+        var iclassid = rawlinks[i].class_id;  
+        // check the ontology should be visible
+        if (lonto[iclassid].show>0) {
+            // cehck that the links are active/inactive
+            if (nc.graph.settings.inactive==1 || 
+                (rawlinks[i].status>0 && lonto[iclassid].status>0)) {
+                var isource = rawlinks[i].source;
+                var itarget = rawlinks[i].target;
+                // check that the source/target nodes are visible
+                if ((isource in goodnodes || isource.id in goodnodes) && 
+                    (itarget in goodnodes || itarget.id in goodnodes)) {                                
+                    nc.graph.links[counter] = nc.graph.rawlinks[i];
+                    counter++;
+                }   
+            }
+        }       
     }
 
 }
 
 /**
- * Starts with nc.graph.nodes and nc.graph.links and further trims them to 
- * leave only those nodes/links at a certain graph distance from a center node
- * 
- */
+* Starts with nc.graph.nodes and nc.graph.links and further trims them to 
+* leave only those nodes/links at a certain graph distance from a center node
+* 
+*/
 nc.graph.filterNeighborhood = function() {
     
     // if no local neighborhood is required, do nothing
@@ -625,13 +679,13 @@ nc.graph.filterNeighborhood = function() {
 
 
 /* ====================================================================================
- * Graph display
- * ==================================================================================== */
+* Graph display
+* ==================================================================================== */
 
 
 /**
- * Extract the current transform values in the graph svg
- */
+* Extract the current transform values in the graph svg
+*/
 nc.graph.getTransformation = function() {        
     var content = nc.graph.svg.select("g.nc-svg-content");     
     if (content.empty()) {        
@@ -642,12 +696,12 @@ nc.graph.getTransformation = function() {
 }
 
 /**
- * This function initializes the behavior of the graph svg simulation (force layout)
- * and some core svg components like zoom and pan.
- * 
- * Uses D3.
- *
- */
+* This function initializes the behavior of the graph svg simulation (force layout)
+* and some core svg components like zoom and pan.
+* 
+* Uses D3.
+*
+*/
 nc.graph.initSimulation = function() {
                     
     // get the graph svg component
@@ -665,11 +719,13 @@ nc.graph.initSimulation = function() {
     ncstyles0 += 'use.nc-newnode { stroke: #000000; stroke-width: 2; stroke-dasharray: 3 3; fill: #dddddd; }\n';
     ncstyles0 += 'line.nc-newlink, line.nc-draggedlink { stroke: #aaaaaa; stroke-width: 6; stroke-dasharray: 7 5; }\n';
     ncstyles0 += 'text { text-anchor: middle; }\n';
-    ncstyles0 += 'text.tooltip { text-anchor: start; }\n';    
-    var ncstyles1 = 'line.nc-link-highlight { stroke: #000000; stroke-width: 4; }\n';
+    ncstyles0 += 'text.tooltip { text-anchor: start; }\n';        
+    var ncstyles1 = 'use.nc-inactive { stroke: #777777; stroke-width: 5;  stroke-dasharray: 3 3; }\n';       
+    ncstyles1 += 'line.nc-inactive { stroke: #777777; stroke-width: 5;  stroke-dasharray: 3 3; }\n';    
+    ncstyles1 += 'line.nc-link-highlight { stroke: #000000; stroke-width: 4; }\n';
     ncstyles1 += 'use.nc-node-highlight { stroke: #000000; stroke-width: 4; }\n';
     ncstyles1 += 'use.nc-node-center { stroke: #000000; stroke-width: 4;  stroke-dasharray: 5 3; }\n';    
-    
+        
     // add ontology definitions as defs    
     var temp = $.map($.extend({}, nc.ontology.nodes, nc.ontology.links), function(value) {
         return [value];
@@ -735,9 +791,9 @@ nc.graph.tick = function() {
 
 
 /**
- * add elements into the graph svg and run the simulation
- * 
- */
+* add elements into the graph svg and run the simulation
+* 
+*/
 nc.graph.simStart = function() {
     
     // first clear the existing svg if it already contains elements
@@ -760,7 +816,7 @@ nc.graph.simStart = function() {
     .data(nc.graph.links)
     .enter().append("line")
     .attr("class", function(d) {        
-        return "nc-default-link "+d["class"];        
+        return "nc-default-link "+d["class"] + (d["status"]<1 ? " nc-inactive": "");        
     })   
     .attr("id", function(d) {
         return d.id;
@@ -798,7 +854,7 @@ nc.graph.simStart = function() {
         return d.id;
     })
     .attr("class",function(d) {        
-        return "nc-default-node "+d["class"];        
+        return "nc-default-node "+d["class"]+ (d["status"]<1 ? " nc-inactive": "");        
     })
     .call(nodedrag).on("click", nc.graph.selectObject).on("dblclick", nc.graph.centerNeighborhood)
     .on('mouseover', tooltipshow).on('mouseout', tooltiphide);  
@@ -836,15 +892,15 @@ nc.graph.simStart = function() {
 
 
 /**
- * Stop the simulation
- */
+* Stop the simulation
+*/
 nc.graph.simStop = function() {
     nc.graph.sim.stop();
 }
 
 /**
- * Start/unpause the simulation
- */
+* Start/unpause the simulation
+*/
 nc.graph.simUnpause = function() {    
     nc.graph.sim.alpha(0.7).restart();    
 // but if the simulation is meant to be off, stop it here
@@ -878,8 +934,8 @@ var dy = function(d) {
 
 
 /* ====================================================================================
- * Interactions (dragging, panning, zooming)
- * ==================================================================================== */
+* Interactions (dragging, panning, zooming)
+* ==================================================================================== */
 
 
 nc.graph.centerNeighborhood = function(d) {
@@ -900,8 +956,8 @@ nc.graph.centerNeighborhood = function(d) {
 }
 
 /**
- * Unpin the position of a node
- */
+* Unpin the position of a node
+*/
 nc.graph.pinToggle = function(d) {    
     if ("index" in d) {
         var dobj = nc.graph.nodes[d.index];
@@ -917,8 +973,8 @@ nc.graph.pinToggle = function(d) {
 
 
 /**
- * @param d the object (node) that is being dragged
- */
+* @param d the object (node) that is being dragged
+*/
 nc.graph.dragstarted = function(d) {  
     
     // pass on the event to "select" - this will highlights the dragged object
@@ -941,8 +997,8 @@ nc.graph.dragstarted = function(d) {
 }
 
 /**
- * @param d the object (node) that is being dragged 
- */
+* @param d the object (node) that is being dragged 
+*/
 nc.graph.dragged = function(d) {     
     var point = d3.mouse(this);    
     switch (nc.graph.mode) {
@@ -968,8 +1024,8 @@ nc.graph.dragged = function(d) {
 }
 
 /**
- * @param d the object (node) that was dragged
- */
+* @param d the object (node) that was dragged
+*/
 nc.graph.dragended = function(d) {    
     var dindex = d.index;    
     switch (nc.graph.mode) {
@@ -994,8 +1050,8 @@ nc.graph.dragended = function(d) {
 // for panning it helps to keep track of the pan-start point
 nc.graph.point = [0,0];
 /**
- * activates when user drags the background
- */
+* activates when user drags the background
+*/
 nc.graph.panstarted = function() {   
     var p = d3.mouse(this);  
     // get original translation 
@@ -1006,8 +1062,8 @@ nc.graph.panstarted = function() {
 
 
 /**
- * Performs the panning by adjusting the g.nc-svg-content transformation
- */
+* Performs the panning by adjusting the g.nc-svg-content transformation
+*/
 nc.graph.panned = function() {
     // compute the content transformation from the current mouse position and the 
     // drag start position
@@ -1025,8 +1081,8 @@ nc.graph.panended = function() {
 
 
 /**
- * Perform rescaling on the content svg upon zoomin
- */
+* Perform rescaling on the content svg upon zoomin
+*/
 nc.graph.zoom = function() {        
     // get existing transformation
     var oldtrans = nc.graph.svg.select("g.nc-svg-content").attr("transform").split(/\(|,|\)/);    
@@ -1045,22 +1101,22 @@ nc.graph.zoom = function() {
 
 
 /* ====================================================================================
- * Helper functions
- * ==================================================================================== */
+* Helper functions
+* ==================================================================================== */
 
 
 /**
- * Converts between a mouse coordinate p to an avg coordinate 
- * (The differences comes from transformations and scaling)
- */
+* Converts between a mouse coordinate p to an avg coordinate 
+* (The differences comes from transformations and scaling)
+*/
 nc.graph.getCoord = function(p) {        
     var trans = nc.graph.getTransformation();
     return [(p[0]-trans[0])/trans[2], (p[1]-trans[1])/trans[2]];
 }
 
 /**
- * Make the new link/new node forms look normal
- */
+* Make the new link/new node forms look normal
+*/
 nc.graph.resetForms = function() {
     $('#fg-linkname,#fg-linktitle,#fg-linkclass,#fg-linksource,#fg-linktarget').removeClass('has-warning has-error has-success');
     $('#fg-linkname label').html("Link name:");
@@ -1075,8 +1131,8 @@ nc.graph.resetForms = function() {
 }
 
 /**
- * Find the node that is nearest to the given point
- */
+* Find the node that is nearest to the given point
+*/
 nc.graph.findNearestNode = function(p) {
     var bestid = 0;
     var bestd = Infinity;
@@ -1092,9 +1148,9 @@ nc.graph.findNearestNode = function(p) {
 
 
 /**
- * Replace an existing node id by a new one.
- * Returns the index of the node in the nc.graph.nodes array
- */
+* Replace an existing node id by a new one.
+* Returns the index of the node in the nc.graph.nodes array
+*/
 nc.graph.replaceNodeId = function(oldid, newid) {
     
     var i;
@@ -1122,9 +1178,9 @@ nc.graph.replaceNodeId = function(oldid, newid) {
 
 
 /**
- * Replaces an id in the nc.graph.links array
- * Returns the index to the link in question
- */
+* Replaces an id in the nc.graph.links array
+* Returns the index to the link in question
+*/
 nc.graph.replaceLinkId = function(oldid, newid) {     
     // replace any linking data
     var llen = nc.graph.links.length;
@@ -1138,13 +1194,13 @@ nc.graph.replaceLinkId = function(oldid, newid) {
 }
 
 /* ====================================================================================
- * Communicating with server
- * ==================================================================================== */
+* Communicating with server
+* ==================================================================================== */
 
 
 /**
- * Processes the new node form submit action
- */
+* Processes the new node form submit action
+*/
 nc.graph.createNode = function() {
     
     nc.graph.resetForms();        
@@ -1214,8 +1270,8 @@ nc.graph.createNode = function() {
 }
 
 /**
- * * Processes the new link form submit action
- */
+* * Processes the new link form submit action
+*/
 nc.graph.createLink = function() {
     
     nc.graph.resetForms();
@@ -1293,8 +1349,8 @@ nc.graph.createLink = function() {
 
 
 /**
- * remove a node from the viz (not from the server)
- */
+* remove a node from the viz (not from the server)
+*/
 nc.graph.removeNode = function() {    
     // pause the simulation just in case
     nc.graph.simStop();
@@ -1324,8 +1380,8 @@ nc.graph.removeNode = function() {
 
 
 /**
- * remove a highlighted link from the viz
- */
+* remove a highlighted link from the viz
+*/
 nc.graph.removeLink = function() {    
     // pause the simulation just in case
     nc.graph.simStop();

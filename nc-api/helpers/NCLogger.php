@@ -591,8 +591,9 @@ class NCLogger extends NCDB {
      * 
      * @param array $array
      * @param array $keys
-
-
+     * 
+     * all required keys in the array. If any keys are missing, the function throws an exception
+     * 
      * @return array
      * 
      */
