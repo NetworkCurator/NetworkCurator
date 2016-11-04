@@ -36,12 +36,10 @@ try {
         throw new Exception("Invalid app id");
     }
 
-    // decrypt the request into a $param array
-    //print_r($request);
-    $params = json_decode($request);
-    //print_r($params);
-    //$params = json_decode(trim(
-    //                mcrypt_decrypt(MCRYPT_RIJNDAEL_256, NC_APP_KEY, $request, MCRYPT_MODE_ECB)));
+    // decrypt the request into a $param array        
+    //$params = json_decode($request);    
+    $params = json_decode(trim(
+                    mcrypt_decrypt(MCRYPT_RIJNDAEL_256, NC_APP_KEY, $request, MCRYPT_MODE_ECB)));
     if ($params == false) {
         throw new Exception('Invalid request - decryption failed');
     }   
