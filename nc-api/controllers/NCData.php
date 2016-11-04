@@ -38,10 +38,7 @@ class NCData extends NCGraphs {
      * @throws Exception
      */
     public function importData() {
-                
-        echo "reached import";
-        return "reached import";
-        
+                        
         $timer = new NCTimer();
         $timer->recordTime("import start");
 
@@ -52,9 +49,9 @@ class NCData extends NCGraphs {
         if ($this->_uperm < NC_PERM_EDIT) {
             throw new Exception("Insufficient permissions " . $this->_uperm);
         }
-
-        $filedata = json_decode($params['file_content'], true);        
-        unset($params['file_content']);
+        
+        $filedata = json_decode($params['data'], true);                
+        unset($params['data']);
 
         // check if the file data matches the requested network
         if (!array_key_exists('network', $filedata)) {
@@ -388,7 +385,7 @@ class NCData extends NCGraphs {
 
         // start a log with output messages
         $msgs = "";
-
+                
         // all nodes require a name, class_name, title, status
         $defaults = ["name" => '', "title" => '', "abstract" => '', "content" => '',
             "class" => '', "status" => 1];
@@ -444,7 +441,6 @@ class NCData extends NCGraphs {
                 $tempset = array_slice($newset, $i, $this->_atatime);
                 $this->batchInsertNodes($tempset);
             }
-
             $this->logActivity($this->_uid, $this->_netid, "added nodes from file", $filename, count($newset));
         }
         $updatecount = 0;

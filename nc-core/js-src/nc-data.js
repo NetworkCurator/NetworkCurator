@@ -75,7 +75,7 @@ nc.data.sendData = function(filename, filedesc, fileurl, networkname) {
     reader.onload = function(e) {                                 
         // clean the data here with JSON.parse
         try {
-            var filedata = JSON.stringify(JSON.parse(reader.result))
+            var filedata = JSON.stringify(JSON.parse(reader.result))            
         } catch(ex) {
             nc.msg('Error', 'File contents does not appear to be valid JSON');                
             return;
