@@ -69,10 +69,7 @@ $guestusers = array('guest' => $guestuser);
             <p>Click the <b>permission levels</b> buttons to adjust the privileges of each user. 
                 Then use the <b>Update</b> button to register the changes in the database.</p>
             <p>Permissions for the <b>guest</b> user determine whether the network is viewable by 
-            non-registered users.</p>        
-            <p><b>Watch out!</b> You now have curation privileges for this network. 
-                If you update your own privileges below the curation level,
-                you will loose the right to make adjustments.</p>
+            non-registered users.</p>                    
         </div>
     </div>
 </div>

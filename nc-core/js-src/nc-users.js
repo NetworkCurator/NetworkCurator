@@ -131,19 +131,39 @@ nc.users.lookup = function() {
 * Invoked when admin pressed "Update" next to a network permission widget
 */
 nc.users.updatePermissions = function(targetid) {
+
+    // check for self-adjustment
+    if (targetid==nc.userid) {
+        var warnm  = "<p>You are about to update your own permission level.</p>";
+        warnm += "<p>If you set your permission level below curator level, you will no longer be able to make adjustments on this page.</p>";        
+        $('#nc-danger-header').html("Permissions");
+        $('#nc-danger-body').html(warnm);
+        $('#nc-danger-modal').modal('show');
+        $('#nc-danger-modal button[val="nc-ok"]').click(function() {
+            nc.users.confirmUpdatePermissions(targetid); 
+            $(this).off("click");
+        });    
+    } else {        
+        nc.users.confirmUpdatePermissions(targetid);          
+    }    
             
-    // find the value associated with the selected permission level
+}
+
+
+/**
+ * performs an update of permissions (after the action has been validated/confirmed)
+ */
+nc.users.confirmUpdatePermissions = function(targetid) {
+    
     var nowform = $('form.nc-form-permissions[val="'+targetid+'"]');
     var nowval = nowform.find("label.active").find("input:radio").val();    
-    
     // find the update button for this user
     var btn = nowform.find('button')    
     btn.addClass('btn-warning disabled').html('Updating');    
-
+        
     // call the update permissions api
     nc.users.updatePermissionsGeneric(targetid, nowval, 
-        function (data) {
-            nc.utils.alert(data);        
+        function (data) {            
             data = JSON.parse(data);
             btn.removeClass('btn-warning btn-success').html('Done').addClass('btn-default');        
             setTimeout(function(){
@@ -159,10 +179,8 @@ nc.users.updatePermissions = function(targetid) {
                     $(this).remove();
                 }); 
             }
-        });            
+        });  
 }
-
-
 
 /**
 * Invoked when curator confirms to grant privileges to a user
