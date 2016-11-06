@@ -357,7 +357,7 @@ class NCLogger extends NCDB {
      */
     protected function getUserPermissions($netid, $uid) {
         $sql = "SELECT permissions FROM " . NC_TABLE_PERMISSIONS .
-                " WHERE BINARY user_id = ? AND network_id = ?";
+                " WHERE user_id = ? AND network_id = ?";
         $stmt = $this->qPE($sql, [$uid, $netid]);
         $result = $stmt->fetch();
         if (!$result) {

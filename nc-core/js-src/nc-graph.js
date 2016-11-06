@@ -100,7 +100,7 @@ nc.graph.initInterface = function() {
     $('#nc-graph-newlink #fg-linkclass .input-group-btn')
     .append(nc.ui.DropdownObjectList("", links, "link", false).find('.btn-group'))
     
-    // add buttons to the toolbar, finally!
+    // add buttons to the toolbar
     toolbar.append(nc.ui.ButtonGroup(['Select']));
     toolbar.append(nc.ui.DropdownObjectList("New node ", nodes, "node", false));
     toolbar.append(nc.ui.DropdownObjectList("New link ", links, "link", false));     
@@ -468,7 +468,7 @@ nc.graph.displayInfo = function(d) {
     detdiv.find('#'+prefix+'-abstract').html(nowabstract).attr("val", dabstract['anno_id']); 
             
     // also fill in the ontology class 
-    detdiv.find('#'+prefix+'-class').html(d['class']);
+    detdiv.find('#'+prefix+'-class').html("Ontology: "+d['class']);
         
 }
 
@@ -1118,15 +1118,17 @@ nc.graph.getCoord = function(p) {
 * Make the new link/new node forms look normal
 */
 nc.graph.resetForms = function() {
-    $('#fg-linkname,#fg-linktitle,#fg-linkclass,#fg-linksource,#fg-linktarget').removeClass('has-warning has-error has-success');
+    //$('#fg-linkname,#fg-linktitle,#fg-linkclass,#fg-linksource,#fg-linktarget').removeClass('has-warning has-error has-success');
+    $('#fg-linkname,#fg-linkclass,#fg-linksource,#fg-linktarget').removeClass('has-warning has-error has-success');
     $('#fg-linkname label').html("Link name:");
-    $('#fg-linktitle label').html("Link title:");
+    //$('#fg-linktitle label').html("Link title:");
     $('#fg-linkclass label').html("Link class:");
     $('#fg-linksource label').html("Source:");
     $('#fg-linktarget label').html("Target:");
-    $('#fg-nodename,#fg-nodetitle,#fg-nodeclass').removeClass('has-warning has-error has-success');   
+    //$('#fg-nodename,#fg-nodetitle,#fg-nodeclass').removeClass('has-warning has-error has-success');   
+    $('#fg-nodename,#fg-nodeclass').removeClass('has-warning has-error has-success');   
     $('#fg-nodename label').html("Node name");
-    $('#fg-nodetitle label').html("Node title");
+    //$('#fg-nodetitle label').html("Node title");
     $('#fg-nodeclass label').html("Node class");       
 }
 
@@ -1211,8 +1213,8 @@ nc.graph.createNode = function() {
     }
    
     // basic checks on the text boxes    
-    if (nc.utils.checkFormInput('fg-nodename', "node name", 1)+
-        nc.utils.checkFormInput('fg-nodetitle', "node title", 2) < 2) return 0;    
+    if (nc.utils.checkFormInput('fg-nodename', "node name", 1)<1) return 0;
+    //nc.utils.checkFormInput('fg-nodetitle', "node title", 2) < 2) return 0;    
    
     var oldid = $('#nc-graph-newnode form').attr('val');
     var newname = $('#fg-nodename input').val();
@@ -1231,9 +1233,10 @@ nc.graph.createNode = function() {
         action: "createNewNode", 
         network: nc.network,
         name: newname,
-        title: $('#fg-nodetitle input').val(),
-        'abstract': newname,
-        'content': newname,
+        //title: $('#fg-nodetitle input').val(),
+        'title': newname,
+        'abstract': newname+" [abstract]",
+        'content': newname +" [content]",
         'class': newclass
     }, function(data) {          
         nc.utils.alert(data);                
@@ -1284,8 +1287,8 @@ nc.graph.createLink = function() {
     // basic checks on the text boxes    
     if (nc.utils.checkFormInput('fg-linkname', "link name", 1) +
         nc.utils.checkFormInput('fg-linksource', "link source", 1) +
-        nc.utils.checkFormInput('fg-linktarget', "link target", 1) +        
-        nc.utils.checkFormInput('fg-linktitle', "link title", 2) < 4) return 0;    
+        nc.utils.checkFormInput('fg-linktarget', "link target", 1) <3) return 0;        
+    //nc.utils.checkFormInput('fg-linktitle', "link title", 2) < 4) return 0;    
     
     // fetch from form into variables here
     var oldid = $('#nc-graph-newlink form').attr('val');
@@ -1305,9 +1308,10 @@ nc.graph.createLink = function() {
         action: "createNewLink", 
         network: nc.network,
         name: newname,
-        title: $('#fg-linktitle input').val(),
-        'abstract': newname,
-        'content': newname,
+        //title: $('#fg-linktitle input').val(),
+        'title': newname,
+        'abstract': newname +" [abstract]",
+        'content': newname +" [content]",
         'class': newclass,
         source: $('#fg-linksource input').val(),
         target: $('#fg-linktarget input').val()

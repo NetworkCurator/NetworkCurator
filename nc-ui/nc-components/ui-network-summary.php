@@ -29,7 +29,7 @@ foreach (["title", "content", "abstract"] as $i) {
 
         <h4 class="nc-mt-10">Curators</h4>
         <?php echo ncListnames($netmeta['curators']); ?>
-        <h4 class="nc-mt-10">Authors</h4>
+        <h4 class="nc-mt-10">Editors</h4>
         <?php echo ncListnames($netmeta['authors']); ?>
         <h4 class="nc-mt-10">Commentators</h4>
         <?php echo ncListNames($netmeta['commentators']); ?>

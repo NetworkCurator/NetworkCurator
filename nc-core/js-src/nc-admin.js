@@ -135,7 +135,7 @@ nc.admin.importNetwork = function(fgfile) {
                 if (data['success']==false || data['data']==false) {
                     $('#'+fgfile).removeClass('has-warning has-error');                    
                     $('#'+fgfile+' label').html("Please choose another network name");                      
-                    // that's all, now exit
+                // that's all, now exit
                 } else if (data['success']==true && data['data']==true) {                    
                     // here invoke function to actually send the data to the server                    
                     nc.data.sendData(filename, "new network", fileurl, netname);        
@@ -150,10 +150,27 @@ nc.admin.importNetwork = function(fgfile) {
 
 
 /**
- * Send a request to purge a network
+ * Invoked when admin presses purge network button
+ * This asks for confirmation, actual purge request is sent from confirmPurgeNetwork
  * 
  */
 nc.admin.purgeNetwork = function() {
+    var warnm = '<p>You are about to delete network <b>'+nc.network+'</b>. This action cannot be undone.</p><p>Are you sure?';
+    $('#nc-danger-header').html("Purge network");
+    $('#nc-danger-body').html(warnm);
+    $('#nc-danger-modal').modal('show');
+    $('#nc-danger-modal button[val="nc-ok"]').unbind("click").click(function() {
+        nc.admin.confirmPurgeNetwork(); 
+        $(this).off("click");
+    }); 
+}
+
+
+/**
+ * Send a request to purge a network
+ * 
+ */
+nc.admin.confirmPurgeNetwork = function() {
     $.post(nc.api, 
     {
         controller: "NCNetworks", 
@@ -167,11 +184,11 @@ nc.admin.purgeNetwork = function() {
             } else if (data['success']==true) {                    
                 nc.msg('Result', data['data']);
             }
-        }
-        location.reload();
+        }        
     }
     ); 
 }
+
 
 /* ====================================================================================
 * Section on processing user accounts

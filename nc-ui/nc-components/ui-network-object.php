@@ -21,6 +21,7 @@ if (substr($objid, 0,1)==NC_PREFIX_CLASS) {
 
 // fetch summary
 $summary = $NCapi->getSummary($network, $_REQUEST['object']);
+//print_r($summary);
 
 // transfer the annotation text into $netmd - will be converted to html in browser
 foreach (["title", "content", "abstract"] as $i) {
@@ -36,7 +37,9 @@ $owner = $summary['content']['owner_id'];
 <div class="row">
     <div class="col-sm-8">
         
-        <div class="nc-object-type"><span><?php echo $objtype.":"; ?> </span><?php echo $summary['name']['anno_text']; ?></div>
+        <div class="nc-object-type"><span><?php echo "Ontology: "; ?> </span><?php echo $summary['name']['anno_text']; ?></div>
+        <div class="nc-object-type"><span>Created by: </span><?php echo $owner; ?></div>
+        
         <h1><div id="nc-object-title" class="nc-editable-text nc-md" 
                  val="<?php echo $summary['title']['anno_id']; ?>"
                  owner="<?php echo $owner; ?>"></div>

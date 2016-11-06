@@ -334,7 +334,7 @@ nc.ui.ClassDisplay = function(classrow) {
     if (+classrow['directional']) fg+= ' (directional)';    
     fg += '</span><span class="nc-comment" val="nc-deprecated" style="display: none">[inactive]</span>';    
     if (nc.curator) { 
-        var temp = '<button class="pull-right btn btn-primary btn-sm nc-mw-sm nc-hm-3" ';
+        var temp = '<button class="pull-right btn btn-primary btn-sm nc-mw-sm nc-mh-3" ';
         fg += temp +' val="remove">Remove</button>';
         fg += temp +' val="activate" style="display: none">Activate</button>';                       
         fg += temp + ' val="edit">Edit</button>';       
@@ -571,9 +571,9 @@ nc.ui.DropdownObjectList = function(atype, aa, aval, withdeprecated) {
         // find the text and add it        
         var nowid = $(this).attr("class_id");
         var nowname = $(this).attr("class_name");        
-        var p4 = $(this).parent().parent().parent().parent();
-        p4.find('button.dropdown-toggle')
-        .addClass('active').attr("class_name", nowname).attr("class_id", nowid); 
+        var p4 = $(this).parent().parent().parent().parent().find('button.dropdown-toggle');        
+        p4.addClass('active').attr("class_name", nowname).attr("selection", nowname).attr("class_id", nowid);         
+            p4.find('span.nc-classname-span').html(atype+" "+nowname);        
         $(this).dropdown("toggle");        
         return false;
     });       

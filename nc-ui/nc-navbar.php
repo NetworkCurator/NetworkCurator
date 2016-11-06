@@ -14,9 +14,12 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse">            
             <ul class="nav navbar-nav navbar-right">                 
-                    <p class="navbar-text">
+                <a href="?page=user&user=<?php echo $uid; ?>">    
+                <p class="navbar-text">
                         <img class="nc-nav-img" src="nc-data/users/<?php echo $uid; ?>.png"></img>
-                        <b><?php echo ncUserFullname(); ?></b></p>
+                        <b><?php echo ncUserFullname(); ?></b>
+                    </p>
+                </a>
                 <li>
                     <?php
                     if (ncIsUserSignedIn()) {

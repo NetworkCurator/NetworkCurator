@@ -103,7 +103,7 @@ nc.users.lookup = function() {
         action: "queryPermissions", 
         network: nc.network,
         target: targetid        
-    }, function(data) {        
+    }, function(data) {           
         nc.utils.alert(data);        
         data = JSON.parse(data);
         btn.html('Lookup').removeClass('btn-warning disabled').addClass('btn-success');                    
@@ -139,7 +139,7 @@ nc.users.updatePermissions = function(targetid) {
         $('#nc-danger-header').html("Permissions");
         $('#nc-danger-body').html(warnm);
         $('#nc-danger-modal').modal('show');
-        $('#nc-danger-modal button[val="nc-ok"]').click(function() {
+        $('#nc-danger-modal button[val="nc-ok"]').unbind("click").click(function() {
             nc.users.confirmUpdatePermissions(targetid); 
             $(this).off("click");
         });    
@@ -163,7 +163,7 @@ nc.users.confirmUpdatePermissions = function(targetid) {
         
     // call the update permissions api
     nc.users.updatePermissionsGeneric(targetid, nowval, 
-        function (data) {            
+        function (data) {              
             data = JSON.parse(data);
             btn.removeClass('btn-warning btn-success').html('Done').addClass('btn-default');        
             setTimeout(function(){
@@ -188,7 +188,7 @@ nc.users.confirmUpdatePermissions = function(targetid) {
 nc.users.grantView = function() {
     var targetid = $('#nc-form-permissions input').val();       
     nc.users.updatePermissionsGeneric(targetid, 1, 
-        function myfun(data) {                
+        function myfun(data) {              
             nc.utils.alert(data); 
             data = JSON.parse(data);
             // clear the text box and add new row to the widget

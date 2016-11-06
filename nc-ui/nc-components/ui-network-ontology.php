@@ -34,7 +34,8 @@ echo ncScriptObject("nc.ontology.links", $linkclasses);
                 Then use the <b>Edit/Update</b> buttons to register the changes in the database.</p>
             <p>Use the <b>Edit/Update</b> buttons to modify the appearance of a class.</p>        
             <p>Click the <b>Remove</b> button to inactivate a given class.</p>            
-        </div>
+                <p>Ontology classes can also be created in bulk through <a href="?network=<?php echo $network; ?>&view=data">data uploads</a>.</p>            
+        </div>        
     </div>
 </div>
 

@@ -10,22 +10,18 @@
  * Main page elements
  * ------------------------------------------------------------------------------------ */
 
-
 html {
     position: relative;
     min-height: 100%;
 }
-
 body {           
     padding-top: 32px;
     margin-bottom: 80px;
 }
-
-h1 {
+h1, h2 {
     margin-top: 1em;
 }
-h2 {
-    margin-top: 1em;
+h2 {    
     font-size: 28px;
 }
 h5 {
@@ -78,6 +74,7 @@ h5 {
 .nc-mb-10 { margin-bottom: 1.0em; }
 .nc-mb-15 { margin-bottom: 1.5em; }
 .nc-mb-20 { margin-bottom: 2.0em; }
+.nc-mh-3 { margin-left: 3px; margin-right: 3px; }
 
 /**
  * classes that set minimum width on objects
@@ -85,36 +82,6 @@ h5 {
 .nc-mw-sm { min-width: 66px !important; }
 .nc-mw-md { min-width: 88px !important; }
 
-/**
- * class set margins
-*/
-.nc-hm-3 {
-    margin-left: 3px;
-    margin-right: 3px;
-}
-
-
-.nc-aside {
-    opacity: 0.6;
-}
-
-/* ------------------------------------------------------------------------------------
- * Generic helper classes
- * ------------------------------------------------------------------------------------ */
-
-/*
- * The curator style hides objects until they are turned visible via js
-*/
-.nc-curator {
-    display: none;
-}
-
-/**
- * editifiers for features accessible only to curators
-*/
-.nc-curator > a {
-    color: #d43f3a !important;
-}
 
 
 /* ------------------------------------------------------------------------------------
@@ -217,9 +184,6 @@ textarea.nc-curation-content {
     color: inherit;
 }
 
-.nc-curator > a {
-    color: #d43f3a !important;
-}
 
 /* ------------------------------------------------------------------------------------
  * Comments
@@ -282,10 +246,12 @@ svg {
     resize: vertical;    
     overflow: hidden;
     height: 480px;
+    margin-bottom: 1em;
 }
 #nc-graph-svg {
     margin-left: 15px;
-    border: #ddd solid 1px;    
+    border: #ddd solid 1px;  
+    margin-bottom: 1em;
 }
 #nc-graph-side {
     /** margin-left: 30px; **/
@@ -549,6 +515,15 @@ svg.nc-symbol {
 .nc-graph-details .btn-group {
     width: 100%;
 }
+#nc-graph-details-class {    
+    color: #ffffff;
+    background-color: #555555;
+    padding: 4px 10px;   
+    border-radius: 2px;
+    display: inline-block;
+    margin-bottom: -2em;
+    margin-top: 0px;
+}
 
 .nc-dropdown-form {
     padding: 10px;        
@@ -613,6 +588,20 @@ span.info {
  * Curation/editing
  * ------------------------------------------------------------------------------------ */
 
+/*
+ * The curator style hides objects until they are turned visible via js
+*/
+.nc-curator {
+    display: none;
+}
+
+/**
+ * editifiers for features accessible only to curators
+*/
+.nc-curator > a {
+    color: #d43f3a !important;
+}
+
 .nc-curation-box a.btn {
     margin-right: 6px;
 }
@@ -641,6 +630,13 @@ img.nc-comment-response {
 /* ------------------------------------------------------------------------------------
  * Sandboxes
  * ------------------------------------------------------------------------------------ */
+
+/**
+ * A label that appears nearby the markdown sandbox boxes
+ */
+.nc-aside {
+    opacity: 0.6;
+}
 
 div.nc-thumbnail {
     cursor: pointer;

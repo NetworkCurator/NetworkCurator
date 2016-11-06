@@ -19,9 +19,6 @@
         
         <script type='text/javascript' src='<?php echo NC_JS_PATH; ?>/networkcurator.js'></script> 
 <?php
-//$firstname = $_SESSION['user_firstname'];
-//$middlename = $_SESSION['user_middlename'];
-//$lastname = $_SESSION['user_lastname'];
 $firstname = $_SESSION['firstname'];
 $middlename = $_SESSION['middlename'];
 $lastname = $_SESSION['lastname'];

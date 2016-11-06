@@ -51,7 +51,7 @@ class NCUsers extends NCLogger {
         }
 
         $this->dblock([NC_TABLE_USERS]);
-        
+
         // check that the network does not already exist?                  
         $sql = "SELECT user_id FROM " . NC_TABLE_USERS . " WHERE user_id = ? ";
         //ncInterpolateQuery($sql, $params)
@@ -63,7 +63,7 @@ class NCUsers extends NCLogger {
         // if reached here, create the new user  
         // create a new external password code (for cookies)        
         $params['target_extpwd'] = md5(makeRandomHexString(32));
-        
+
         // write the target user into the database        
         $sql = "INSERT INTO " . NC_TABLE_USERS . "
                    (datetime, user_id, user_firstname, user_middlename, user_lastname, 
@@ -75,9 +75,9 @@ class NCUsers extends NCLogger {
             'target_firstname', 'target_middlename', 'target_lastname',
             'target_email', 'target_password', 'target_extpwd']);
         $stmt = $this->qPE($sql, $pp);
-        
+
         $this->dbunlock();
-        
+
         // create a user identicon        
         $userimg = new NCIdenticons();
         $imgfile = dirname(__FILE__) . "/../../nc-data/users/" . $pp['target_id'] . ".png";
@@ -85,9 +85,9 @@ class NCUsers extends NCLogger {
 
         // log the activity        
         $fullname = ncFullname($this->_params, $prefix = "target_");
-        $this->logActivity($this->_uid, '', "created user account", $this->_params['target_id'], $fullname);        
+        $this->logActivity($this->_uid, '', "created user account", $this->_params['target_id'], $fullname);
         $this->logAction($this->_uid, $this->_params['source_ip'], "NCUsers", "createNewUser", $this->_params['target_id'] . ": " . $fullname);
-        
+
         return true;
     }
 
@@ -113,7 +113,7 @@ class NCUsers extends NCLogger {
         // look up the user in the database
         $sql = "SELECT user_id, user_pwd, user_extpwd, user_firstname, 
             user_middlename, user_lastname 
-            FROM " . NC_TABLE_USERS . " WHERE BINARY user_id = ? ";
+            FROM " . NC_TABLE_USERS . " WHERE user_id = ? ";
         $stmt = $this->qPE($sql, [$params['target_id']]);
         $result = $stmt->fetch();
         if (!$result) {
@@ -208,7 +208,7 @@ class NCUsers extends NCLogger {
             throw new Exception("Guest user cannot have high permissions");
         }
         $sql = "SELECT user_id, user_firstname, user_middlename, user_lastname 
-            FROM " . NC_TABLE_USERS . " WHERE BINARY user_id = ?";
+            FROM " . NC_TABLE_USERS . " WHERE user_id = ?";
         $stmt = $this->qPE($sql, [$targetid]);
         $result = $stmt->fetch();
         if (!$result) {
@@ -261,7 +261,7 @@ class NCUsers extends NCLogger {
         }
 
         // make sure the target user exist
-        $sql = "SELECT user_id FROM " . NC_TABLE_USERS . " WHERE BINARY user_id = ?";
+        $sql = "SELECT user_id FROM " . NC_TABLE_USERS . " WHERE user_id = ?";
         $stmt = $this->qPE($sql, [$params['target']]);
         if (!$stmt->fetch()) {
             throw new Exception("Target user does not exist");
@@ -274,6 +274,35 @@ class NCUsers extends NCLogger {
         // if reached here, all is well. Get the permission level
         $targetperm = $this->getUserPermissions($netid, $params['target']);
         return $targetperm;
+    }
+
+    /**
+     * queries a user id  and return the name, email address, etc. 
+     * 
+     * @return type
+     * @throws Exception
+     */
+    public function fetchUserInfo() {
+        
+        // check that required parameters are defined
+        $params = $this->subsetArray($this->_params, ["target"]);        
+        
+        // the asking user should be the site administrator
+        // a user asking for their own permissions, or curator on a network
+        if ($this->_uid != $params['target'] && $this->_uid != "admin") {
+            throw new Exception("Insufficient permissions");
+        }
+        
+        // make sure the target user exist
+        $sql = "SELECT user_id, user_firstname, user_middlename, user_lastname, user_email 
+            FROM " . NC_TABLE_USERS . " WHERE user_id = ?";
+        $stmt = $this->qPE($sql, [$params['target']]);
+        $result = $stmt->fetch();
+        if (!$result) {        
+            throw new Exception("Target user does not exist");
+        }
+        
+        return $result;        
     }
 
 }

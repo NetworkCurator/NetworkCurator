@@ -256,6 +256,14 @@ class NCApiCaller {
         $params['network'] = $network;        
         return $this->_caller->sendRequest($params);
     }
+    
+    function fetchUserInfo($target) {
+        $params = $this->_p;
+        $params['controller'] = 'NCUsers';        
+        $params['action'] = 'fetchUserInfo';                
+        $params['target'] = $target;
+        return $this->_caller->sendRequest($params);
+    }
 }
 
 ?>
