@@ -10,7 +10,7 @@ if ($uid == "guest") {
     exit();
 }
 
-include_once "nc-components/ui-user.php";
+include_once "nc-components/ui-user-info.php";
 
 ?>    
 

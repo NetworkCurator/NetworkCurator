@@ -255,3 +255,67 @@ nc.admin.createUser = function(fgfirst, fgmiddle, fglast, fgid, fgemail, fgpwd, 
     return 1;
 }
 
+
+/**
+ * Invoked from the user profile page when user wants to update a name, password, or email.
+ * 
+ * @param fgfirst form group with first name
+ * @param fgmiddle form group with middle name
+ * @param fglast form group with last name
+ * @param fgemail form group with email address
+ * @param fgpwd - formgroup with current password
+ * @param fgnewpwd - formgroup with new password
+ * @param fgnewpwd2 - formgroup with password (confirmation)
+ * 
+ */
+nc.admin.updateUserInfo = function(fgfirst, fgmiddle, fglast, fgemail, fgpwd, fgnewpwd, fgnewpwd2) {
+            
+    $('form .form-group').removeClass('has-warning has-error');
+            
+    // basic checks on the for text boxes     
+    if (nc.utils.checkFormInput(fgfirst, "first name", 1) 
+        + nc.utils.checkFormInput(fgmiddle, "middle name", -1)
+        + nc.utils.checkFormInput(fglast, "last name", 1)        
+        + nc.utils.checkFormInput(fgpwd, "password", 1)        
+        + nc.utils.checkFormEmail(fgemail, "email") < 5) {
+        return 0;
+    };      
+    if ($('#'+fgnewpwd+' input').val() != $('#'+fgnewpwd2+' input').val()) {
+        $('#'+fgnewpwd2).addClass('has-warning');
+        $('#'+fgnewpwd2+' label').html("Please re-confirm the password:");
+        return 0;
+    }             
+    // check validity of new password 
+    if ($('#'+fgnewpwd+' input').val() !="") {
+        if (nc.utils.checkFormInput(fgnewpwd, "password", 1)<1) {
+            return 0;
+        }
+    }
+    
+    $.post(nc.api, 
+    {
+        controller: "NCUsers", 
+        action: "updateUserInfo", 
+        target_firstname: $('#'+fgfirst +' input').val(),
+        target_middlename: $('#'+fgmiddle+' input').val(),
+        target_lastname: $('#'+fglast+' input').val(),
+        target_email: $('#'+fgemail+' input').val(),
+        target_id: nc.userid,
+        target_password: $('#'+fgpwd+' input').val(),
+        target_newpassword: $('#'+fgnewpwd+' input').val()
+    }, function(data) {                          
+        nc.utils.alert(data);        
+        data = JSON.parse(data);
+        if (nc.utils.checkAPIresult(data)) {
+            if (data['success']==false || data['data']==false) {                
+                $('#nc-update-response').html("<br/>Error:"+data['errormsg']);                
+            } else if (data['success']==true) {                 
+                $('form .form-group').addClass('has-success has-feedback');                                                                
+                $('form button.submit').removeClass('btn-success').addClass('btn-default disabled').html("Success!");                
+                $('form,form button.submit').attr("disabled", true);  
+                $('#nc-update-response').html("<br/>"+data['data']);                
+            }
+        }                        
+    });    
+                
+}

@@ -92,6 +92,51 @@ class NCUsers extends NCLogger {
     }
 
     /**
+     * Update first/middle/last names, email, or password for an existing user
+     * 
+     * 
+     */
+    public function updateUserInfo() {
+
+        // check that required parameters are defined
+        $params = $this->subsetArray($this->_params, [
+            "target_firstname", "target_middlename", "target_lastname",
+            "target_email", "target_id", "target_password", "target_newpassword"]);
+
+
+        // perform tests on whether this user can create new user?
+        if ($this->_uid !== "admin" && $this->_uid !== $params['target_id']) {
+            throw new Exception("Insufficient permissions to update user info");
+        }
+
+        // verify the current password
+        $this->verify();
+
+        // for good measure, update the external passord code (for cookies)        
+        $params['target_extpwd'] = md5(makeRandomHexString(32));
+
+        // update the non-password fields
+        $sql = "UPDATE " . NC_TABLE_USERS . " SET user_firstname = ? , user_middlename = ? ,
+                    user_lastname = ? , user_email = ?, user_extpwd = ? WHERE user_id = ? ";
+        $stmt = $this->qPE($sql, [$params['target_firstname'], $params['target_middlename'],
+            $params['target_lastname'], $params['target_email'], $params['target_extpwd'],
+            $params['target_id']]);
+        $result = "Updated user information";
+
+        // check if to update the password
+        if ($params['target_newpassword'] != "") {
+            // create a hashes for the user password
+            $targetpwd = password_hash($params['target_newpassword'], PASSWORD_BCRYPT);
+            $sql = "UPDATE " . NC_TABLE_USERS . " SET user_pwd = ? WHERE user_id = ? ";
+            $stmt = $this->qPE($sql, [$targetpwd, $params['target_id']]);
+            $result .= " and password";
+        }
+
+        $result .= " (new login may be required)";
+        return $result;
+    }
+
+    /**
      * Checks a userid and password combination (used during log-in)
      * 
      * The params['user_id'] field is here expected to contain "guest"
@@ -283,26 +328,52 @@ class NCUsers extends NCLogger {
      * @throws Exception
      */
     public function fetchUserInfo() {
-        
+
         // check that required parameters are defined
-        $params = $this->subsetArray($this->_params, ["target"]);        
-        
+        $params = $this->subsetArray($this->_params, ["target"]);
+
         // the asking user should be the site administrator
         // a user asking for their own permissions, or curator on a network
         if ($this->_uid != $params['target'] && $this->_uid != "admin") {
             throw new Exception("Insufficient permissions");
         }
-        
+
         // make sure the target user exist
         $sql = "SELECT user_id, user_firstname, user_middlename, user_lastname, user_email 
             FROM " . NC_TABLE_USERS . " WHERE user_id = ?";
         $stmt = $this->qPE($sql, [$params['target']]);
         $result = $stmt->fetch();
-        if (!$result) {        
+        if (!$result) {
             throw new Exception("Target user does not exist");
         }
-        
-        return $result;        
+
+        return $result;
+    }
+
+    /**
+     * returns array with all user ids (only for admins)
+     * 
+     * @throws Exception
+     * 
+     */
+    public function listUsers() {
+
+        // the asking user should be the site administrator
+        // a user asking for their own permissions, or curator on a network
+        if ($this->_uid != "admin") {
+            throw new Exception("Insufficient permissions");
+        }
+
+        $sql = "SELECT user_id AS id, user_firstname AS firstname, 
+            user_middlename AS middlename, user_lastname AS lastname, user_status AS status
+            FROM " . NC_TABLE_USERS;
+
+        $stmt = $this->_db->query($sql);
+        $result = array();
+        while ($row = $stmt->fetch()) {
+            $result[] = $row;
+        }
+        return $result;
     }
 
 }

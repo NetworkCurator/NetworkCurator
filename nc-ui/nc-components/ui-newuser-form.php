@@ -41,4 +41,6 @@
         </form>
         
     </div>
+
+    <?php include_once "ui-user-list.php"; ?>    
 </div>

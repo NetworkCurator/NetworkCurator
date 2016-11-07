@@ -528,7 +528,7 @@ svg.nc-symbol {
 .nc-dropdown-form {
     padding: 10px;        
 }
-.nc-dropdown-form td, th {
+.nc-dropdown-form td, .nc-dropdown-form th {
     padding-left: 10px;
     padding-right: 10px;
 }
@@ -583,6 +583,15 @@ span.info {
     border-radius: 2px;
     display: inline-block;
 }
+
+/* ------------------------------------------------------------------------------------
+ * Tables 
+ * ------------------------------------------------------------------------------------ */
+
+table {
+    width: 100%;
+}
+
 
 /* ------------------------------------------------------------------------------------
  * Curation/editing
@@ -679,3 +688,5 @@ div.makealive {
     height: auto;   
     overflow: visible;            
 }
+
+

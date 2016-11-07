@@ -219,3 +219,4 @@ nc.users.updatePermissionsGeneric = function(targetid, perm, f) {
         permissions: perm
     }, f );   
 }
+

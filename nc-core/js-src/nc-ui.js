@@ -902,3 +902,32 @@ nc.ui.populateCommentsBox = function(commentarray) {
         nc.ui.addCommentBox(val); 
     })
 }
+
+
+/* ====================================================================================
+* Users table
+* ==================================================================================== */
+
+/**
+ * 
+ * @param ulist object with a set of user data
+ * @param objname target div to hold the users table
+ */
+nc.ui.createUsersTable = function(ulist, objname) {
+    
+    var objdiv = $('#'+objname);
+    
+    // create a table object
+    var html = '<table class="table"><tr><th>User id</th><th>Name</th><th>Status</th></tr>';
+    var tdco = '</td><td>';
+    for (var i=0; i<ulist.length; i++) {
+        var temp = '<tr><td>'+ulist[i]['id']+tdco+
+            ulist[i]['firstname']+' '+ulist[i]['middlename']+' '+ulist[i]['lastname'];
+        temp += tdco + ulist[i].status+'</td></tr>';
+        html += temp;        
+    }        
+    html += '</table>';
+    
+    objdiv.html(html);
+    
+}
