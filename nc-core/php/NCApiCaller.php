@@ -265,7 +265,7 @@ class NCApiCaller {
         return $this->_caller->sendRequest($params);
     }
     
-    function listUsers($target) {
+    function listUsers() {
         $params = $this->_p;
         $params['controller'] = 'NCUsers';        
         $params['action'] = 'listUsers';                        
