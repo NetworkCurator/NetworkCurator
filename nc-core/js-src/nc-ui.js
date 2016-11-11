@@ -179,7 +179,10 @@ nc.ui.ClassTreeWidget = function(classdata, islink) {
             addagain += nc.ui.addClassTreeRow(val);          
         });        
     } while (addagain<Object.keys(classdata).length);
-                
+    //alert("aab 1");
+    //root.DOMRefresh();
+    //alert("aab 2");
+
     // create functions that respond to events on the tree
     // clicking a class name to see the summary page
     root.on("click", 'span[val="nc-classname"]', function() {
@@ -273,14 +276,8 @@ nc.ui.ClassTreeRowWidget = function(classrow) {
     var aform = nc.ui.ClassForm(classrow);
     var cid = classrow['class_id'];    
     var cname = classrow['name'];
-    // get the svg defs from nc.ontology.nodes    
-    var cdefs = nc.utils.sanitize(classrow.defs);
-    // earlier code looked up cdefs from nc.ontology.link and .nodes (is that needed)?
-    //if (classrow['connector']==1) {
-    //    var cdefs = nc.utils.sanitize(nc.ontology.links[cid].defs, true);
-    //} else {
-    //    var cdefs = nc.utils.sanitize(nc.ontology.nodes[cid].defs, true);
-    //}
+    // get the svg defs from nc.ontology.nodes        
+    var cdefs = nc.utils.sanitize(classrow.defs, true);        
     var achildren = '<ol class="nc-classtree-children" val="'+classrow['class_id']+'"></ol>';       
     var classvg = '<svg class="nc-symbol" val="'+cid+'"><defs>'+cdefs+'</defs>';
     classvg += '<g transform="translate(18,18)">';
@@ -296,8 +293,8 @@ nc.ui.ClassTreeRowWidget = function(classrow) {
 
     // modify the object if class is inactive
     if (classrow['status']!=1) {
-        obj = nc.ui.toggleClassDisplay(obj);
-    }    
+        obj = nc.ui.toggleClassDisplay(obj);        
+    }        
     
     return obj;
 }

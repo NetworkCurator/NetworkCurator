@@ -180,8 +180,8 @@ nc.utils.allowedAttributes= {
     code: ['class'],
     style: ['type'],
     g: ['id', 'transform'],
-    circle: ['cx', 'cy', 'r', 'id' , 'fill'],
-    rect: ['x', 'y', 'width', 'height', 'id', 'fill'],
+    circle: ['cx', 'cy', 'r', 'id', 'fill', 'strok*'],
+    rect: ['x', 'y', 'rx', 'ry', 'width', 'height', 'id', 'fill', 'strok*'],
     marker: ['id', 'viewbox', 'ref*', 'mark*', 'orient'],
     line: ['x1', 'x2', 'y1', 'y2', 'id', 'strok*'],
     path: ['d', 'fill', 'strok*']
