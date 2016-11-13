@@ -14,7 +14,6 @@ echo ncScriptObject("nc.ontology.nodes", $nodeclasses);
 echo ncScriptObject("nc.ontology.links", $linkclasses);
 echo ncScriptObject("nc.graph.rawnodes", $graphnodes);
 echo ncScriptObject("nc.graph.rawlinks", $graphlinks);
-
 ?>
 
 
@@ -22,7 +21,7 @@ echo ncScriptObject("nc.graph.rawlinks", $graphlinks);
     <div id="nc-graph-toolbar" class="col-sm-12"></div>
 </div>
 <div class="row">
-    <div id="nc-graph-svg-container" class="col-sm-8">        
+    <div id="nc-graph-svg-container" class="col-sm-8">                       
         <svg id="nc-graph-svg"></svg>                    
     </div>
     <div id="nc-graph-side" class="col-sm-4">        
@@ -45,13 +44,13 @@ echo ncScriptObject("nc.graph.rawlinks", $graphlinks);
     debugOntologies = function() {
         $('#nc-debugging').html(JSON.stringify(nc.ontology.nodes)+"<br/><br/>"+JSON.stringify(nc.ontology.links));
     }
-    </script>
-    <div class="nc-mt-10">Debugging</div>    
+</script>
+<div class="nc-mt-10">Debugging</div>    
 <a onclick="javascript:debugNodes(); return false;">Show nodes </a>
 <a onclick="javascript:debugLinks(); return false;">Show links </a>
 <a onclick="javascript:debugUser(); return false">Show user data </a>
 <a onclick="javascript:debugOntologies(); return false">Show ontologies </a>
 
 <div id="nc-debugging">
-    
+
 </div>

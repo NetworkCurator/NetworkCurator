@@ -24,7 +24,8 @@ nc.graph = {
     info: {}, // store of downloaded content information about a node/link
     settings: {}, // store settings for the simulation
     sim: {}, // force simulation 
-    svg: {}, // the svg div on the page   
+    svg: {}, // the svg div on the page  
+    zoombehavior: {}, // d3 zoom behavior
     mode: "select"
 };
 
@@ -53,9 +54,11 @@ nc.graph.settings.neighborhood = 2;
  */
 nc.graph.initInterface = function() {
         
-    // check if this is the graph page
     var toolbar = $('#nc-graph-toolbar');
     nc.graph.svg = d3.select('#nc-graph-svg');   
+
+    // create buttons on the svg
+    $('#nc-graph-svg-container').prepend(nc.graph.makeIconToolbar());
 
     // set the status codes to integers
     $.each(nc.graph.rawnodes, function(key) { 
@@ -151,6 +154,39 @@ nc.graph.initInterface = function() {
 }
 
 
+nc.graph.makeIconToolbar = function() {
+    
+    // create toolbar div
+    var obj = $(nc.ui.graphIconToolbar());
+                  
+    // add handlers for the buttons
+    obj.find('.glyphicon-zoom-in').click(function() {
+        var svgbg = document.querySelector('.nc-svg-background');
+        var nowscale = d3.zoomTransform(svgbg);                 
+        nowscale.k = nowscale.k *1.1;        
+        nc.graph.svg.select('.nc-svg-background').call(nc.graph.zoombehavior.transform, nowscale);        
+    });    
+    obj.find('.glyphicon-zoom-out').click(function() {
+        var svgbg = document.querySelector('.nc-svg-background');
+        var nowscale = d3.zoomTransform(svgbg);                 
+        nowscale.k = nowscale.k/1.1;        
+        nc.graph.svg.select('.nc-svg-background').call(nc.graph.zoombehavior.transform, nowscale);        
+    });    
+    // centering of viewpoint
+    obj.find('.glyphicon-record').click(nc.graph.centerview);        
+    // saving image to disk
+    obj.find('.glyphicon-picture').click(nc.graph.saveGraphSVG);        
+    // toggling view (wide-narrow view)    
+    obj.find('.glyphicon-resize-full').click(function() {     
+        nc.graph.toggleWideScreen(true);        
+    });    
+    obj.find('.glyphicon-resize-small').hide().click(function() {        
+        nc.graph.toggleWideScreen(false);        
+    });
+    
+    return obj;
+}
+
 /**
  * Helper function to initInterface() - creates a button with view node/link options
  * 
@@ -206,12 +242,7 @@ nc.graph.makeSettingsBtn = function() {
         nc.graph.settings[nowinput.attr("val")] = newval; 
         if (nowsetting=="wideview") {
             // changing the view size does not require restart of the sim
-            if (newval) {
-                // make the graph view wide
-                $('#nc-graph-svg-container').removeClass("col-sm-8").addClass("col-sm-12");
-            } else {
-                $('#nc-graph-svg-container').removeClass("col-sm-12").addClass("col-sm-8");
-            }
+            nc.graph.toggleWideScreen(newval);            
         } else if (nowsetting=="forcesim") {  
             // fixing the layout does not require restart of the sim
             if (newval) {                                
@@ -238,6 +269,23 @@ nc.graph.makeSettingsBtn = function() {
 }
 
 /**
+ * Toggles between wide and narrow view
+ */
+nc.graph.toggleWideScreen = function(gowide) {    
+    var iconset = $('.nc-svgtools');
+    if (gowide) {
+        // make the graph view wide        
+        $('#nc-graph-svg-container').removeClass("col-sm-8").addClass("col-sm-12");        
+        iconset.find('.glyphicon-resize-full').hide();        
+        iconset.find('.glyphicon-resize-small').show();                        
+    } else {
+        $('#nc-graph-svg-container').removeClass("col-sm-12").addClass("col-sm-8");
+        iconset.find('.glyphicon-resize-full').show();    
+        iconset.find('.glyphicon-resize-small').hide();                
+    }    
+}
+
+/**
  * Helper function to initInterface() - creates a button with save options
  * 
  */
@@ -246,17 +294,7 @@ nc.graph.makeSaveBtn = function() {
     var savebtn = nc.ui.DropdownGraphSave();
     
     // attach actions to the save lins
-    savebtn.find('a[val="diagram"]').click(function() {
-        // find dimensions of the svg
-        var width = parseInt(nc.graph.svg.style("width"));    
-        var height = parseInt(nc.graph.svg.style("height"));
-        // create text with svg content
-        var svgdef = '<svg width="'+width+'" height="'+height+'">';
-        var nowview = svgdef+$('#nc-graph-svg').html()+'</svg>';        
-        // save to file
-        var filename = nc.network+"_"+nc.userid+"_network.svg";                
-        nc.utils.saveToFile(nowview, filename);
-    });
+    savebtn.find('a[val="diagram"]').click(nc.graph.saveGraphSVG);
     
     savebtn.find('a[val="definition"]').click(function() {
         alert("TO DO: save graph definition");
@@ -278,6 +316,20 @@ nc.graph.makeSaveBtn = function() {
     });
             
     return savebtn;
+}
+
+
+// captures current graph state and triggers an svg file download
+nc.graph.saveGraphSVG = function() {
+    // find dimensions of the svg
+    var width = parseInt(nc.graph.svg.style("width"));    
+    var height = parseInt(nc.graph.svg.style("height"));
+    // create text with svg content
+    var svgdef = '<svg width="'+width+'" height="'+height+'">';
+    var nowview = svgdef+$('#nc-graph-svg').html()+'</svg>';        
+    // save to file
+    var filename = nc.network+"_"+nc.userid+"_network.svg";                
+    nc.utils.saveToFile(nowview, filename);
 }
 
 
@@ -756,26 +808,26 @@ nc.graph.initSimulation = function() {
     .force("charge", d3.forceManyBody().strength(nc.graph.settings.strength).distanceMax(400))
     .force("center", d3.forceCenter(width / 2, height / 2))
     .velocityDecay(nc.graph.settings.vdecay);    
-                        
+                                                
     // Set up panning and zoom (uses a rect to catch click-drag events)                        
     var svgpan = d3.drag().on("start", nc.graph.panstarted).
     on("drag", nc.graph.panned).on("end", nc.graph.panended);       
-    var svgzoom = d3.zoom().scaleExtent([0.125, 4])   
+    nc.graph.zoombehavior = d3.zoom().scaleExtent([0.125, 4])   
     .on("zoom", nc.graph.zoom);  
         
     nc.graph.svg.append("rect").classed("nc-svg-background", true)
     .attr("width", "100%").attr("height", "100%")
     .style("fill", "none").style("pointer-events", "all")    
-    .call(svgpan).call(svgzoom)
-    .on("wheel", function() {
+    .call(svgpan).call(nc.graph.zoombehavior)
+    .on("wheel", function() {         
         d3.event.preventDefault();
     })
-    .on("click", nc.graph.unselect);        
+    .on("click", nc.graph.unselect);   
     
     // create a single group g for holding all nodes and links
     nc.graph.svg.append("g").classed("nc-svg-content", true)
-    .attr("transform", "translate("+initT[0]+","+initT[1]+")scale("+initT[2]+")");                                        
-            
+    .attr("transform", "translate("+initT[0]+","+initT[1]+")scale("+initT[2]+")");                                                
+
     if (nc.graph.rawnodes.length>0) {
         nc.graph.simStart();
     }    
@@ -1083,27 +1135,41 @@ nc.graph.panended = function() {
 /**
 * Perform rescaling on the content svg upon zoomin
 */
-nc.graph.zoom = function() {        
+nc.graph.zoom = function() {
     // get existing transformation
-    var oldtrans = nc.graph.svg.select("g.nc-svg-content").attr("transform").split(/\(|,|\)/);    
-    oldtrans = [parseFloat(oldtrans[1]), parseFloat(oldtrans[2]), parseFloat(oldtrans[4])];        
+    var oldtrans = nc.graph.getTransformation();
     var oldscale = oldtrans[2];
-    // apply a scaling transformation manually
-    var newscale = d3.event.transform.k;            
+    // apply a scaling transformation manually    
+    var newscale = d3.event.transform.k;       
     var sw2 = parseInt(nc.graph.svg.style("width").replace("px",""))/2;
     var sh2 = parseInt(nc.graph.svg.style("height").replace("px",""))/2; 
     var newtrans = [sw2 + (oldtrans[0]-sw2)*(newscale/oldscale), 
     sh2+(oldtrans[1]-sh2)*(newscale/oldscale), newscale];    
     // set the new transformation into the content
     nc.graph.svg.select("g.nc-svg-content")
-    .attr("transform", "translate(" + newtrans[0] +","+ newtrans[1] +")scale("+newtrans[2]+")")        
+    .attr("transform", "translate(" + newtrans[0] +","+ newtrans[1] +")scale("+newtrans[2]+")")            
+}
+
+
+/**
+ * perform a translate operation so that nodes appear in the center of the graph view
+ */
+nc.graph.centerview = function() {    
+    // collect information about current viewpoint
+    var oldtrans = nc.graph.getTransformation();
+    var sw2 = parseInt(nc.graph.svg.style("width").replace("px",""))/2;
+    var sh2 = parseInt(nc.graph.svg.style("height").replace("px",""))/2;         
+        
+    // set current transformation to center viewpoint in the middle
+    var newtrans = [sw2*(1-oldtrans[2]), sh2*(1-oldtrans[2])];    
+    nc.graph.svg.select("g.nc-svg-content")
+    .attr("transform", "translate("+newtrans[0]+","+newtrans[1]+")scale("+oldtrans[2]+")")            
 }
 
 
 /* ====================================================================================
 * Helper functions
 * ==================================================================================== */
-
 
 /**
 * Converts between a mouse coordinate p to an avg coordinate 

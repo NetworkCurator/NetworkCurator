@@ -928,3 +928,26 @@ nc.ui.createUsersTable = function(ulist, objname) {
     objdiv.html(html);
     
 }
+
+/* ====================================================================================
+* Widget for in-graph icon toolbar
+* ==================================================================================== */
+
+/**
+ * Invoked during init of graph page. Generates a widget with icons onclick handlers
+ * Icons set zoom, panning, actions on the graph page
+ */
+nc.ui.graphIconToolbar = function() {
+    
+    // determins which glyphicons to display in the toolbar
+    var iconset = ['record','zoom-in','zoom-out','picture','resize-full','resize-small'];
+    
+    // create a vertical widget with one icon per line
+    var html = '<div class="nc-svgtools"><div>';
+    for (var i=0; i<iconset.length; i++) {
+        html+='<span class="glyphicon glyphicon-'+iconset[i]+'"></span>';
+    }
+    html+='</div></div>';
+            
+    return html;
+}
