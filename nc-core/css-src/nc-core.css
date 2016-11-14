@@ -292,6 +292,37 @@ textarea {
     display: none;    
 }
 
+/* ------------------------------------------------------------------------------------
+ * Graph search
+ * ------------------------------------------------------------------------------------ */
+
+#nc-graph-search {
+    margin-left: 15px;
+    margin-bottom: 0.5em;
+    padding: 0px;
+    border: none; 
+}
+#nc-graph-search input {
+    margin-left: 6px;
+    border: none !important;
+    outline: none !important;
+    padding: 4px;
+}
+span.nc-search-item {
+    border: #777 solid 1px;
+    margin: 4px;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+span.nc-search-unknown {
+    border: #777 dashed 1px;
+}
+span.nc-search-item .glyphicon {
+    font-size: 70%;
+    cursor: pointer;
+    color: #777;
+    padding-left: 4px;
+}
 
 /* ------------------------------------------------------------------------------------
  * Graph editor

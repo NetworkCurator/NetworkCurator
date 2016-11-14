@@ -57,8 +57,12 @@ nc.graph.initInterface = function() {
     var toolbar = $('#nc-graph-toolbar');
     nc.graph.svg = d3.select('#nc-graph-svg');   
 
+    // create search box
+    var svgcontainer = $('#nc-graph-svg-container');
+    svgcontainer.parent().prepend(nc.graph.makeSearchBox());
+
     // create buttons on the svg
-    $('#nc-graph-svg-container').prepend(nc.graph.makeIconToolbar());
+    svgcontainer.prepend(nc.graph.makeIconToolbar());
 
     // set the status codes to integers
     $.each(nc.graph.rawnodes, function(key) { 
@@ -331,6 +335,63 @@ nc.graph.saveGraphSVG = function() {
     var filename = nc.network+"_"+nc.userid+"_network.svg";                
     nc.utils.saveToFile(nowview, filename);
 }
+
+
+/* ====================================================================================
+ * Handlers for graph search box
+ * ==================================================================================== */
+
+
+/**
+ * Scans the search box and returns an array of search items
+ */
+nc.graph.getSearchElements = function() {
+    var result = [];
+    $('#nc-graph-search span.nc-search-item').each(function() {
+        result.push($( this ).text());
+    });
+   return result;
+}
+
+/**
+ * Create an object with a search box and handlers.
+ */
+nc.graph.makeSearchBox = function() {
+    
+    var searchbox = nc.ui.graphSearchBox();
+    
+    // creates a span element with 
+    var makeSearchSpan = function(x) {
+        // search through the raw nodes
+        var ok = false;
+        for (var i=0; i<nc.graph.rawnodes.length && !ok; i++) {            
+            if (nc.graph.rawnodes[i].name==x) {
+                ok = true;
+            }
+        }        
+        ok = (ok ? '': ' nc-search-unknown');
+        var span = '<span class="nc-search-item'+ok+'">'+x+'<span class="glyphicon glyphicon-remove"></span></span>';        
+        return $(span);
+    }
+    
+    // attach a handler that will add search items into the div
+    searchbox.find('input').on("keyup", function(e) {                
+        if (e.keyCode==32) {            
+            var nowval = $(this).val().trim();            
+            var nowitems = nc.graph.getSearchElements();            
+            if (nowitems.indexOf(nowval)<0) {                
+                $(this).before(makeSearchSpan(nowval));
+            } else {
+                alert("this item already exists");
+            }
+                        
+            $(this).val("");
+        }
+        
+    });
+    return searchbox;
+}
+    
 
 
 /* ====================================================================================

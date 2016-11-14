@@ -570,7 +570,7 @@ nc.ui.DropdownObjectList = function(atype, aa, aval, withdeprecated) {
         var nowname = $(this).attr("class_name");        
         var p4 = $(this).parent().parent().parent().parent().find('button.dropdown-toggle');        
         p4.addClass('active').attr("class_name", nowname).attr("selection", nowname).attr("class_id", nowid);         
-            p4.find('span.nc-classname-span').html(atype+" "+nowname);        
+        p4.find('span.nc-classname-span').html(atype+" "+nowname);        
         $(this).dropdown("toggle");        
         return false;
     });       
@@ -919,7 +919,7 @@ nc.ui.createUsersTable = function(ulist, objname) {
     var tdco = '</td><td>';
     for (var i=0; i<ulist.length; i++) {
         var temp = '<tr><td>'+ulist[i]['id']+tdco+
-            ulist[i]['firstname']+' '+ulist[i]['middlename']+' '+ulist[i]['lastname'];
+        ulist[i]['firstname']+' '+ulist[i]['middlename']+' '+ulist[i]['lastname'];
         temp += tdco + ulist[i].status+'</td></tr>';
         html += temp;        
     }        
@@ -950,4 +950,29 @@ nc.ui.graphIconToolbar = function() {
     html+='</div></div>';
             
     return html;
+}
+
+
+
+/* ====================================================================================
+* Widget for graph search
+* ==================================================================================== */
+
+/**
+ * Creates 
+ */
+nc.ui.graphSearchBox = function() {
+    var html = '<div id="nc-graph-search">';
+    html += '<input type="text" placeholder="Search" >';
+    html += '</div>'; 
+    var searchbox = $(html);
+    
+    // attach a handler to remove items
+    searchbox.on("click", 'span.glyphicon-remove', 
+        function() {            
+            $(this).parent().remove();
+            nc.graph.simStart();
+        })
+        
+    return searchbox;
 }
