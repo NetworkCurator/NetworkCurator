@@ -41,7 +41,7 @@ nc.graph.settings.strength = -30;
 nc.graph.settings.vdecay = 0.5;
 // for navigation within a small neighborhood in the graph 
 nc.graph.settings.local = true;
-nc.graph.settings.centernode = "";
+nc.graph.settings.searchnodes = [];
 nc.graph.settings.neighborhood = 2;
 
 
@@ -341,7 +341,6 @@ nc.graph.saveGraphSVG = function() {
  * Handlers for graph search box
  * ==================================================================================== */
 
-
 /**
  * Scans the search box and returns an array of search items
  */
@@ -350,8 +349,55 @@ nc.graph.getSearchElements = function() {
     $('#nc-graph-search span.nc-search-item').each(function() {
         result.push($( this ).text());
     });
-   return result;
+    return result;
 }
+
+
+/**
+ * queries whether the search div has an element with name x
+ */
+nc.graph.hasSearchElement = function(x) {
+    var nowitems = nc.graph.getSearchElements();
+    return (nowitems.indexOf(x)>=0);
+}
+
+
+/**
+ * removes one element from the search box
+ */
+nc.graph.removeSearchElement = function(x) {
+    x = x.trim();
+    $('#nc-graph-search span.nc-search-item').each(function() {
+        if ($( this ).text()==x) {
+            $(this).remove();
+        }
+    });
+    nc.graph.simStart();
+}
+
+/**
+ * Add one node to the search set
+ * 
+ * @param x - text to add to the text box
+ * @param restart - logical, determines if the simulation should be restarted
+ * @return true if a term was actually added
+ */
+nc.graph.addSearchElement = function(x, restart) {
+                    
+    if (!nc.graph.hasSearchElement(x)) {       
+        var newspan = nc.ui.searchSpan(x, nc.graph.rawnodes);
+        $('#nc-graph-search input').before(newspan);                
+        if (restart) {
+            nc.graph.simStart();
+        }
+        if (!newspan.hasClass('nc-search-unknown')) {        
+            return true;        
+        }
+    } 
+    
+    return false;    
+}
+
 
 /**
  * Create an object with a search box and handlers.
@@ -359,36 +405,35 @@ nc.graph.getSearchElements = function() {
 nc.graph.makeSearchBox = function() {
     
     var searchbox = nc.ui.graphSearchBox();
-    
-    // creates a span element with 
-    var makeSearchSpan = function(x) {
-        // search through the raw nodes
-        var ok = false;
-        for (var i=0; i<nc.graph.rawnodes.length && !ok; i++) {            
-            if (nc.graph.rawnodes[i].name==x) {
-                ok = true;
+           
+    // attach a handler that will add search items into the div
+    searchbox.find('input').on("keyup", function(e) {  
+        // respond to spacebar or enter in the input box
+        if (e.keyCode==32 || e.keyCode==13) {            
+            var nowval = $(this).val().trim();            
+            // split it up into smaller bits (handles cut/paste)            
+            nowval = nowval.split(/ |\n/); 
+            var result = 0;
+            for (var i=0; i<nowval.length; i++) {                                
+                result += nc.graph.addSearchElement(nowval[i].trim(), false);                        
+            }            
+            // clear the textbox             
+            $(this).val("");
+            // restart the simulation if the adding actually changed the search space
+            if (result>0) {
+                nc.graph.simStart();
             }
         }        
-        ok = (ok ? '': ' nc-search-unknown');
-        var span = '<span class="nc-search-item'+ok+'">'+x+'<span class="glyphicon glyphicon-remove"></span></span>';        
-        return $(span);
-    }
-    
-    // attach a handler that will add search items into the div
-    searchbox.find('input').on("keyup", function(e) {                
-        if (e.keyCode==32) {            
-            var nowval = $(this).val().trim();            
-            var nowitems = nc.graph.getSearchElements();            
-            if (nowitems.indexOf(nowval)<0) {                
-                $(this).before(makeSearchSpan(nowval));
-            } else {
-                alert("this item already exists");
-            }
-                        
-            $(this).val("");
-        }
-        
     });
+    
+    // attach a handler to remove items
+    searchbox.on("click", 'span.glyphicon-remove', 
+        function() {            
+            //$(this).parent().remove();
+            nc.graph.removeSearchElement($(this).parent().text());
+        //nc.graph.simStart();
+        });   
+        
     return searchbox;
 }
     
@@ -753,15 +798,18 @@ nc.graph.filterLinks = function() {
 */
 nc.graph.filterNeighborhood = function() {
     
+    nc.graph.settings.searchnodes = nc.graph.getSearchElements();
     // if no local neighborhood is required, do nothing
-    if (!nc.graph.settings.local || nc.graph.settings.centernode=='') {
+    if (!nc.graph.settings.local || nc.graph.settings.searchnodes.length==0) {
         return;
     }
     
     // start with filtered nc.graph.nodes and nc.graph.links
-    var oknodes = {};    
-    oknodes[nc.graph.settings.centernode] = true;
-    
+    var oknodes = {};
+    for (var i=0; i<nc.graph.settings.searchnodes.length; i++) {
+        oknodes[nc.graph.settings.searchnodes[i]] = true;
+    }
+        
     // loop over the links 'd' times 
     var nowd = 0;
     while (nowd < nc.graph.settings.neighborhood) {
@@ -775,18 +823,15 @@ nc.graph.filterNeighborhood = function() {
             oknodes[oklinks[i].target.name] = true;
         }
         nowd++;        
-    }
-    //alert("A1 "+JSON.stringify(oknodes));
+    }    
 
     // filter the graph nodes and graph links to touch the neighborhood nodes only
     nc.graph.nodes = nc.graph.nodes.filter(function(v) {
         return v.name in oknodes;
-    });
-    //alert("A2 "+JSON.stringify(nc.graph.nodes));
+    });    
     nc.graph.links = nc.graph.links.filter(function(v) {
         return (v.source.name in oknodes && v.target.name in oknodes);
     }); 
-//alert("A3 "+JSON.stringify(nc.graph.links));
     
 }
 
@@ -969,7 +1014,7 @@ nc.graph.simStart = function() {
     .attr("class",function(d) {        
         return "nc-default-node "+d["class"]+ (d["status"]<1 ? " nc-inactive": "");        
     })
-    .call(nodedrag).on("click", nc.graph.selectObject).on("dblclick", nc.graph.centerNeighborhood)
+    .call(nodedrag).on("click", nc.graph.selectObject).on("dblclick", nc.graph.toggleSearchNode)
     .on('mouseover', tooltipshow).on('mouseout', tooltiphide);  
                   
     // create textlabels for nodes (depending on node class settings)
@@ -986,19 +1031,20 @@ nc.graph.simStart = function() {
     .attr("dx", "0em").attr("dy", "0.3em")
     .style("font-size", nc.graph.settings.namesize+"pt")    
     .call(nodedrag)
-    .on('click', nc.graph.selectObject ).on("dblclick", nc.graph.centerNeighborhood);    
+    .on('click', nc.graph.selectObject ).on("dblclick", nc.graph.toggleSearchNode);    
          
     nc.graph.sim.nodes(nc.graph.nodes).on("tick", nc.graph.tick);                   
     nc.graph.sim.force("link").links(nc.graph.links);         
     
-    // perhaps add a selection class to one of the nodes
-    if (nc.graph.settings.centernode!='' && nc.graph.settings.local) {        
-        // find the id that corresponds to the center node
-        var temp = nc.graph.nodes.filter(function(v) {
-            return v.name == nc.graph.settings.centernode
-        });        
-        nc.graph.svg.select('use[id="'+temp[0].id+'"]').classed("nc-node-center", true);           
-    }
+    // add a selection class to one of the nodes    
+    nc.graph.settings.searchnodes = nc.graph.getSearchElements();
+    // find the ids that corresponds to the search nodes
+    for (var i=0; i<nc.graph.nodes.length; i++) {
+        var v = nc.graph.nodes[i];
+        if (nc.graph.settings.searchnodes.indexOf(v.name)>=0) {
+            nc.graph.svg.select('use[id="'+v.id+'"]').classed("nc-node-center", true);           
+        }
+    }                   
     
     nc.graph.simUnpause();    
 }
@@ -1051,20 +1097,18 @@ var dy = function(d) {
 * ==================================================================================== */
 
 
-nc.graph.centerNeighborhood = function(d) {
-    var newcenter = d.name;
-    
+/**
+ * Called when user double-clicks on a node/text linked with a node
+ * Adds/removes the node from the search box
+ */
+nc.graph.toggleSearchNode = function(d) {
+        
     // early exit if nothing needs to be changed
-    if (newcenter==nc.graph.settings.centernode) {
-        return;
+    if (nc.graph.hasSearchElement(d.name)) {
+        nc.graph.removeSearchElement(d.name);
+    } else {
+        nc.graph.addSearchElement(d.name, true);
     }
-    if (!nc.graph.settings.local) {
-        return;
-    }
-    
-
-    nc.graph.settings.centernode = newcenter;
-    nc.graph.simStart();
     
 }
 

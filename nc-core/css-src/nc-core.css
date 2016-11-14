@@ -316,6 +316,7 @@ span.nc-search-item {
 }
 span.nc-search-unknown {
     border: #777 dashed 1px;
+    color: #999;
 }
 span.nc-search-item .glyphicon {
     font-size: 70%;

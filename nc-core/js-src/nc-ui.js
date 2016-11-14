@@ -959,20 +959,33 @@ nc.ui.graphIconToolbar = function() {
 * ==================================================================================== */
 
 /**
- * Creates 
+ * Create a div for searching
  */
 nc.ui.graphSearchBox = function() {
     var html = '<div id="nc-graph-search">';
     html += '<input type="text" placeholder="Search" >';
     html += '</div>'; 
-    var searchbox = $(html);
-    
-    // attach a handler to remove items
-    searchbox.on("click", 'span.glyphicon-remove', 
-        function() {            
-            $(this).parent().remove();
-            nc.graph.simStart();
-        })
-        
-    return searchbox;
+    return $(html);                 
+}
+
+
+/**
+ * Creates a span element with a remove sub-spab
+ * 
+ * @param x text for the search element
+ * @param knownarray array with object. 
+ * if x is not among the knownarray, it gets a nc-search-unknown class
+ * 
+ */ 
+nc.ui.searchSpan = function(x, knownarray) {
+    // search through the knownarray
+    var ok = false;
+    for (var i=0; i<knownarray.length && !ok; i++) {            
+        if (knownarray[i].name==x) {
+            ok = true;
+        }
+    }        
+    ok = (ok ? '': ' nc-search-unknown');
+    var span = '<span class="nc-search-item'+ok+'">'+x+'<span class="glyphicon glyphicon-remove"></span></span>';        
+    return $(span);
 }
