@@ -37,5 +37,4 @@ mkdir css
 cat css-src/nc-core.css > css/nc-core.css
 
 
-echo ""
 echo "Done"
