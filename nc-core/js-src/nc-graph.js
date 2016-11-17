@@ -46,6 +46,94 @@ nc.graph.settings.neighborhood = 2;
 
 
 /* ====================================================================================
+ * Setup at the beginning
+ * ==================================================================================== */
+
+/**
+ * invoked from the nc-core.js script. Loads graph data and displays the interface
+ */
+nc.graph.initGraph = function() {
+    nc.graph.svg = d3.select('#nc-graph-svg');    
+    $('#nc-graph-svg-container').prepend('<span>Loading... (please wait)</span>');    
+
+    // counter to get how many items have been loaded from server at init
+    var numloaded = 0;
+    
+    // load the ontology data
+    $.post(nc.api, 
+    {
+        controller: "NCOntology", 
+        action: "getLinkOntology",        
+        network: nc.network        
+    }, function(data) {         
+        data = JSON.parse(data);        
+        if (nc.utils.checkAPIresult(data)) {            
+            nc.ontology.links = nc.ontology.addLongnames(data['data']); 
+            numloaded++;
+        }                             
+    }
+    ); 
+    $.post(nc.api, 
+    {
+        controller: "NCOntology", 
+        action: "getNodeOntology",        
+        network: nc.network        
+    }, function(data) {         
+        data = JSON.parse(data);        
+        if (nc.utils.checkAPIresult(data)) {            
+            nc.ontology.nodes = nc.ontology.addLongnames(data['data']);  
+            numloaded++;
+        }                             
+    }
+    );  
+     
+    // load all graph data 
+    $.post(nc.api, 
+    {
+        controller: "NCGraphs", 
+        action: "getAllNodes",        
+        network: nc.network        
+    }, function(data) {                 
+        data = JSON.parse(data);        
+        if (nc.utils.checkAPIresult(data)) {            
+            nc.graph.rawnodes = data['data'];
+            numloaded++;            
+        }                             
+    }
+    ); 
+    $.post(nc.api, 
+    {
+        controller: "NCGraphs", 
+        action: "getAllLinks",        
+        network: nc.network        
+    }, function(data) {                         
+        data = JSON.parse(data);        
+        if (nc.utils.checkAPIresult(data)) {            
+            nc.graph.rawlinks = data['data']; 
+            numloaded++;
+        }                             
+    }
+    );
+    
+    // function to wait for all ajax data before starting the graph init sequence
+    var checkAndInit = function() {                        
+        if (numloaded>=4) {            
+            $('#nc-graph-svg-container').find('span').remove();
+            nc.graph.initInterface();                
+            nc.graph.initSimulation();
+            nc.graph.simUnpause();            
+            return;           
+        }                
+        // if reached here, not loaded yet
+        numloaded+= 0.01;
+        setTimeout(checkAndInit, 200);        
+    };    
+    // start monitoring the load status. When done, initialize the user interface
+    checkAndInit();          
+    
+};
+
+/* ====================================================================================
  * Structure of graph box
  * ==================================================================================== */
 
@@ -70,10 +158,10 @@ nc.graph.initInterface = function() {
     });
     $.each(nc.graph.rawlinks, function(key) { 
         nc.graph.rawlinks[key].status = +nc.graph.rawlinks[key].status;        
-    });
-
+    });    
+    
     // add elements into nc.ontology.nodes, nc.ontology.links that related to display    
-    $.each(nc.ontology.nodes, function(key) {
+    $.each(nc.ontology.nodes, function(key) {    
         nc.ontology.nodes[key].status = +nc.ontology.nodes[key].status;
         nc.ontology.nodes[key].show = 1;
         nc.ontology.nodes[key].showlabel = 0;
@@ -100,7 +188,7 @@ nc.graph.initInterface = function() {
         return nc.utils.sortByKey(result, 'label');
     }    
     var nodes=pushonto(nc.ontology.nodes), links=pushonto(nc.ontology.links);
-     
+    
     // add ontology options to the new node/new link forms   
     $('#nc-graph-newnode #fg-nodeclass .input-group-btn')
     .append(nc.ui.DropdownObjectList("", nodes, "node", false).find('.btn-group'))
@@ -195,8 +283,8 @@ nc.graph.makeIconToolbar = function() {
  * Helper function to initInterface() - creates a button with view node/link options
  * 
  */
-nc.graph.makeViewBtn = function(nodes, links) {
-    var viewbtn = nc.ui.DropdownOntoView(nodes, links);
+nc.graph.makeViewBtn = function(nodes, links) {    
+    var viewbtn = nc.ui.DropdownOntoView(nodes, links);    
     // add handlers to the checkboxes in the form
     // attach handling for toggling of the checkboxes
     viewbtn.find('input[type="checkbox"]').on("change", function() {
@@ -223,7 +311,7 @@ nc.graph.makeViewBtn = function(nodes, links) {
  * 
  */
 nc.graph.makeSettingsBtn = function() {
-    
+        
     var settingsbtn = nc.ui.DropdownGraphSettings();
     
     // fill initial values for the settings text areas
@@ -250,15 +338,15 @@ nc.graph.makeSettingsBtn = function() {
         } else if (nowsetting=="forcesim") {  
             // fixing the layout does not require restart of the sim
             if (newval) {                                
-                for (var i=0; i<nc.graph.nodes.length; i++) {
-                    nownode = nc.graph.nodes[i];
+                for (var i=0; i<nc.graph.rawnodes.length; i++) {
+                    nownode = nc.graph.rawnodes[i];
                     nownode.fx=null;
                     nownode.fy=null;
                 }
                 nc.graph.simUnpause();
             } else {                
-                for (var i=0; i<nc.graph.nodes.length; i++) {
-                    var nownode = nc.graph.nodes[i];
+                for (var i=0; i<nc.graph.rawnodes.length; i++) {
+                    var nownode = nc.graph.rawnodes[i];
                     nownode.fx=nownode.x;
                     nownode.fy=nownode.y;
                 }
@@ -279,11 +367,13 @@ nc.graph.toggleWideScreen = function(gowide) {
     var iconset = $('.nc-svgtools');
     if (gowide) {
         // make the graph view wide        
-        $('#nc-graph-svg-container').removeClass("col-sm-8").addClass("col-sm-12");        
+        $('#nc-graph-svg-container').removeClass("col-sm-8").addClass("col-sm-12");  
+        $('#nc-graph-side').removeClass("col-sm-4").addClass("col-sm-8");
         iconset.find('.glyphicon-resize-full').hide();        
         iconset.find('.glyphicon-resize-small').show();                        
     } else {
         $('#nc-graph-svg-container').removeClass("col-sm-12").addClass("col-sm-8");
+        $('#nc-graph-side').removeClass("col-sm-8").addClass("col-sm-4");
         iconset.find('.glyphicon-resize-full').show();    
         iconset.find('.glyphicon-resize-small').hide();                
     }    
@@ -1062,14 +1152,6 @@ nc.graph.simStop = function() {
 */
 nc.graph.simUnpause = function() {    
     nc.graph.sim.alpha(0.7).restart();    
-// but if the simulation is meant to be off, stop it here
-//if (!nc.graph.settings.forcesim) {         
-//    for (var i=0; i<nc.graph.nodes.length; i++) {
-//        var nownode = nc.graph.nodes[i];
-//        nownode.fx=nownode.x;
-//        nownode.fy=nownode.y;            
-//    }         
-//}
 }
 
 var dsourcex = function(d) {

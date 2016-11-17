@@ -160,10 +160,8 @@ nc.init.initLog = function() {
  * Initialize a graph editing toolbar and graph viewer
  */
 nc.init.initGraph = function() {
-    if ($('#nc-graph-svg').length==0) return;    
-    nc.graph.initInterface();    
-    nc.graph.initSimulation();
-    nc.graph.simUnpause();
+    if ($('#nc-graph-svg').length==0) return; 
+    nc.graph.initGraph();    
 }
 
 /**
