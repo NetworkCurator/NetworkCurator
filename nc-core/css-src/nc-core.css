@@ -569,7 +569,7 @@ svg.nc-symbol {
 }
 #nc-graph-details-class {    
     color: #ffffff;
-    background-color: #555555;
+    background-color: #777777;
     padding: 4px 10px;   
     border-radius: 2px;
     display: inline-block;
@@ -630,8 +630,9 @@ span.info {
 .nc-object-type {
     font-size: 110%;
     color: #ffffff;
-    background-color: #555555;
-    padding: 4px 10px;   
+    background-color: #777777;
+    padding: 4px 10px;  
+    margin-right: 8px;
     border-radius: 2px;
     display: inline-block;
 }
@@ -662,7 +663,9 @@ table {
 .nc-curator > a {
     color: #d43f3a !important;
 }
-
+.nc-curation-content {
+    min-height: 20px;
+}
 .nc-curation-box a.btn {
     margin-right: 6px;
 }

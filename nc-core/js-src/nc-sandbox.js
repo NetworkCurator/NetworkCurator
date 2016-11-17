@@ -378,6 +378,76 @@ nc.sandbox.downloadJSON = function() {
 
 
 /* ====================================================================================
+ * network specific makealive functions
+ * ==================================================================================== */
+
+/**
+ * makealive conversion function. 
+ * 
+ * Validates ontology, node, link structure in input object x.
+ * Generates output as validation messages a file to download
+ * 
+ * It is helpful in combination with the sandbox capabilities so that
+ * users can copy/paste data into text boxes and then download files that are ready
+ * for upload.
+ * 
+ */
+makealive.lib.nodeneighbors = function(obj, x) {
+    
+    // define accepted arguments (network related)
+    var xargs = [
+    makealive.defArg("network", "string", "Network name", null), 
+    makealive.defArg("target", "string", "Node title", null),    
+    makealive.defArg("linkclass", "string", "Class of link", null)    
+    ];
+    
+    // get options for venn diagram
+    var vennargs = makealive.lib.venn01(null, x);    
+    vennargs = vennargs.filter(function(x) {
+        return x.name!="A" && x.name!="B" && x.name!="title" && x.name!="names";
+    });
+    
+    // merge the two types of arguments
+    xargs = xargs.concat(vennargs);
+        
+    // provide info on arguments
+    if (obj===null) return xargs;    
+    
+    // check required arguments, check/fill optional arguments
+    makealive.checkArgs(x, xargs);                      
+            
+    // ***********************************************************************
+    // done prep, start processing data
+    
+    // send request for nearest neighbors
+    $.post(nc.api, 
+    {
+        controller: "NCGraphs", 
+        action: "getNeighbors",        
+        network: x.network,
+        target: x.target,
+        linkclass: x.linkclass        
+    }, function(data) {                
+        data = JSON.parse(data);
+        if (nc.utils.checkAPIresult(data)) {
+            if (data['success']==true) {                
+                // create an object for the venn02 sandbox                
+                x.title = "Neighbors of "+x.target+ " vs. [custom set]";
+                x.names = [x.target, "custom set"];
+                x.A = data['data'];                
+                makealive.lib.venn02(obj, x);                
+            } else {
+                // here?                
+                throw "Error: "+data['errormsg'];
+            }
+        }                             
+    }
+    );    
+
+}
+
+
+/* ====================================================================================
  * On page load, activate sandbox converter listener
  * ==================================================================================== */
 

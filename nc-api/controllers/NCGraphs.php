@@ -138,8 +138,8 @@ class NCGraphs extends NCOntology {
      * id of deprecated node
      * 
      */
-    public function removeNode() {      
-        $params = $this->subsetArray($this->_params, ["name"]);      
+    public function removeNode() {
+        $params = $this->subsetArray($this->_params, ["name"]);
         return $this->toggleNode($params['name'], NC_DEPRECATED);
     }
 
@@ -286,7 +286,7 @@ class NCGraphs extends NCOntology {
      * id of deprecated link
      * 
      */
-    public function removeLink() {        
+    public function removeLink() {
         $params = $this->subsetArray($this->_params, ["name"]);
         return $this->toggleLink($params['name'], NC_DEPRECATED);
     }
@@ -299,7 +299,7 @@ class NCGraphs extends NCOntology {
      * id of deprecated link
      * 
      */
-    public function activateLink() {        
+    public function activateLink() {
         $params = $this->subsetArray($this->_params, ["name"]);
         return $this->toggleLink($params['name'], NC_ACTIVE);
     }
@@ -433,6 +433,55 @@ class NCGraphs extends NCOntology {
             }
         }
         return $result;
+    }
+
+    /**
+     * Fetch nodes that are immediate neighbors of a given node
+     * 
+     * @return array
+     * 
+     */
+    public function getNeighbors() {
+
+        //return json_encode($this->_params);
+        $params = $this->subsetArray($this->_params, ["target", "linkclass"]);
+
+        // get ids for the target node and for the link type
+        $nodeid = $this->getNameAnnoRootId($this->_netid, $params['target']);
+        $linkclassid = $this->getNameAnnoRootId($this->_netid, $params['linkclass']);
+        $nodeid = $nodeid['root_id'];
+        $linkclassid = $linkclassid['root_id'];
+
+        // build query fetching node ids connected to target node
+        $tl = "" . NC_TABLE_LINKS;
+        $tat = "" . NC_TABLE_ANNOTEXT;
+
+        $neighbors = array();
+
+        // prep parts of a sql statement
+        $sqlbase = "SELECT anno_text AS name                       
+            FROM $tl JOIN $tat ON $tl.network_id = $tat.network_id ";
+        $sqlwhere = " WHERE $tl.network_id = ?                       
+                      AND $tl.link_status = " . NC_ACTIVE . "
+                      AND $tat.anno_type = " . NC_NAME . "                      
+                      AND $tat.anno_status = " . NC_ACTIVE . "                       
+                      AND $tl.class_id = ?";
+
+        // fetch neighbors when params[target] is the source_id
+        $sql = $sqlbase . " AND $tl.target_id = $tat.root_id " . $sqlwhere . " AND $tl.source_id = ? ";
+        $stmt = $this->qPE($sql, [$this->_netid, $linkclassid, $nodeid]);
+        while ($row = $stmt->fetch()) {            
+            $neighbors[] = $row['name'];
+        }       
+
+        // fetch neighbors when params[target] is the target
+        $sql = $sqlbase . " AND $tl.source_id = $tat.root_id " . $sqlwhere . " AND $tl.target_id = ? ";
+        $stmt = $this->qPE($sql, [$this->_netid, $linkclassid, $nodeid]);
+        while ($row = $stmt->fetch()) {
+            $neighbors[] = $row['name'];
+        }
+
+        return $neighbors;
     }
 
 }
