@@ -3,8 +3,11 @@
 
 ## script to pull an update and build local js and css
 
+echo ""
 echo "Updating NetworkCurator core"
 git pull
+
+echo ""
 echo "Updating NetworkCurator user interface"
 cd nc-ui
 git pull
@@ -13,6 +16,8 @@ cd ..
 
 
 ## build dist js
+echo ""
+echo "Building javascript and css files"
 cd nc-core
 rm -fr js
 mkdir js
@@ -32,4 +37,5 @@ mkdir css
 cat css-src/nc-core.css > css/nc-core.css
 
 
+echo ""
 echo "Done"
