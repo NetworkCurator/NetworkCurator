@@ -172,11 +172,13 @@ nc.utils.mdconverter = new showdown.Converter({
 // allowed tags for sanitize-html
 // compare to sanitize-html default, adds svg tags
 nc.utils.allowedTags = ['h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 
-    'p', 'a', 'ul', 'ol',
+    'p', 'a', 'ul', 'ol', 'sub', 'sup',
     'nl', 'li', 'b', 'i', 'strong', 'em', 'strike', 'code', 'hr', 'br', 'div',
     'table', 'thead', 'caption', 'tbody', 'tr', 'th', 'td', 'pre',   
     'g', 'circle', 'rect', 'line', 'path', 'polyline', 'ellipse', 'polygon', 'marker'];
 nc.utils.allowedAttributes= {
+    a: ['href'],
+    table: ['class'],
     code: ['class'],
     style: ['type'],
     g: ['id', 'transform'],
@@ -202,7 +204,7 @@ nc.utils.sanitize =function(x, allowstyle) {
     var oktags = nc.utils.allowedTags.slice(0);
     if (allowstyle) {
         oktags.push('style');
-    }   
+    }       
     //alert("A: "+JSON.stringify(oktags)+" ++++ "+JSON.stringify(nc.utils.allowedAttributes));
     return sanitizeHtml(x, {
         allowedTags: oktags,
