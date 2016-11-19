@@ -438,19 +438,29 @@ class NCGraphs extends NCOntology {
     /**
      * Fetch nodes that are immediate neighbors of a given node
      * 
+     * accepted parameters are target (node name) and linkclass (ontology class name of 
+     * connecting link)
+     * 
+     * link class names can be separated by commas
+     * 
      * @return array
      * 
      */
     public function getNeighbors() {
+        
+        $params = $this->subsetArray($this->_params, ["query", "linkclass"]);
 
-        //return json_encode($this->_params);
-        $params = $this->subsetArray($this->_params, ["target", "linkclass"]);
+        // get ids for the query node 
+        $queryid = $this->getNameAnnoRootId($this->_netid, $params['query']);
+        $queryid = $queryid['root_id'];
 
-        // get ids for the target node and for the link type
-        $nodeid = $this->getNameAnnoRootId($this->_netid, $params['target']);
-        $linkclassid = $this->getNameAnnoRootId($this->_netid, $params['linkclass']);
-        $nodeid = $nodeid['root_id'];
-        $linkclassid = $linkclassid['root_id'];
+        // get ids for the link types (can be array of types separated by commas)
+        $linkclassa = explode(",", $params['linkclass']);
+        $linkclassid = [];
+        for ($i = 0; $i < sizeof($linkclassa); $i++) {
+            $temp = $this->getNameAnnoRootId($this->_netid, $linkclassa[$i]);
+            $linkclassid[] = $temp['root_id'];
+        }
 
         // build query fetching node ids connected to target node
         $tl = "" . NC_TABLE_LINKS;
@@ -458,25 +468,38 @@ class NCGraphs extends NCOntology {
 
         $neighbors = array();
 
-        // prep parts of a sql statement
+        // prep parts of a sql statement (fetching node names that are adjacent to the query)
         $sqlbase = "SELECT anno_text AS name                       
             FROM $tl JOIN $tat ON $tl.network_id = $tat.network_id ";
-        $sqlwhere = " WHERE $tl.network_id = ?                       
+        $sqlwhere = " WHERE $tl.network_id = :network_id                       
                       AND $tl.link_status = " . NC_ACTIVE . "
                       AND $tat.anno_type = " . NC_NAME . "                      
-                      AND $tat.anno_status = " . NC_ACTIVE . "                       
-                      AND $tl.class_id = ?";
-
-        // fetch neighbors when params[target] is the source_id
-        $sql = $sqlbase . " AND $tl.target_id = $tat.root_id " . $sqlwhere . " AND $tl.source_id = ? ";
-        $stmt = $this->qPE($sql, [$this->_netid, $linkclassid, $nodeid]);
-        while ($row = $stmt->fetch()) {            
+                      AND $tat.anno_status = " . NC_ACTIVE . "";
+        $sqlclass = "AND (";
+        for ($i = 0; $i < sizeof($linkclassid); $i++) {
+            if ($i>0) {
+                $sqlclass .= " OR ";
+            }
+            $sqlclass.= " $tl.class_id = :class_$i ";
+        }
+        $sqlclass .= ");";
+        
+        // preparey array for the sql PDO query
+        $pt = ['network_id'=>$this->_netid, 'query_id'=>$queryid];
+        for ($i = 0; $i<sizeof($linkclassid); $i++) {
+            $pt["class_$i"] = $linkclassid[$i];
+        }
+        
+        // fetch neighbors when params[query] is the source_id
+        $sql = $sqlbase . " AND $tl.target_id = $tat.root_id " . $sqlwhere . " AND $tl.source_id = :query_id ".$sqlclass;                               
+        $stmt = $this->qPE($sql, $pt);
+        while ($row = $stmt->fetch()) {
             $neighbors[] = $row['name'];
-        }       
-
-        // fetch neighbors when params[target] is the target
-        $sql = $sqlbase . " AND $tl.source_id = $tat.root_id " . $sqlwhere . " AND $tl.target_id = ? ";
-        $stmt = $this->qPE($sql, [$this->_netid, $linkclassid, $nodeid]);
+        }        
+        
+        // fetch neighbors when params[query] is the target
+        $sql = $sqlbase . " AND $tl.source_id = $tat.root_id " . $sqlwhere . " AND $tl.target_id = :query_id ".$sqlclass;
+        $stmt = $this->qPE($sql, $pt);
         while ($row = $stmt->fetch()) {
             $neighbors[] = $row['name'];
         }

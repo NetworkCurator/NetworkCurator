@@ -397,11 +397,11 @@ makealive.lib.nodeneighbors = function(obj, x) {
     // define accepted arguments (network related)
     var xargs = [
     makealive.defArg("network", "string", "Network name", null), 
-    makealive.defArg("target", "string", "Node title", null),    
+    makealive.defArg("query", "string", "Node title", null),    
     makealive.defArg("linkclass", "string", "Class of link", null)    
     ];
     
-    // get options for venn diagram
+    // get options for venn diagram, then remove some
     var vennargs = makealive.lib.venn01(null, x);    
     vennargs = vennargs.filter(function(x) {
         return x.name!="A" && x.name!="B" && x.name!="title" && x.name!="names";
@@ -415,29 +415,32 @@ makealive.lib.nodeneighbors = function(obj, x) {
     
     // check required arguments, check/fill optional arguments
     makealive.checkArgs(x, xargs);                      
-            
-    // ***********************************************************************
-    // done prep, start processing data
     
-    // send request for nearest neighbors
+    // do some basic manual checking (avoids sending obviously bad requests to server)
+    if (nc.utils.checkString(x.network, 1)+nc.utils.checkString(x.query, 1)<2) {        
+        throw "Invalid network or query name";                
+    } 
+    
+    // ***********************************************************************
+    // done prep, create chart
+        
+    // send request for nearest neighbors. When complete, draw a venn02 makealive chart
     $.post(nc.api, 
     {
         controller: "NCGraphs", 
         action: "getNeighbors",        
         network: x.network,
-        target: x.target,
+        query: x.query,
         linkclass: x.linkclass        
-    }, function(data) {                
+    }, function(data) {            
         data = JSON.parse(data);
         if (nc.utils.checkAPIresult(data)) {
-            if (data['success']==true) {                
-                // create an object for the venn02 sandbox                
-                x.title = "Neighbors of "+x.target+ " vs. [custom set]";
-                x.names = [x.target, "custom set"];
+            if (data['success']==true) {                                
+                x.title = "Neighbors of "+x.query+ " vs. [custom set]";
+                x.names = [x.query, "custom set"];
                 x.A = data['data'];                
                 makealive.lib.venn02(obj, x);                
-            } else {
-                // here?                
+            } else {                              
                 throw "Error: "+data['errormsg'];
             }
         }                             
