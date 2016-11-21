@@ -29,6 +29,7 @@ cat js-src/nc-core.js js-src/nc-utils.js \
     js-src/nc-sandbox.js \
     js-src/nc-ui.js \
     js-src/nc-users.js \
+    js-src/nc-history.js \
       > js/networkcurator.js
 
 ## build dist css

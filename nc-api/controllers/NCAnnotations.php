@@ -53,7 +53,7 @@ class NCAnnotations extends NCLogger {
 
         // check that required parameters are defined
         $params = $this->subsetArray($this->_params, ["anno_id", "anno_text"]);
-        
+
         // check if user has permission to view the table        
         if ($this->_uperm < NC_PERM_COMMENT) {
             throw new Exception("Insufficient permission to edit annotation");
@@ -78,7 +78,7 @@ class NCAnnotations extends NCLogger {
 
         // if reached here, edit the annotation              
         $this->batchUpdateAnno([array_merge($params, $result)]);
-        
+
         // log the action       
         $this->logActivity($this->_uid, $this->_netid, "updated annotation text for", $params['anno_id'], $params['anno_text']);
 
@@ -177,27 +177,52 @@ class NCAnnotations extends NCLogger {
      * 
      */
     public function getSummary() {
-        
+
         // check that required parameters are defined
-        $params = $this->subsetArray($this->_params, array_merge(["root_id"], 
-            array_keys($this->_annotypes)));            
+        $params = $this->subsetArray($this->_params, array_merge(["root_id"], array_keys($this->_annotypes)));
 
         // start by getting the full summary data
         $result = $this->getFullSummaryFromRootId($this->_netid, $params['root_id'], true);
-        
+
         // unset some of the items if they are not required
         foreach (array_keys($this->_annotypes) as $key) {
-            if ($params[$key]!=1) {
+            if ($params[$key] != 1) {
                 unset($result[$key]);
             } else {
                 $result[$key] = $this->subsetArray($result[$key], ['owner_id', 'anno_id', 'anno_text']);
             }
         }
-        
+
         // send the data back
-        return $result;        
+        return $result;
     }
-    
+
+    /**
+     * @return array
+     * 
+     * This requires params to specify a root_id for the annotation.
+     * 
+     * @return
+     * 
+     * array with all versions of the annotation
+     * 
+     */
+    public function getHistory() {
+
+        $params = $this->subsetArray($this->_params, ["anno_id"]);
+        
+        // fetch the annotation text from db
+        $sql = "SELECT datetime, modified, user_id, anno_text 
+                  FROM " . NC_TABLE_ANNOTEXT . "
+                  WHERE network_id = ? and anno_id = ? ORDER BY modified DESC";
+        $stmt = $this->qPE($sql, [$this->_netid, $params['anno_id']]);
+        $result = [];
+        while ($row = $stmt->fetch()) {
+            $result[] = $row;
+        }
+                
+        return $result;
+    }
 }
 
 ?>

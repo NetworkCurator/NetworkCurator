@@ -36,8 +36,8 @@ nc.graph.settings.inactive = false;
 nc.graph.settings.namesize = 12;
 // for tuning the force simulation
 nc.graph.settings.forcesim = true;
-nc.graph.settings.linklength = 45;
-nc.graph.settings.strength = -30;
+nc.graph.settings.linklength = 60;
+nc.graph.settings.strength = -90;
 nc.graph.settings.vdecay = 0.5;
 // for navigation within a small neighborhood in the graph 
 nc.graph.settings.local = true;
@@ -235,14 +235,14 @@ nc.graph.initInterface = function() {
     });
     
     // for details box, add buttons for "read more" and to "activate/inactivate"
-    var detailsdiv = $('#nc-graph-details');
+    var detailsabstract = $('#nc-graph-details-abstract');
     var readbutton = '<a class="btn btn-default btn-sm" href="#" id="nc-graph-details-more">Read more</a>'      
-    detailsdiv.append(readbutton);
     if (nc.curator) {        
         var togglebutton = '<a class="btn btn-danger btn-sm nc-btn-mh" id="nc-graph-details-remove">Remove</a>';  
-        detailsdiv.append(togglebutton);
+        detailsabstract.after(togglebutton);
     }
-        
+    detailsabstract.after(readbutton);
+            
 }
 
 
@@ -274,6 +274,12 @@ nc.graph.makeIconToolbar = function() {
     });    
     obj.find('.glyphicon-resize-small').hide().click(function() {        
         nc.graph.toggleWideScreen(false);        
+    });
+    obj.find('.glyphicon-play').hide().click(function() {        
+        nc.graph.toggleSimulation(true);        
+    });
+    obj.find('.glyphicon-pause').click(function() {        
+        nc.graph.toggleSimulation(false);        
     });
     
     return obj;
@@ -336,21 +342,8 @@ nc.graph.makeSettingsBtn = function() {
             // changing the view size does not require restart of the sim
             nc.graph.toggleWideScreen(newval);            
         } else if (nowsetting=="forcesim") {  
-            // fixing the layout does not require restart of the sim
-            if (newval) {                                
-                for (var i=0; i<nc.graph.rawnodes.length; i++) {
-                    nownode = nc.graph.rawnodes[i];
-                    nownode.fx=null;
-                    nownode.fy=null;
-                }
-                nc.graph.simUnpause();
-            } else {                
-                for (var i=0; i<nc.graph.rawnodes.length; i++) {
-                    var nownode = nc.graph.rawnodes[i];
-                    nownode.fx=nownode.x;
-                    nownode.fy=nownode.y;
-                }
-            }
+            // toggling the simulation on/off
+            nc.graph.toggleSimulation(newval);                        
         } else {        
             // for other, just remake the simulation
             nc.graph.initSimulation();            
@@ -378,6 +371,36 @@ nc.graph.toggleWideScreen = function(gowide) {
         iconset.find('.glyphicon-resize-small').hide();                
     }    
 }
+
+
+/**
+ * Toggle simulation on/off
+ * 
+ * @param onsim - logical, set true to make the simulation go on, false to pause
+ */
+nc.graph.toggleSimulation = function(onsim) {
+    var iconset = $('.nc-svgtools');
+    // fixing the layout does not require restart of the sim
+    if (onsim) {                                
+        for (var i=0; i<nc.graph.rawnodes.length; i++) {
+            nownode = nc.graph.rawnodes[i];
+            nownode.fx=null;
+            nownode.fy=null;
+        }
+        nc.graph.simUnpause();
+        iconset.find('.glyphicon-pause').show();
+        iconset.find('.glyphicon-play').hide();
+    } else {                
+        for (var i=0; i<nc.graph.rawnodes.length; i++) {
+            var nownode = nc.graph.rawnodes[i];
+            nownode.fx=nownode.x;
+            nownode.fy=nownode.y;
+        }
+        iconset.find('.glyphicon-pause').hide();
+        iconset.find('.glyphicon-play').show();
+    }
+}
+
 
 /**
  * Helper function to initInterface() - creates a button with save options
@@ -686,10 +709,8 @@ nc.graph.displayInfo = function(d) {
     
     // get the details div and clear its content
     var detdiv = $('#'+prefix);
-    detdiv.find('.nc-md').html("Loading...");
-    detdiv.find('#'+prefix+'-more').click(function() {         
-        window.location.replace("?network="+nc.network+"&object="+d.id);        
-    } );
+    detdiv.find('.nc-md').html("Loading...");    
+    detdiv.find('#'+prefix+'-more').attr("href", "?network="+nc.network+"&object="+d.id);
     if (nc.curator) {
         var type = ("source" in d ? "Link" : "Node");  
         var removeactivate = (d.status<1 ? "Activate": "Remove");                

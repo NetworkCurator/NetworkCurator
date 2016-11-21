@@ -271,6 +271,15 @@ class NCApiCaller {
         $params['action'] = 'listUsers';                        
         return $this->_caller->sendRequest($params);
     }
+    
+    function getHistory($network, $target) {
+        $params = $this->_p;
+        $params['controller'] = 'NCAnnotations';        
+        $params['action'] = 'getHistory';                        
+        $params['network'] = $network;        
+        $params['anno_id'] = $target;                        
+        return $this->_caller->sendRequest($params);
+    }
 }
 
 ?>

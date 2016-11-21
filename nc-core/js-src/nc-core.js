@@ -82,6 +82,7 @@ nc.init.all = function() {
     nc.init.initComments();        
     nc.init.initOntology();    
     nc.init.initGraph();       
+    nc.init.initHistory();
     
     nc.ui.speed = speed;
 }
@@ -191,11 +192,14 @@ nc.init.initComments = function() {
         } else {       
             // populate the comments box with the new comment
             nc.ui.populateCommentsBox(data['data']);        
+            if (!nc.commentator) {
+                $('.nc-comment-response').hide();
+            }
         }
     });
-    
+        
     // for users allowed to generate comments, add a comment box    
-    if (!nc.commentator) {
+    if (!nc.commentator) {                
         return;
     }
     
@@ -215,16 +219,31 @@ nc.init.initCuration = function() {
     var box = nc.ui.AnnoEditBox();
     var alleditable = $('.nc-editable-text');    
     alleditable.html(box);    
+            
+    // add handler to show history button
+    $('.nc-history-toolbox').css("font-size", $('body').css("font-size"));   
+    var historybtn = $('#nc-history');    
+    var lockbtn = $('#nc-curation-lock');
+    historybtn.on("click",
+        function() {         
+            // while history editing, disable editing
+            lockbtn.toggle();
+            // make the history buttons visible
+            $('.nc-editable-text').toggleClass('nc-editable-text-history');
+            $('.nc-history-toolbox').toggle();            
+        });
     
     // for guests who only look, no need for any curation ui widgets or handlers
     if (!nc.commentator) return;
     
     // show curation level ui graphics, add an event to toggle curation on/off
     // this allows owners of comments to edit their own stuff
-    $('.nc-curator').show();    
-    var lockbtn = $('#nc-curation-lock');
+    $('.nc-curator').show();        
     lockbtn.on("click",
         function() {
+            // while editing, disable history previews
+            historybtn.toggle();
+            // adjust the edit/view buttons
             lockbtn.find('span.glyphicon-pencil, span.glyphicon-lock').toggleClass('glyphicon-pencil glyphicon-lock');
             lockbtn.toggleClass("nc-editing nc-looking"); 
             // for curators, all editable components become active,
@@ -281,6 +300,15 @@ nc.init.initNetwork = function() {
     if (!nc.curator) $('.nc-curator').hide();        
     if (!nc.editor) $('.nc-editor').hide();    
     if (!nc.commentator) $('.nc-commentator').hide();    
+}
+
+
+/**
+ * Initialize a history page
+ */
+nc.init.initHistory = function() {
+    if ($('#nc-history-timeline').length==0) return; 
+    nc.history.initHistory();    
 }
 
 

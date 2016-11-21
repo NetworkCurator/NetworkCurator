@@ -719,14 +719,19 @@ nc.ui.AnnoEditBox = function() {
         
     // write static html to define components of the toolbox
     var html = '<div class="nc-curation-box">';
+    html += '<div class="nc-history-toolbox" style="display: none">';
+    html += '<a role="button" class="nc-curation-toolbox-history pull-right">history</a>';
+    html += '</div>';    
     html += '<div class="nc-curation-toolbox" style="display: none">';
     html += '<a role="button" class="nc-curation-toolbox-md btn btn-sm btn-default nc-mw-sm" style="display: none">Edit</a>';
-    html += '<a role="button" class="nc-curation-toolbox-preview btn btn-sm btn-default nc-mw-sm">Preview</a>';    
+    html += '<a role="button" class="nc-curation-toolbox-preview btn btn-sm btn-default nc-mw-sm">Preview</a>';        
     html += '<a role="button" class="nc-curation-toolbox-close pull-right">close</a>';
-    html += '</div><div class="nc-curation-content"></div>';
+    html += '</div>';
+    html += '<div class="nc-curation-content"></div>';
     html += '<textarea class="nc-curation-content" style="display: none"></textarea>';
     html += '<a role="button" class="btn btn-sm btn-success nc-submit nc-mw-sm" style="display: none">Submit</a>';
-    html += '<a role="button" class="btn btn-sm btn-danger nc-remove nc-mw-sm" style="display: none">Remove</a></div>';    
+    html += '<a role="button" class="btn btn-sm btn-danger nc-remove nc-mw-sm" style="display: none">Remove</a>';
+    html += '</div>';    
         
     // create DOM objects, then add actions to the toolbox buttons
     var curabox = $(html);        
@@ -782,6 +787,11 @@ nc.ui.AnnoEditBox = function() {
             thiscurabox.find('.nc-curation-toolbox').show();                      
         }            
     });
+    // clicking the history button triggers the history page
+    curabox.find('.nc-curation-toolbox-history').on("click", function() {        
+        var objid = $(this).parent().parent().parent().attr("val");
+        window.location.replace("?network="+nc.network+"&history="+objid);        
+    })
    
     return curabox;
 }
@@ -940,7 +950,9 @@ nc.ui.createUsersTable = function(ulist, objname) {
 nc.ui.graphIconToolbar = function() {
     
     // determins which glyphicons to display in the toolbar
-    var iconset = ['record','zoom-in','zoom-out','picture','resize-full','resize-small'];
+    var iconset = ['record','zoom-in','zoom-out',
+    'play', 'pause',
+    'picture','resize-full','resize-small'];
     
     // create a vertical widget with one icon per line
     var html = '<div class="nc-svgtools"><div>';
@@ -988,4 +1000,25 @@ nc.ui.searchSpan = function(x, knownarray) {
     ok = (ok ? '': ' nc-search-unknown');
     var span = '<span class="nc-search-item'+ok+'">'+x+'<span class="glyphicon glyphicon-remove"></span></span>';        
     return $(span);
+}
+
+
+
+/* ====================================================================================
+* Widget for history timeline entry
+* ==================================================================================== */
+
+nc.ui.timelineEntry = function(x, v) {
+    
+    var nowtime=x.modified;
+    if (nowtime==null) {
+        nowtime = x.datetime;
+    }
+
+    var html = '<div class="nc-timeline-entry" val="'+v+'">';
+    html += '<span class="nc-comment-date">'+x.datetime+'</span>';   
+    html += '<span class="nc-comment-user">'+x.user_id+'</span>';        
+    html += '</div>';
+
+    return $(html);
 }

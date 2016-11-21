@@ -127,9 +127,9 @@ a {
 /*
  * definitions defining editable elements
 */
-.nc-editable-text-visible {
-    background-color: #f2f2f2;
-    border: 1px dashed #bbbbbb;
+.nc-editable-text-visible, .nc-editable-text-history {
+    background-color: #f5f5f5;
+    border: 1px dashed #666;
     margin: -7px -7px; 
     padding: 6px 6px;
 }
@@ -146,6 +146,9 @@ textarea.nc-curation-content {
     width: 100%;
     border-radius: 4px !important;
 } 
+.nc-curation-toolbox-history {
+    padding-left: 8px;
+}
 
 
 /* ------------------------------------------------------------------------------------
@@ -155,19 +158,23 @@ textarea.nc-curation-content {
 .nc-navbar { 
     min-height:32px; 
 }
+.nc-navbar .navbar-brand, .nc-navbar .navbar-text {
+    line-height: 32px; 
+    color: #555;
+}
 .nc-navbar .navbar-brand { 
     padding: 0px 15px; 
     font-size: inherit;
-    height: 32px;
-    line-height: 32px; }
+    height: 32px;        
+}
 .nc-navbar .navbar-nav > li > a {  
     padding: 0px 15px;
-    line-height: 32px; 
+    line-height: 32px;
+    color: #555;
 }
 .nc-navbar .navbar-text { 
     padding: 0px 15px 0px 0px;
-    margin: 0px 15px;
-    line-height: 32px; 
+    margin: 0px 15px;    
 }
 .nc-navbar2 .container {
     padding-left: 0px !important;
@@ -265,6 +272,9 @@ svg {
     overflow: hidden;
     height: 480px;
     margin-bottom: 1em;
+}
+#nc-graph-svg-container span {
+    margin-left: 15px;
 }
 .nc-svgtools { 
     float: left;
@@ -662,6 +672,10 @@ span.info {
     border-radius: 2px;
     display: inline-block;
 }
+#nc-object-content, #nc-network-content {
+    margin-bottom: 2em;
+}
+
 
 /* ------------------------------------------------------------------------------------
  * Tables 
@@ -770,4 +784,24 @@ div.makealive {
     overflow: visible;            
 }
 
+/* ------------------------------------------------------------------------------------
+ * History
+ * ------------------------------------------------------------------------------------ */
 
+.nc-timeline-entry {
+    background-color: #bbb;
+    padding: 10px 14px;
+    margin-bottom: 10px;    
+    cursor: pointer;
+}
+.nc-timeline-entry:hover {
+    border: solid 1px #333;    
+    margin: -1px -1px 9px -1px;
+}
+.nc-timeline-entry span {
+    color: #f8f8f8;
+    padding-right: 6px;
+}
+.nc-timeline-active {
+    background-color: #dbb;
+}
