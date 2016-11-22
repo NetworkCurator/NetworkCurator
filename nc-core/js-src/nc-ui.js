@@ -655,7 +655,7 @@ nc.ui.DropdownGraphSettings = function() {
     html += '<tr><td><span>Label size</span></td><td><input val="namesize" type="text"></td><td><span class="info">(pt)</span></td></tr>';    
 
     html += '<tr><th colspan="3">Layout</th></tr>';
-    html += '<tr><td><span>Force layout</span></td><td><input val="forcesim" type="checkbox"></td><td></td></tr>';
+    //html += '<tr><td><span>Force layout</span></td><td><input val="forcesim" type="checkbox"></td><td></td></tr>';
     html += '<tr><td><span>Link length</span></td><td><input type="text" val="linklength"></td><td><span class="info">(au, e.g. [20,100])</span></td></tr>';
     html += '<tr><td><span>Node strength</span></td><td><input type="text" val="strength"></td><td><span class="info">(au, e.g [-100, -20]</span></td></tr>';
     html += '<tr><td><span>Velocity decay</span></td><td><input type="text" val="vdecay"></td><td><span class="info">(au, [0,1])</span></td></tr>';
@@ -871,8 +871,7 @@ nc.ui.CommentBox = function(uid, rootid, parentid, annoid, annomd) {
 * @param comdata array with elements datetime, modified, owner_id, root_id, parent_id,
 * anno_id, anno_text
 */
-nc.ui.addCommentBox = function(comdata) { //datetime, ownerid, rootid, parentid, annoid, annotext) {
-    
+nc.ui.addCommentBox = function(comdata) {     
     var cbox = $('#nc-comments');       
     var html = '<div class="nc-mb-5 nc-comment-head"><span class="nc-comment-date">'+comdata.datetime+'</span>';    
     html += '<span class="nc-comment-user">'+comdata.owner_id+'</span>';     
@@ -906,8 +905,11 @@ nc.ui.populateCommentsBox = function(commentarray) {
     $.each(commentarray, function(key, val){     
         var obj = val;
         obj.root_id = rootid;                
-        nc.ui.addCommentBox(val); 
+        nc.ui.addCommentBox(obj); 
     })
+    // the comments should already be visible but in some browser the contents
+    // are not fully ready, try to force render of the comments
+    $('#nc-comments').show();
 }
 
 
@@ -1015,10 +1017,15 @@ nc.ui.timelineEntry = function(x, v) {
         nowtime = x.datetime;
     }
 
-    var html = '<div class="nc-timeline-entry" val="'+v+'">';
-    html += '<span class="nc-comment-date">'+x.datetime+'</span>';   
-    html += '<span class="nc-comment-user">'+x.user_id+'</span>';        
-    html += '</div>';
+    //var html = '<div class="nc-timeline-entry" val="'+v+'">';
+    //html += '<span class="nc-comment-date">'+x.datetime+'</span>';   
+    //html += '<span class="nc-comment-user">'+x.user_id+'</span>';        
+    //html += '</div>';
 
+    var html = '<li class="list-group-item nc-timeline-entry" val="'+v+'">';
+    html += '<span class="nc-comment-date">'+x.datetime+'</span>';   
+    html += '<span class="nc-comment-user">'+x.user_id+'</span>';            
+    html += '</li>'
+    
     return $(html);
 }

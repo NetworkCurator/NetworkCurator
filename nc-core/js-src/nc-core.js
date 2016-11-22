@@ -192,8 +192,8 @@ nc.init.initComments = function() {
         } else {       
             // populate the comments box with the new comment
             nc.ui.populateCommentsBox(data['data']);        
-            if (!nc.commentator) {
-                $('.nc-comment-response').hide();
+            if (!nc.commentator) {                
+                $('a.nc-comment-response').hide();
             }
         }
     });
@@ -204,7 +204,7 @@ nc.init.initComments = function() {
     }
     
     var rootid = $('#nc-newcomment').attr('val');
-    $('#nc-newcomment').html(nc.ui.CommentBox(nc.userid, rootid, rootid, '', ''));
+    $('#nc-newcomment').html(nc.ui.CommentBox(nc.userid, rootid, rootid, '', ''));    
 }
 
 /**

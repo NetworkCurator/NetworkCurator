@@ -11,7 +11,7 @@ nc-core/build-makealive
 
 ## ignoring local installation details
 nc-admin/*/*local*
-
+*local*
 
 ## ignoring build files
 nc-core/js/*

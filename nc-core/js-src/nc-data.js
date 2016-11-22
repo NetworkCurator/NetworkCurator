@@ -17,7 +17,6 @@ nc.data = {};
  * Importing files
  * ==================================================================================== */
 
-
 /*
  * Invoked from the data import form 
  * Extracts values from the form and sends a data upload request to server
@@ -107,5 +106,49 @@ nc.data.sendData = function(filename, filedesc, fileurl, networkname) {
     };   
     reader.readAsText(fileurl);    
 
+}
 
+
+/* ====================================================================================
+ * Exporting files
+ * ==================================================================================== */
+
+
+
+/*
+ * request a data download from server
+ *  
+ *  
+ *    
+ */
+nc.data.exportData = function() {
+    
+    // get export type from the export form
+    var type = $('#nc-export-form input:radio:checked').val();    
+    var btn = $('#nc-export-form button[type="submit"]');
+
+    btn.toggleClass("btn-success btn-default disabled").html("Downloading data (please wait)");
+        
+    $.post(nc.api, 
+    {
+        controller: "NCData", 
+        action: "exportData", 
+        network: nc.network,
+        "export": type            
+    }, function(data) {  
+        //alert(data);
+        nc.utils.alert(data);        
+        data = JSON.parse(data);            
+        if (nc.utils.checkAPIresult(data)) {
+            if (data['success']==false) {
+            // handle failure
+            } else {                                        
+                $('#nc-export-response').html(data['data'].replace(/\n/g,"<br/>"));            
+            }             
+        } else {   
+            nc.msg('Hey!', 'Something went wrong with the export');                  
+        }                        
+        btn.toggleClass("btn-default disabled btn-success").html("Download");
+    }
+    );    
 }

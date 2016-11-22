@@ -2,7 +2,7 @@
 
 include_once "NCGraphs.php";
 include_once "NCOntology.php";
-include_once dirname(__FILE__)."/../helpers/NCTimer.php";
+include_once dirname(__FILE__) . "/../helpers/NCTimer.php";
 
 /**
  * Class handling requests for data import and export
@@ -38,7 +38,7 @@ class NCData extends NCGraphs {
      * @throws Exception
      */
     public function importData() {
-                        
+
         $timer = new NCTimer();
         $timer->recordTime("import start");
 
@@ -49,8 +49,8 @@ class NCData extends NCGraphs {
         if ($this->_uperm < NC_PERM_EDIT) {
             throw new Exception("Insufficient permissions " . $this->_uperm);
         }
-        
-        $filedata = json_decode($params['data'], true);                
+
+        $filedata = json_decode($params['data'], true);
         unset($params['data']);
 
         // check if the file data matches the requested network
@@ -66,7 +66,7 @@ class NCData extends NCGraphs {
 
         // save the data onto disk
         $this->importJSON($filedata, $params);
-        
+
         $this->dblock([NC_TABLE_FILES, NC_TABLE_NODES, NC_TABLE_LINKS,
             NC_TABLE_CLASSES, NC_TABLE_ANNOTEXT, NC_TABLE_ACTIVITY,
             NC_TABLE_ANNOTEXT . " AS nodenameT", NC_TABLE_ANNOTEXT . " AS classnameT",
@@ -142,7 +142,7 @@ class NCData extends NCGraphs {
      * 
      */
     private function importJSON($filedata, $params) {
-        
+
         $filestring = json_encode($filedata, JSON_PRETTY_PRINT);
         $this->dblock([NC_TABLE_FILES, NC_TABLE_ACTIVITY]);
 
@@ -166,9 +166,8 @@ class NCData extends NCGraphs {
         // log the upload
         $this->logActivity($this->_uid, $this->_netid, "uploaded data file", $params['file_name'], $params['file_desc']);
         $this->dbunlock();
-        
     }
-    
+
     /**
      * Helper function adjusts title, abstract, description of entire network
      * 
@@ -385,7 +384,7 @@ class NCData extends NCGraphs {
 
         // start a log with output messages
         $msgs = "";
-                
+
         // all nodes require a name, class_name, title, status
         $defaults = ["name" => '', "title" => '', "abstract" => '', "content" => '',
             "class" => '', "status" => 1];
@@ -575,6 +574,44 @@ class NCData extends NCGraphs {
         }
 
         return $msgs . " -- links: added " . count($newset) . " / updated " . $updatecount . " / skipped $numskipped\n";
+    }
+
+    /**
+     * Export data for a network, i.e. transfer info from database into a json object
+     * 
+     * @return boolean
+     * 
+     * @throws Exception
+     */
+    public function exportData() {
+
+        // check that required inputs are defined
+        $params = $this->subsetArray($this->_params, ["export"]);
+        $what = $params["export"];
+        
+        // create 
+        $result = array();
+        $result['network'] = array();
+        $result['ontology'] = array();
+                
+        $result['nodes'] = array();
+        $result['links'] = array();
+
+        if ($what=="network") {
+            return json_encode($result);
+        }
+
+        $result['users'] = array();
+        $result['comments'] = array();
+
+        if ($what=="comments") {
+            return json_encode($result);
+        }
+        
+        // for complete information, also include users, permissions, and comments
+        $result['history'] = array();
+        
+        return json_encode($result);
     }
 
 }

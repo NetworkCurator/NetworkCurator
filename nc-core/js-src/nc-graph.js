@@ -26,23 +26,26 @@ nc.graph = {
     sim: {}, // force simulation 
     svg: {}, // the svg div on the page  
     zoombehavior: {}, // d3 zoom behavior
-    mode: "select"
+    mode: "select"    
 };
 
 // set default values for display settings
-nc.graph.settings.tooltip = true;
-nc.graph.settings.wideview = false;
-nc.graph.settings.inactive = false;
-nc.graph.settings.namesize = 12;
-// for tuning the force simulation
-nc.graph.settings.forcesim = true;
-nc.graph.settings.linklength = 60;
-nc.graph.settings.strength = -90;
-nc.graph.settings.vdecay = 0.5;
-// for navigation within a small neighborhood in the graph 
-nc.graph.settings.local = true;
-nc.graph.settings.searchnodes = [];
-nc.graph.settings.neighborhood = 2;
+nc.graph.settings = {
+    // settings for user interface
+    tooltip: true,
+    wideview: false,
+    inactive: false,
+    namesize:  12,
+    // tuning of simulation
+    forcesim: true,
+    linklength: 60,
+    strength: -80,
+    vdecay: 0.5,
+    // navigation within a small neighborhood
+    local: true,
+    searchnodes: [],
+    neighborhood: 2
+}
 
 
 /* ====================================================================================
@@ -379,6 +382,7 @@ nc.graph.toggleWideScreen = function(gowide) {
  * @param onsim - logical, set true to make the simulation go on, false to pause
  */
 nc.graph.toggleSimulation = function(onsim) {
+    nc.graph.settings.forcesim = onsim;
     var iconset = $('.nc-svgtools');
     // fixing the layout does not require restart of the sim
     if (onsim) {                                
