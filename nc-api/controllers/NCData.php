@@ -589,13 +589,15 @@ class NCData extends NCGraphs {
         $params = $this->subsetArray($this->_params, ["export"]);
         $what = $params["export"];
 
-        // create 
+        // create blocks for network and ontology
         $result = array();
         $result['network'] = $this->exportNetworkBlock();
         $result['ontology'] = $this->exportNetworkOntology();
 
-        $result['nodes'] = array();
-        $result['links'] = array();
+        // create blocks for nodes and links (uses a dictionary)
+        $ontodictionary = $this->getOntologyDictionary();
+        $result['nodes'] = $this->exportNodes($ontodictionary);
+        $result['links'] = $this->exportLinks($ontodictionary, $result['nodes']);
 
         if ($what == "network") {
             return json_encode($result);
@@ -648,6 +650,7 @@ class NCData extends NCGraphs {
             foreach (['connector', 'directional', 'status'] as $detailtype) {
                 $temp[$detailtype] = $val[$detailtype];
             }
+            $temp['class_id'] = $key;
             $result[] = $temp;
         }
         return $result;
@@ -655,6 +658,8 @@ class NCData extends NCGraphs {
 
     /**
      * Helper to exportData
+     * 
+     * Possible problem: this does not indicate the ontology hierarchy
      * 
      * @return array
      * 
@@ -664,14 +669,69 @@ class NCData extends NCGraphs {
     private function exportNetworkOntology() {
         // fetch the node and link ontologies separately
         $this->_params['ontology'] = "nodes";
-        $nodeonto = $this->getNodeOntology(false, true);
+        $nodeonto = $this->getNodeOntology(true, true);
         $this->_params['ontology'] = "links";
-        $linkonto = $this->getLinkOntology(false, true);
+        $linkonto = $this->getLinkOntology(true, true);
 
-        // transfer consise description into fullonto
+        // merge node and link ontologies
         return array_merge($this->exportOntoFormatter($nodeonto), $this->exportOntoFormatter($linkonto));
     }
 
+    /**
+     * Helper to exportData, produces array with all node or link data
+     * 
+     * @param $what
+     * 
+     * string - either "nodes" or "links"
+     * 
+     * @param $ontodictionary
+     * array with ontology (used to convert between class_id into class (name)
+     * 
+     * @return array - a block for network definition for "nodes"
+     * 
+     */
+    private function exportNodes($ontodictionary) {
+        // fetch the name, title, abstract, content fields        
+        $objects = $this->getAllNodesExtended();
+        // fill in the class name using the diciontary
+        foreach ($objects as $key => $val) {
+            $objects[$key]['class'] = $ontodictionary[$val['class_id']];
+        }
+        return $objects;
+    }
+
+    
+    /**
+     * Helper to exportData, produces array with all node or link data
+     * 
+     * @param $ontodictionary
+     * array with ontology (used to convert between class_id into class (name)
+     * 
+     * @param $nodedefs
+     * 
+     * output from exportNodes
+     * 
+     * @return array - a block for network definition for "nodes"
+     * 
+     */
+    private function exportLinks($ontodictionary, $nodedefs) {
+        // fetch the name, title, abstract, content fields        
+        $objects = $this->getAllLinksExtended();        
+        // turn the nodedefs into a dictionary
+        $nodedictionary = array();
+        foreach ($nodedefs as $key=>$val) {
+            $nodedictionary[$val['id']] = $val['name'];
+        }                
+        // fill in the class name using the diciontary
+        // and source_id and target_id names using nodedefs
+        foreach ($objects as $key => $val) {
+            $objects[$key]['class'] = $ontodictionary[$val['class_id']];
+            $objects[$key]['source'] = $nodedictionary[$val['source_id']];
+            $objects[$key]['target'] = $nodedictionary[$val['target_id']];            
+        }
+        return $objects;
+    }
+    
 }
 
 ?>

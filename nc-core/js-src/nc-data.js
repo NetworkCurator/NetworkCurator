@@ -135,8 +135,7 @@ nc.data.exportData = function() {
         action: "exportData", 
         network: nc.network,
         "export": type            
-    }, function(data) {  
-        alert(data);
+    }, function(data) {          
         nc.utils.alert(data);        
         data = JSON.parse(data);                    
         if (nc.utils.checkAPIresult(data)) {

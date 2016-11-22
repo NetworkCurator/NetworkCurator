@@ -347,16 +347,72 @@ class NCGraphs extends NCOntology {
     }
 
     /**
-     * Fetch all nodes associated with a network
+     * Helper function creates a bit of sql code used in getAllNodesExtended and getAllLinksExtended
+     */
+    private function getGetExtendedHelpers() {
+
+        // column names
+        $tac = "anno_type";
+        $tat = "anno_text";
+        // build helper sql bits first in array
+        $sqlcase = [];
+        $sqlgroup = [];
+        $carray = $this->_annotypes;
+        $atypes = array_keys($carray);
+        foreach ($atypes AS $what) {
+            $sqlcase[] = "(CASE WHEN $tac = $carray[$what] THEN $tat ELSE '' END) AS $what";
+            $sqlgroup[] = "GROUP_CONCAT($what SEPARATOR '') AS " . $what . "";
+        }
+        $sqlcase = implode(", ", $sqlcase);
+        $sqlgroup = implode(", ", $sqlgroup);
+
+        return ['case' => $sqlcase, 'group' => $sqlgroup];
+    }
+
+    /**
+     * Fetch all nodes associated with a network, with name, title, abstract, content
      * 
-     * Provides node ids, node names, and class names
+     * (In contrast to getAllNodes, this does not provide class names)
+     * (It is a separate function as it uses a different database query strategy)
      * 
      * @param boolean $namekeys
      * 
      * when true, the output is indexed by the node name (Nxxxxxx)
      * when false, there are not named indexes 
-     * 
+     *      
      * @return array
+     */
+    protected function getAllNodesExtended() {
+
+        $tn = "" . NC_TABLE_NODES;
+        $ta = "" . NC_TABLE_ANNOTEXT;
+
+        // get sql helper bits
+        $sqlhelper = $this->getGetExtendedHelpers();
+
+        $innersql = "SELECT node_id AS id, $tn.class_id AS class_id, 
+                       anno_text, anno_type, node_status AS status, " . $sqlhelper['case'] . "
+            FROM $tn JOIN $ta 
+                        ON $tn.network_id = $ta.network_id AND
+                        $tn.node_id = $ta.root_id                     
+                  WHERE $tn.network_id = ?                          
+                      AND $ta.anno_type <= " . NC_CONTENT . "
+                      AND $ta.anno_status = " . NC_ACTIVE . "                       
+                  GROUP BY $ta.root_id, $ta.anno_type";
+        $sql = "SELECT id, class_id, status, " . $sqlhelper['group'] . " FROM ($innersql) AS T GROUP BY id ";
+        $stmt = $this->qPE($sql, [$this->_netid]);
+        $result = array();
+        while ($row = $stmt->fetch()) {
+            $result[] = $row;
+        }
+        return $result;
+    }
+
+    /**
+     * This is the original version that is working
+     * 
+     * @param type $namekeys
+     * @return type
      */
     public function getAllNodes($namekeys = false) {
 
@@ -393,15 +449,61 @@ class NCGraphs extends NCOntology {
     }
 
     /**
+     * Fetch all links associated with a network, with name, title, abstract, content.
+     * Analogous to getAllNodesExtended
+     * 
+     * (In contrast to getAllLinks, this does not provide class names)
+     * (It is a separate function as it uses a different database query strategy)
+     * 
+     * @param boolean $namekeys
+     * 
+     * when true, the output is indexed by the node name (Nxxxxxx)
+     * when false, there are not named indexes 
+     *      
+     * @return array
+     */
+    protected function getAllLinksExtended() {
+
+        $tl = "" . NC_TABLE_LINKS;
+        $ta = "" . NC_TABLE_ANNOTEXT;
+
+        // get sql helper bits
+        $sqlhelper = $this->getGetExtendedHelpers();
+
+        $innersql = "SELECT link_id AS id, $tl.class_id AS class_id, source_id, target_id, 
+                       anno_text, anno_type, link_status AS status, " . $sqlhelper['case'] . "
+            FROM $tl JOIN $ta 
+                        ON $tl.network_id = $ta.network_id AND
+                        $tl.link_id = $ta.root_id                     
+                  WHERE $tl.network_id = ?                          
+                      AND $ta.anno_type <= " . NC_CONTENT . "
+                      AND $ta.anno_status = " . NC_ACTIVE . "                       
+                  GROUP BY $ta.root_id, $ta.anno_type";
+        $sql = "SELECT id, class_id, status, source_id, target_id, "
+                . $sqlhelper['group'] . " FROM ($innersql) AS T GROUP BY id ";
+        $stmt = $this->qPE($sql, [$this->_netid]);
+        $result = array();
+        while ($row = $stmt->fetch()) {
+            $result[] = $row;
+        }
+        return $result;
+    }
+
+    /**
      * Fetch all links associated with a network
      * 
      * Provides link ids, linkages, and link names, and class names
      *
      * @param boolean namekeys
+     *
+     * @param boolean $fulldetail
+     * 
+     * when true, the output contains name, title, abstract, content
+     * when false, the output contains only name and title
      * 
      * @return array
      */
-    public function getAllLinks($namekeys = false) {
+    public function getAllLinks($namekeys = false, $fulldetail = false) {
 
         $tl = "" . NC_TABLE_LINKS;
         $tat = "" . NC_TABLE_ANNOTEXT;
@@ -447,7 +549,7 @@ class NCGraphs extends NCOntology {
      * 
      */
     public function getNeighbors() {
-        
+
         $params = $this->subsetArray($this->_params, ["query", "linkclass"]);
 
         // get ids for the query node 
@@ -477,28 +579,28 @@ class NCGraphs extends NCOntology {
                       AND $tat.anno_status = " . NC_ACTIVE . "";
         $sqlclass = "AND (";
         for ($i = 0; $i < sizeof($linkclassid); $i++) {
-            if ($i>0) {
+            if ($i > 0) {
                 $sqlclass .= " OR ";
             }
             $sqlclass.= " $tl.class_id = :class_$i ";
         }
         $sqlclass .= ");";
-        
+
         // preparey array for the sql PDO query
-        $pt = ['network_id'=>$this->_netid, 'query_id'=>$queryid];
-        for ($i = 0; $i<sizeof($linkclassid); $i++) {
+        $pt = ['network_id' => $this->_netid, 'query_id' => $queryid];
+        for ($i = 0; $i < sizeof($linkclassid); $i++) {
             $pt["class_$i"] = $linkclassid[$i];
         }
-        
+
         // fetch neighbors when params[query] is the source_id
-        $sql = $sqlbase . " AND $tl.target_id = $tat.root_id " . $sqlwhere . " AND $tl.source_id = :query_id ".$sqlclass;                               
+        $sql = $sqlbase . " AND $tl.target_id = $tat.root_id " . $sqlwhere . " AND $tl.source_id = :query_id " . $sqlclass;
         $stmt = $this->qPE($sql, $pt);
         while ($row = $stmt->fetch()) {
             $neighbors[] = $row['name'];
-        }        
-        
+        }
+
         // fetch neighbors when params[query] is the target
-        $sql = $sqlbase . " AND $tl.source_id = $tat.root_id " . $sqlwhere . " AND $tl.target_id = :query_id ".$sqlclass;
+        $sql = $sqlbase . " AND $tl.source_id = $tat.root_id " . $sqlwhere . " AND $tl.target_id = :query_id " . $sqlclass;
         $stmt = $this->qPE($sql, $pt);
         while ($row = $stmt->fetch()) {
             $neighbors[] = $row['name'];
