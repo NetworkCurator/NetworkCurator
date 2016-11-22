@@ -136,14 +136,17 @@ nc.data.exportData = function() {
         network: nc.network,
         "export": type            
     }, function(data) {  
-        //alert(data);
+        alert(data);
         nc.utils.alert(data);        
-        data = JSON.parse(data);            
+        data = JSON.parse(data);                    
         if (nc.utils.checkAPIresult(data)) {
             if (data['success']==false) {
             // handle failure
             } else {                                        
-                $('#nc-export-response').html(data['data'].replace(/\n/g,"<br/>"));            
+                //alert(JSON.stringify(JSON.parse(data['data']), null," "));
+                var xx = JSON.stringify(JSON.parse(data['data']), null," ");
+                nc.utils.saveToFile(xx, 'export-'+nc.network+'.json');
+                //$('#nc-export-response').html(data['data'].replace(/\n/g,"<br/>"));            
             }             
         } else {   
             nc.msg('Hey!', 'Something went wrong with the export');                  

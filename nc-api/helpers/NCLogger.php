@@ -457,7 +457,7 @@ class NCLogger extends NCDB {
         $sql = "SELECT network_id, datetime, owner_id, root_id, parent_id, 
             anno_id, anno_type, anno_text FROM " . NC_TABLE_ANNOTEXT . "  
                 WHERE network_id = ? AND root_id = ?                  
-                  AND anno_type <= " . NC_DEFS . " AND anno_status=" . NC_ACTIVE;
+                  AND anno_type <= " . NC_DEFS . " AND anno_status=" . NC_ACTIVE ." ORDER BY anno_type ";
         $stmt = $this->qPE($sql, [$netid, $rootid]);
         $result = [];
         while ($row = $stmt->fetch()) {

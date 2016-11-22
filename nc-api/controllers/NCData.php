@@ -588,30 +588,88 @@ class NCData extends NCGraphs {
         // check that required inputs are defined
         $params = $this->subsetArray($this->_params, ["export"]);
         $what = $params["export"];
-        
+
         // create 
         $result = array();
-        $result['network'] = array();
-        $result['ontology'] = array();
-                
+        $result['network'] = $this->exportNetworkBlock();
+        $result['ontology'] = $this->exportNetworkOntology();
+
         $result['nodes'] = array();
         $result['links'] = array();
 
-        if ($what=="network") {
+        if ($what == "network") {
             return json_encode($result);
         }
 
         $result['users'] = array();
         $result['comments'] = array();
 
-        if ($what=="comments") {
+        if ($what == "comments") {
             return json_encode($result);
         }
-        
+
         // for complete information, also include users, permissions, and comments
         $result['history'] = array();
-        
+
         return json_encode($result);
+    }
+
+    /**
+     * Helper to exportData. Prepares the network block
+     * 
+     * @return array
+     * 
+     * array with network block - ready for import
+     * 
+     */
+    private function exportNetworkBlock() {
+        $netsummary = $this->getFullSummaryFromRootId($this->_netid, $this->_netid);
+        $result = array();
+        foreach (array_keys($netsummary) as $key) {
+            $result[$key] = $netsummary[$key]['anno_text'];
+        }
+        return array($result);
+    }
+
+    /**
+     * Formatter transfer from an entry from getOntology into format for import
+     * 
+     * @param array $onto object from getOntology (has many items like owner_id not needed)
+     * @return array
+     * 
+     */
+    private function exportOntoFormatter($onto) {
+        $result = array();
+        foreach ($onto as $key => $val) {
+            $temp = array();
+            foreach (array_keys($this->_annotypeslong) as $annotype) {
+                $temp[$annotype] = $val[$annotype];
+            }
+            foreach (['connector', 'directional', 'status'] as $detailtype) {
+                $temp[$detailtype] = $val[$detailtype];
+            }
+            $result[] = $temp;
+        }
+        return $result;
+    }
+
+    /**
+     * Helper to exportData
+     * 
+     * @return array
+     * 
+     * array with ontology details (ready for import)
+     * 
+     */
+    private function exportNetworkOntology() {
+        // fetch the node and link ontologies separately
+        $this->_params['ontology'] = "nodes";
+        $nodeonto = $this->getNodeOntology(false, true);
+        $this->_params['ontology'] = "links";
+        $linkonto = $this->getLinkOntology(false, true);
+
+        // transfer consise description into fullonto
+        return array_merge($this->exportOntoFormatter($nodeonto), $this->exportOntoFormatter($linkonto));
     }
 
 }
