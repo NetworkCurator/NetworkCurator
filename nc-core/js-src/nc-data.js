@@ -140,12 +140,10 @@ nc.data.exportData = function() {
         data = JSON.parse(data);                    
         if (nc.utils.checkAPIresult(data)) {
             if (data['success']==false) {
-            // handle failure
-            } else {                                        
-                //alert(JSON.stringify(JSON.parse(data['data']), null," "));
+                nc.msg('Hey!', 'Something went wrong with the export');                  
+            } else {                                                        
                 var xx = JSON.stringify(JSON.parse(data['data']), null," ");
-                nc.utils.saveToFile(xx, 'export-'+nc.network+'.json');
-                //$('#nc-export-response').html(data['data'].replace(/\n/g,"<br/>"));            
+                nc.utils.saveToFile(xx, 'export-'+type+'-'+nc.network+'.json');                
             }             
         } else {   
             nc.msg('Hey!', 'Something went wrong with the export');                  

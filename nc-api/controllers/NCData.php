@@ -2,6 +2,7 @@
 
 include_once "NCGraphs.php";
 include_once "NCOntology.php";
+include_once "NCNetworks.php";
 include_once dirname(__FILE__) . "/../helpers/NCTimer.php";
 
 /**
@@ -589,6 +590,11 @@ class NCData extends NCGraphs {
         $params = $this->subsetArray($this->_params, ["export"]);
         $what = $params["export"];
 
+        // processing of complete data dump is done separately
+        if ($what == "complete") {
+            return $this->exportCompleteData();
+        }
+
         // create blocks for network and ontology
         $result = array();
         $result['network'] = $this->exportNetworkBlock();
@@ -599,20 +605,9 @@ class NCData extends NCGraphs {
         $result['nodes'] = $this->exportNodes($ontodictionary);
         $result['links'] = $this->exportLinks($ontodictionary, $result['nodes']);
 
-        if ($what == "network") {
-            return json_encode($result);
-        }
-
-        $result['users'] = array();
-        $result['comments'] = array();
-
-        if ($what == "comments") {
-            return json_encode($result);
-        }
-
-        // for complete information, also include users, permissions, and comments
-        $result['history'] = array();
-
+        // get a snapshot of the users
+        $result['users'] = $this->exportUsers();
+        
         return json_encode($result);
     }
 
@@ -700,7 +695,6 @@ class NCData extends NCGraphs {
         return $objects;
     }
 
-    
     /**
      * Helper to exportData, produces array with all node or link data
      * 
@@ -716,22 +710,108 @@ class NCData extends NCGraphs {
      */
     private function exportLinks($ontodictionary, $nodedefs) {
         // fetch the name, title, abstract, content fields        
-        $objects = $this->getAllLinksExtended();        
+        $objects = $this->getAllLinksExtended();
         // turn the nodedefs into a dictionary
         $nodedictionary = array();
-        foreach ($nodedefs as $key=>$val) {
+        foreach ($nodedefs as $key => $val) {
             $nodedictionary[$val['id']] = $val['name'];
-        }                
+        }
         // fill in the class name using the diciontary
         // and source_id and target_id names using nodedefs
         foreach ($objects as $key => $val) {
             $objects[$key]['class'] = $ontodictionary[$val['class_id']];
             $objects[$key]['source'] = $nodedictionary[$val['source_id']];
-            $objects[$key]['target'] = $nodedictionary[$val['target_id']];            
+            $objects[$key]['target'] = $nodedictionary[$val['target_id']];
         }
         return $objects;
     }
-    
+
+    /**
+     * Helper to exportData. Gives a snapshot of the users for a network
+     * 
+     */
+    private function exportUsers() {
+        $ncusers = new NCNetworks($this->_db, ['user_id' => $this->_uid, 'network' => $this->_network]);
+        $netusers = $ncusers->listNetworkUsers();
+        // transfer users as an array, not object
+        $result = array();
+        foreach ($netusers as $key => $val) {
+            $result[] = $val;
+        }
+        return $result;
+    }
+
+    /**
+     * Invoked by exportData. Instead of making import-able dumps, this creates simpler
+     * dumps of parts of the tables that correspond to the $this->network.
+     * 
+     */
+    private function exportCompleteData() {
+        
+        $result = array();
+                
+        // specify users table order to appear in the output
+        $alltables = [NC_TABLE_ACTIVITY, NC_TABLE_ANNONUM, NC_TABLE_ANNOTEXT, NC_TABLE_CLASSES,
+            NC_TABLE_LINKS, NC_TABLE_NODES, NC_TABLE_PERMISSIONS, NC_TABLE_USERS];
+        foreach ($alltables as $val) {
+            if ($val == NC_TABLE_USERS) {
+                $result[$val] = $this->dumpUsersTable();
+            } else {
+                $result[$val] = $this->dumpGenericTable($val);
+            }
+        }
+
+        return json_encode($result);
+    }
+
+    /**
+     * Helper to exportCompleteData
+     * 
+     * @return array
+     */
+    private function dumpUsersTable() {
+        $tu = NC_TABLE_USERS;
+        $tp = NC_TABLE_PERMISSIONS;
+        $sql = "SELECT $tu.user_id AS user_id, user_firstname, user_middlename, user_lastname, permissions
+            FROM $tu JOIN $tp ON $tu.user_id = $tp.user_id 
+                WHERE network_id = ? AND permissions >= " . NC_PERM_COMMENT . "
+                    AND permissions <= " . NC_PERM_CURATE;
+        $stmt = $this->qPE($sql, [$this->_netid]);
+        $result = array();
+        while ($row = $stmt->fetch()) {
+            $result[] = $row;
+        }
+        return $result;
+    }
+
+    /**
+     * Get a whole db record for one table
+     *
+     * @param type $tabname
+     *      
+     * @return type
+     */
+    private function dumpGenericTable($tabname) {
+        
+        // find all the columns in the table
+        $sql = "SHOW columns FROM $tabname";
+        $stmt = $this->qPE($sql, []);
+        $tablecolumns = array();
+        while ($row = $stmt->fetch()) {
+            $tablecolumns[] = $row['Field'];
+        }                
+        
+        // select all data in the table
+        $sql = "SELECT ". implode(", ", $tablecolumns) . " FROM $tabname WHERE network_id = ?";        
+        $stmt = $this->qPE($sql, [$this->_netid]);
+        $result = array();
+        while ($row = $stmt->fetch()) {
+            $result[] = $row;
+        }
+        
+        return $result;
+    }
+
 }
 
 ?>
