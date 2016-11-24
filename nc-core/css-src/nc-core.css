@@ -98,6 +98,9 @@ a {
 }
 
 /** The footer at the bottom of each page */
+footer {
+    background-color: #f8f8f8; 
+}
 .nc-footer {
     position: absolute;
     bottom: 0;
