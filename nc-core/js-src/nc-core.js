@@ -83,7 +83,8 @@ nc.init.all = function() {
     nc.init.initOntology();    
     nc.init.initGraph();       
     nc.init.initHistory();
-    
+    nc.init.browserCheck();
+
     nc.ui.speed = speed;
 }
 
@@ -161,7 +162,7 @@ nc.init.initLog = function() {
  * Initialize a graph editing toolbar and graph viewer
  */
 nc.init.initGraph = function() {
-    if ($('#nc-graph-svg').length==0) return; 
+    if ($('#nc-graph-svg').length==0) return;         
     nc.graph.initGraph();    
 }
 
@@ -309,6 +310,26 @@ nc.init.initNetwork = function() {
 nc.init.initHistory = function() {
     if ($('#nc-history-timeline').length==0) return; 
     nc.history.initHistory();    
+}
+
+
+/**
+ * Initialize browser compatibility check
+ */
+nc.init.browserCheck = function() {
+    var warnalerts = $('.nc-browser-warning');
+    if (warnalerts.length==0) return;
+
+    // by default hide the warnings (should be hidden in css)
+    warnalerts.hide();
+       
+    // check for IE and Edge
+    // They don't have full support for SVG use elements, or couldn't get them to work
+    // Don't abort, but display a warning sign    
+    var agent = window.navigator.userAgent;    
+    if (agent.indexOf('MSIE ')>=0 || agent.indexOf('Edge/')>=0 || agent.indexOf('Trident/')>=0) {        
+        warnalerts.show();
+    }        
 }
 
 
