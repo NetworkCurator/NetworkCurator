@@ -974,11 +974,14 @@ nc.ui.graphIconToolbar = function() {
 
 /**
  * Create a div for searching
+ * Contains an input field a dropdown list
  */
 nc.ui.graphSearchBox = function() {
-    var html = '<div id="nc-graph-search">';
+    // nc-input is a container for the textbox+dropdown ul
+    var html = '<div id="nc-graph-search"><div id="nc-input">';    
     html += '<input type="text" placeholder="Search" >';
-    html += '</div>'; 
+    html += '<div class="dropdown"><ul class="dropdown-menu" role="menu"></ul></div>';    
+    html += '</div></div>'; 
     return $(html);                 
 }
 

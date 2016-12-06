@@ -350,6 +350,17 @@ textarea {
     outline: none !important;
     padding: 4px;
 }
+#nc-graph-search li {
+    font-size: 80%;
+    color: #444;   
+}
+#nc-graph-search #nc-input {
+    display: inline;
+    padding-top: 2px;
+}
+#nc-input .dropdown {
+    position: relative;
+}
 span.nc-search-item {
     border: #777 solid 1px;
     margin: 4px;
