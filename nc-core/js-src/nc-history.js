@@ -37,7 +37,7 @@ nc.history.initHistory = function() {
         action: "getHistory",        
         network: nc.network,
         anno_id: nc.history.annoid
-    }, function(data) {         
+    }, function(data) {                
         data = JSON.parse(data);        
         if (nc.utils.checkAPIresult(data)) {            
             nc.history.makeHistory(data['data']);
@@ -48,7 +48,9 @@ nc.history.initHistory = function() {
 
 
 /**
+ * invoked after history data dd is obtained from server
  * 
+ * dd - object with a summary of historical changes to an annotation object
  * 
  */
 nc.history.makeHistory = function(dd) {

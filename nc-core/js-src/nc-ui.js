@@ -1020,19 +1020,11 @@ nc.ui.searchSpan = function(x, knownarray) {
 * ==================================================================================== */
 
 nc.ui.timelineEntry = function(x, v) {
-    
-    var nowtime=x.modified;
-    if (nowtime==null) {
-        nowtime = x.datetime;
-    }
-
-    //var html = '<div class="nc-timeline-entry" val="'+v+'">';
-    //html += '<span class="nc-comment-date">'+x.datetime+'</span>';   
-    //html += '<span class="nc-comment-user">'+x.user_id+'</span>';        
-    //html += '</div>';
-
+        
+    var nowtime = (x.modified==null ? x.datetime: x.modified);
+        
     var html = '<li class="list-group-item nc-timeline-entry" val="'+v+'">';
-    html += '<span class="nc-comment-date">'+x.datetime+'</span>';   
+    html += '<span class="nc-comment-date">'+nowtime+'</span>';   
     html += '<span class="nc-comment-user">'+x.user_id+'</span>';            
     html += '</li>'
     
