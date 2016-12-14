@@ -794,7 +794,7 @@ nc.graph.displayInfo = function(d) {
     dettitle.find('textarea.'+ncc).html(dtitle['anno_text']);    
         
     var detabs = detdiv.find('#'+prefix+'-abstract');
-    detabs.attr("val", dtitle['anno_id']);
+    detabs.attr("val", dabstract['anno_id']);
     detabs.find('div.'+ncc).html(nc.utils.md2html(dabstract['anno_text']));
     detabs.find('textarea.'+ncc).html(dabstract['anno_text']);            
     
