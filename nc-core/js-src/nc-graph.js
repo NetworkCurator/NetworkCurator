@@ -756,15 +756,15 @@ nc.graph.unselect = function(d) {
  */
 nc.graph.displayInfo = function(d) {     
     
-    if (d.id==null) {
-        return;
-    }
-    
+    if (d.id==null) return;
+         
     var prefix = "nc-graph-details";
+    var ncc = "nc-curation-content";
     
     // get the details div and clear its content
     var detdiv = $('#'+prefix);
-    detdiv.find('.nc-md').html("Loading...");    
+    detdiv.find('#'+prefix+'-class').html("Loading...");        
+    detdiv.find('.nc-md .'+ncc).html("Loading...");    
     detdiv.find('#'+prefix+'-more').attr("href", "?network="+nc.network+"&object="+d.id);
     if (nc.curator) {
         var type = ("source" in d ? "Link" : "Node");  
@@ -783,17 +783,24 @@ nc.graph.displayInfo = function(d) {
         return;
     }
         
-    // if reached here, the graph info has data on this object        
+    // if reached here, the graph.info has data on this object       
+    // transfer the data into the page
     var dtitle = nc.graph.info[d.id]['title'];
-    var dabstract = nc.graph.info[d.id]['abstract'];            
-    var nowtitle = nc.utils.md2html(dtitle['anno_text']);
-    detdiv.find('#'+prefix+'-title').html(nowtitle).attr("val", dtitle['anno_id']);
-    var nowabstract = nc.utils.md2html(dabstract['anno_text']);
-    detdiv.find('#'+prefix+'-abstract').html(nowabstract).attr("val", dabstract['anno_id']); 
-            
-    // also fill in the ontology class 
-    detdiv.find('#'+prefix+'-class').html("Ontology: "+d['class']);
+    var dabstract = nc.graph.info[d.id]['abstract'];     
         
+    var dettitle = detdiv.find('#'+prefix+'-title');
+    dettitle.attr("val", dtitle['anno_id']);
+    dettitle.find('div.'+ncc).html(nc.utils.md2html(dtitle['anno_text']));
+    dettitle.find('textarea.'+ncc).html(dtitle['anno_text']);    
+        
+    var detabs = detdiv.find('#'+prefix+'-abstract');
+    detabs.attr("val", dtitle['anno_id']);
+    detabs.find('div.'+ncc).html(nc.utils.md2html(dabstract['anno_text']));
+    detabs.find('textarea.'+ncc).html(dabstract['anno_text']);            
+    
+    // also fill in the ontology class 
+    detdiv.find('#'+prefix+'-class').html("Ontology: "+d['class']);    
+    
 }
 
 

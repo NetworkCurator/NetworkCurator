@@ -137,6 +137,8 @@ footer {
     border: 1px dashed #666;
     margin: -7px -7px; 
     padding: 6px 6px;
+    font-weight: 300;
+    font-family: 'Open Sans', Helvetica, sans-serif;
 }
 
 .nc-curation-toolbox {    

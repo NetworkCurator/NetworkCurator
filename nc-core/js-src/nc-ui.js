@@ -656,9 +656,9 @@ nc.ui.DropdownGraphSettings = function() {
 
     html += '<tr><th colspan="3">Layout</th></tr>';
     //html += '<tr><td><span>Force layout</span></td><td><input val="forcesim" type="checkbox"></td><td></td></tr>';
-    html += '<tr><td><span>Link length</span></td><td><input type="text" val="linklength"></td><td><span class="info">(au, e.g. [20,100])</span></td></tr>';
-    html += '<tr><td><span>Node strength</span></td><td><input type="text" val="strength"></td><td><span class="info">(au, e.g [-100, -20]</span></td></tr>';
-    html += '<tr><td><span>Velocity decay</span></td><td><input type="text" val="vdecay"></td><td><span class="info">(au, [0,1])</span></td></tr>';
+    html += '<tr><td><span>Link length</span></td><td><input type="text" val="linklength"></td><td><span class="info">(au, e.g. [20, 100])</span></td></tr>';
+    html += '<tr><td><span>Node strength</span></td><td><input type="text" val="strength"></td><td><span class="info">(au, e.g [-100, -20])</span></td></tr>';
+    html += '<tr><td><span>Velocity decay</span></td><td><input type="text" val="vdecay"></td><td><span class="info">(au, [0, 1])</span></td></tr>';
     
     html += '<tr><th colspan="3">Traversal</th></tr>';
     html += '<tr><td><span>Local neighborhood</span></td><td><input val="local" type="checkbox" checked></td><td></td></tr>';
@@ -791,6 +791,12 @@ nc.ui.AnnoEditBox = function() {
     curabox.find('.nc-curation-toolbox-history').on("click", function() {        
         var objid = $(this).parent().parent().parent().attr("val");
         window.location.replace("?network="+nc.network+"&history="+objid);        
+    })
+    // mouseover the history button fills the href attribute 
+    // (this enables right-click, then open in new window?)
+    curabox.find('.nc-curation-toolbox-history').on("mouseover", function() {        
+        var objid = $(this).parent().parent().parent().attr("val");
+        $(this).attr("href", "?network="+nc.network+"&history="+objid);        
     })
    
     return curabox;
