@@ -282,8 +282,7 @@ svg {
 }
 #nc-graph-svg-container {
     border-right: #ddd solid 1px;
-    padding: 0 0 0 0;  
-    /** margin: 0px -30px 15px 15px; */
+    padding: 0 0 0 0;      
     resize: vertical;    
     overflow: hidden;
     height: 480px;
@@ -316,9 +315,6 @@ svg {
     margin-left: 15px;
     border: #ddd solid 1px;  
     margin-bottom: 1em;
-}
-#nc-graph-side {
-    /** margin-left: 30px; **/
 }
 textarea {
     resize: vertical;
@@ -440,10 +436,6 @@ form {
  * New nodes 
  * ------------------------------------------------------------------------------------ */
 
-svg#nc-graph-svg rect, svg#nc-graph-svg circle, svg#nc-graph-svg line {
-    /** all: inherit;    **/
-}
-
 .nc-default-node {
     fill: #449944;    
 }
@@ -564,8 +556,7 @@ ol {
 
 span.nc-comment {
     position: relative;
-    vertical-align: middle;
-    /** display: inline-block;**/
+    vertical-align: middle;    
     padding-top: 0px; 
     margin-top: 0px;
     padding-left: 0px;
@@ -585,6 +576,7 @@ svg.nc-symbol {
     cursor: pointer;
 }
 
+
 /* ------------------------------------------------------------------------------------
  * Front page
  * ------------------------------------------------------------------------------------ */
@@ -593,10 +585,10 @@ svg.nc-symbol {
     font-size: 120%;
 }
 
+
 /* ------------------------------------------------------------------------------------
  * Graph editor
  * ------------------------------------------------------------------------------------ */
-
 
 #nc-graph-toolbar {
     margin-bottom: 8px;
@@ -608,15 +600,14 @@ svg.nc-symbol {
     min-width: 94px;
 }
 .nc-toolbar-group-new button.dropdown-toggle {
-   /**  width: 200px; **/
+   
 }
 .nc-toolbar-group span.caret {
     margin-left: 6px;
 }
 
 .nc-graph-details {
-    display: none;
-    /** border: solid #ddd 1px; **/
+    display: none;    
     padding: 0px 22px;
     padding-bottom: 1em;
     width: 100%;
@@ -638,6 +629,9 @@ svg.nc-symbol {
     display: inline-block;
     margin-bottom: -2em;
     margin-top: 0px;
+}
+#nc-graph-details-abstract {
+    margin-bottom: 1em;
 }
 
 .nc-dropdown-form {
@@ -725,7 +719,7 @@ table {
 }
 
 /**
- * editifiers for features accessible only to curators
+ * features accessible only to curators
 */
 .nc-curator > a {
     color: #d43f3a !important;
@@ -749,11 +743,11 @@ a.nc-comment-response {
     padding-bottom: 8px;    
 }
 img.nc-comment-primary {
-    height: 40p;
+    height: 40px;
     width: 40px;
 }
 img.nc-comment-response {
-    height: 30p;
+    height: 30px;
     width: 30px;
 }
 
