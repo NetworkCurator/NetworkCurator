@@ -180,7 +180,8 @@ FROM $ta JOIN $tp ON $ta.$ni = $tp.$ni
     WHERE BINARY $tp.user_id = '$uid' AND $tp.permissions>" . NC_PERM_NONE . "
     AND $ta.root_id LIKE 'W%'
     AND $ta.anno_status = 1 AND $tac <=" . NC_ABSTRACT . "
-GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
+GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id ORDER BY title";
+        
         $stmt = $this->_db->query($sql);
         $result = array();
         while ($row = $stmt->fetch()) {
@@ -409,8 +410,8 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id";
 
         // remove data directory for the network
         $networkdir = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/networks/" . $this->_netid;
-        $result = "Removing network " . $this->_network . "\nNetwork data is in directory: " . $this->_netid .
-                "\nAttempt to remove, but please verify manually\n\n";
+        $result = "Removing network " . $this->_network . ".\n Network data is in directory: " . $this->_netid .
+                ".\n Attempted to remove, but please verify.\n\n";
         system("rm -fr $networkdir");
 
         // record the action in the site log

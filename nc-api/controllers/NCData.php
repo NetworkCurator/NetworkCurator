@@ -15,7 +15,7 @@ include_once dirname(__FILE__) . "/../helpers/NCTimer.php";
 class NCData extends NCGraphs {
 
     // for batch insertions and updates, restrict number of items in the set
-    private $_atatime = 5000;
+    private $_atatime = 2000;
 
     /**
      * Constructor 
@@ -368,6 +368,113 @@ class NCData extends NCGraphs {
     }
 
     /**
+     * Helper to batchUpdatesNodes
+     * 
+     * @param string $netid
+     * 
+     * network code
+     * 
+     * @param array $batch
+     * 
+     * each element should contain array describing a node/link with component "status"
+     * 
+     * @param string $what
+     * 
+     * either "node" or "link"
+     * 
+     * @return int
+     * 
+     * number of data fields actually updated
+     * 
+     */
+    private function batchCheckUpdateStatus($netid, $batch, $what) {
+
+        $whattable = $this->getTableName($what);
+
+        // fetch current status and classes from the db
+        $sql = "SELECT network_id, class_id AS class_id, " . $what . "_id AS id, "
+                . $what . "_status AS status "
+                . " FROM $whattable WHERE network_id = :netid AND (";
+        $sqlcheck = [];
+        $params = ['netid' => $netid];
+        $batchkeys = array_keys($batch);
+        $n = count($batch);
+        for ($i = 0; $i < $n; $i++) {
+            $x = sprintf("%'.06d", $i);
+            $sqlcheck[] = " " . $what . "_id = :field_$x ";
+            $params["field_$x"] = $batchkeys[$i];
+        }
+        $sql .= implode("OR", $sqlcheck) . ")";
+        $stmt = $this->qPE($sql, $params);
+
+        // scan through the fetched data and compare with the "new" data in the batch set. 
+        // Discrepant entries are moved to $toupdate        
+        $toactive = [];
+        $toinactive = [];
+        while ($row = $stmt->fetch()) {
+            $nowid = $row['id'];
+            $nowstatus = $this->standardizeStatus($batch[$nowid]['status'], "AD");            
+            if ($nowstatus != $row['status']) {
+                if ($nowstatus == NC_ACTIVE) {
+                    $toactive[] = $nowid;
+                } else {
+                    $toinactive[] = $nowid;
+                }
+            }
+        }
+
+        // set active and inactive components
+        $this->batchSetStatus($netid, $what, $toactive, NC_ACTIVE);
+        $this->batchSetStatus($netid, $what, $toinactive, NC_DEPRECATED);
+
+        return count($toactive) + count($toinactive);
+    }
+
+    /**
+     * Helper to importNodes. Update annotations, status codes, and node classes.
+     * 
+     * @param string netid
+     * 
+     * network id
+     * 
+     * @param array batch
+     * 
+     * each element should be an array describing a node
+     * 
+     * @param string what
+     * 
+     * one of "node" or "link"
+     * 
+     * @param int batchsize
+     * 
+     * maximal length of the update batch (it this useful?)
+     * 
+     * @return int
+     * 
+     * number of data fields actually updated
+     * (when updates say 2 fields in a single network node, returns 2)     
+     * 
+     */
+    private function batchUpdateObjects($netid, $batch, $what, $batchsize = 100000) {
+       
+        $n = count($batch);
+        if ($n == 0) {
+            return;
+        }
+        if ($n > $batchsize) {
+            throw new Exception("batchUpdateObjects: too many items in the batch");
+        }
+
+        // update the text annotations
+        $annoupdates = $this->batchCheckUpdateAnno($netid, $batch);
+
+        // update the status codes
+        $statusupdates = $this->batchCheckUpdateStatus($netid, $batch, $what);
+
+        return $annoupdates + $statusupdates;
+    }
+
+    /**
      * Helper function processes adjustments for nodes
      *      
      * @param array $nodedict
@@ -448,14 +555,14 @@ class NCData extends NCGraphs {
             //echo "updating nodes ".count($updateset)."! <br/>";
             for ($i = 0; $i < count($newset); $i+=$this->_atatime) {
                 $tempset = array_slice($updateset, $i, $this->_atatime);
-                $updatecount += $this->batchCheckUpdateAnno($this->_netid, $tempset);
+                $updatecount += $this->batchUpdateObjects($this->_netid, $tempset, 'node');
             }
             $this->logActivity($this->_uid, $this->_netid, "updated nodes from file", $filename, $updatecount);
         }
 
         return $msgs . " -- nodes: added " . count($newset) . " / updated " . $updatecount . " / skipped $numskipped\n";
     }
-
+          
     /**
      * Helper function processes updates on links
      * 
@@ -557,7 +664,7 @@ class NCData extends NCGraphs {
 
         // batch insert and update
         if (count($newset) > 0) {
-            //echo "inserting new nodes ".count($newset)."! <br/>";
+            //echo "inserting new links ".count($newset)."! <br/>";
             for ($i = 0; $i < count($newset); $i+=$this->_atatime) {
                 $tempset = array_slice($newset, $i, $this->_atatime);
                 $this->batchInsertLinks($tempset);
@@ -566,10 +673,10 @@ class NCData extends NCGraphs {
         }
         $updatecount = 0;
         if (count($updateset) > 0) {
-            //echo "inserting new nodes ".count($newset)."! <br/>";
+            //echo "updating links ".count($newset)."! <br/>";
             for ($i = 0; $i < count($updateset); $i+=$this->_atatime) {
                 $tempset = array_slice($updateset, $i, $this->_atatime);
-                $updatecount += $this->batchCheckUpdateAnno($this->_netid, $tempset);
+                $updatecount += $this->batchUpdateObjects($this->_netid, $tempset, 'link');
             }
             $this->logActivity($this->_uid, $this->_netid, "updated links from file", $filename, $updatecount);
         }
@@ -607,7 +714,7 @@ class NCData extends NCGraphs {
 
         // get a snapshot of the users
         $result['users'] = $this->exportUsers();
-        
+
         return json_encode($result);
     }
 
@@ -747,9 +854,9 @@ class NCData extends NCGraphs {
      * 
      */
     private function exportCompleteData() {
-        
+
         $result = array();
-                
+
         // specify users table order to appear in the output
         $alltables = [NC_TABLE_ACTIVITY, NC_TABLE_ANNONUM, NC_TABLE_ANNOTEXT, NC_TABLE_CLASSES,
             NC_TABLE_LINKS, NC_TABLE_NODES, NC_TABLE_PERMISSIONS, NC_TABLE_USERS];
@@ -785,30 +892,30 @@ class NCData extends NCGraphs {
     }
 
     /**
-     * Get a whole db record for one table
+     * Get entire data from a db table
      *
-     * @param type $tabname
+     * @param string $tabname
      *      
-     * @return type
+     * @return array
      */
     private function dumpGenericTable($tabname) {
-        
+
         // find all the columns in the table
         $sql = "SHOW columns FROM $tabname";
         $stmt = $this->qPE($sql, []);
         $tablecolumns = array();
         while ($row = $stmt->fetch()) {
             $tablecolumns[] = $row['Field'];
-        }                
-        
+        }
+
         // select all data in the table
-        $sql = "SELECT ". implode(", ", $tablecolumns) . " FROM $tabname WHERE network_id = ?";        
+        $sql = "SELECT " . implode(", ", $tablecolumns) . " FROM $tabname WHERE network_id = ?";
         $stmt = $this->qPE($sql, [$this->_netid]);
         $result = array();
         while ($row = $stmt->fetch()) {
             $result[] = $row;
         }
-        
+
         return $result;
     }
 

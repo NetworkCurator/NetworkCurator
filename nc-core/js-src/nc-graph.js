@@ -799,7 +799,7 @@ nc.graph.displayInfo = function(d) {
     detabs.find('textarea.'+ncc).html(dabstract['anno_text']);            
     
     // also fill in the ontology class 
-    detdiv.find('#'+prefix+'-class').html("Ontology: "+d['class']);    
+    detdiv.find('#'+prefix+'-class').html("Class: "+d['class']);    
     
 }
 

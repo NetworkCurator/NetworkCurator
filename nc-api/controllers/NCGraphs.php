@@ -107,22 +107,22 @@ class NCGraphs extends NCOntology {
      */
     private function toggleNode($nodename, $newstatus) {
 
+        $newstatus = $this->standardizeStatus($newstatus, "AD");
+
         $this->dblock([NC_TABLE_NODES, NC_TABLE_ANNOTEXT]);
 
         // check if this node name exists        
         $nodeinfo = $this->getNameAnnoRootId($this->_netid, $nodename, true);
         $nodeid = $nodeinfo['root_id'];
 
-        // set the node as inactive in the nodes table        
-        $sql = "UPDATE " . NC_TABLE_NODES . " SET node_status = " . $newstatus . " WHERE 
-                     network_id = ? AND node_id = ? ";
-        $this->qPE($sql, [$this->_netid, $nodeid]);
+        // set the node status in the nodes table        
+        $this->batchSetStatus($this->_netid, 'node', [$nodeid], $newstatus);
 
         $this->dbunlock();
 
         // log entry 
         $logmsg = "activated node";
-        if ($newstatus == NC_DEPRECATED) {
+        if ($newstatus == NC_DEPRECATED || $newstatus == NC_OLD) {
             $logmsg = "removed node";
         }
         $this->logActivity($this->_uid, $this->_netid, $logmsg, $nodename, $nodeid);
@@ -185,7 +185,9 @@ class NCGraphs extends NCOntology {
             (network_id, node_id, class_id, node_status) VALUES ";
         $sqlvalues = [];
         for ($i = 0; $i < $n; $i++) {
-            $temp = [$this->_netid, $nodeids[$i], $nodebatch[$i]['class_id'], 1];
+            $nowstatus = $this->standardizeStatus($nodebatch[$i]['status'], "AD");
+            $temp = [$this->_netid, $nodeids[$i],
+                $nodebatch[$i]['class_id'], $nowstatus];
             $sqlvalues[] = "('" . implode("', '", $temp) . "')";
         }
         $sql .= implode(", ", $sqlvalues);
@@ -244,9 +246,53 @@ class NCGraphs extends NCOntology {
     }
 
     /**
+     * Helper sets several components to a common status code
+     * 
+     * @param string $tablename
+     * 
+     * name of table (assumed already locked)
+     * 
+     * @param string $what
+     * 
+     * one of "class", "link" or "node"
+     * 
+     * @param array $idarray
+     * 
+     * array of several id codes to toggle
+     *      
+     * @param int $newstatus
+     * 
+     * new status
+     * 
+     */
+    protected function batchSetStatus($netid, $what, $idarray, $newstatus) {
+
+        if (count($idarray)==0) {
+            return;
+        }
+        
+        // find the table that should be affected
+        $tablename = $this->getTableName($what);
+
+        // prepare and exec statement with multiple updates at once
+        $sql = "UPDATE $tablename SET " . $what . "_status = " . $newstatus . " WHERE 
+                     network_id = :netid AND (";
+        $params = ['netid' => $netid];
+        $sqlcheck = [];
+        $n = count($idarray);
+        for ($i = 0; $i < $n; $i++) {
+            $x = sprintf("%'.06d", $i);
+            $sqlcheck[] = " " . $what . "_id = :x_$x ";
+            $params["x_$x"] = $idarray[$i];
+        }
+        $sql .= implode("OR", $sqlcheck) . ")";
+        $this->qPE($sql, $params);
+    }
+
+    /**
      * Helper function, adjust the status of a named link
      * 
-     * @param type $linkname
+     * @param type $linkid
      * @param type $newstatus
      * 
      * @return type
@@ -255,22 +301,22 @@ class NCGraphs extends NCOntology {
      */
     private function toggleLink($linkname, $newstatus) {
 
+        $newstatus = $this->standardizeStatus($newstatus, "AD");
+
         $this->dblock([NC_TABLE_LINKS, NC_TABLE_ANNOTEXT]);
 
         // check if this link name exists        
         $linkinfo = $this->getNameAnnoRootId($this->_netid, $linkname, true);
         $linkid = $linkinfo['root_id'];
 
-        // set the link as inactive in the links table
-        $sql = "UPDATE " . NC_TABLE_LINKS . " SET link_status = " . $newstatus . " WHERE 
-                     network_id = ? AND link_id = ? ";
-        $this->qPE($sql, [$this->_netid, $linkid]);
+        // set the link status in the links table
+        $this->batchSetStatus($this->_netid, 'link', [$linkid], $newstatus);
 
         $this->dbunlock();
 
         // log entry 
         $logmsg = "activated link";
-        if ($newstatus == NC_DEPRECATED) {
+        if ($newstatus == NC_DEPRECATED || $newstatus == NC_OLD) {
             $logmsg = "removed link";
         }
         $this->logActivity($this->_uid, $this->_netid, $logmsg, $linkname, $linkid);
@@ -333,8 +379,9 @@ class NCGraphs extends NCOntology {
             (network_id, link_id, source_id, target_id, class_id, link_status) VALUES ";
         $sqlvalues = [];
         for ($i = 0; $i < $n; $i++) {
+            $nowstatus = $this->standardizeStatus($linkbatch[$i]['status'], "AD");
             $temp = [$this->_netid, $linkids[$i], $linkbatch[$i]['source_id'],
-                $linkbatch[$i]['target_id'], $linkbatch[$i]['class_id'], NC_ACTIVE];
+                $linkbatch[$i]['target_id'], $linkbatch[$i]['class_id'], $nowstatus];
             $sqlvalues[] = "('" . implode("', '", $temp) . "')";
         }
         $sql .= implode(", ", $sqlvalues);

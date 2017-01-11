@@ -37,7 +37,7 @@ foreach ($newusers as $nu) {
 }
 
 
-$newnetworks = array('net-zulu', 'net-yankee', 'xray', 'A', 'update-class', 'net-zulu');
+$newnetworks = array('net-zulu', 'net-yankee', 'xray', 'A', 'update-class', 'net-zulu', 'net-status');
 foreach ($newnetworks as $nn) {
     echo "Creating network $nn";
     $params = array('controller' => 'NCNetworks', 'action' => 'createNewNetwork',

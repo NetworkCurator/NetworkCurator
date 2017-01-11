@@ -1,0 +1,74 @@
+{
+    "network": [
+        {
+            "name": "net-status",
+            "title": "net-status",
+            "abstract": "network uploaded with some elements with status 0"
+        }
+    ],
+    "ontology": [
+        {
+            "name": "NODE",
+            "connector": 0,
+            "directional": 0
+        },
+        {
+            "name": "TYPE2",
+            "connector": 0,
+            "directional": 0
+        },
+	{
+            "name": "LINK",
+            "connector": 1,
+            "directional": 0
+        }         
+    ],
+    "nodes": [
+        {
+            "name": "OBJ_1",
+            "title": "OBJ_1",
+            "class": "NODE"
+        },
+        {
+            "name": "OBJ_2",
+            "title": "OBJ_2",
+            "class": "NODE"
+        },
+        {
+            "name": "OBJ_3",
+            "title": "OBJ_3",
+            "class": "NODE",
+	    "status": -1
+        },
+        {
+            "name": "OBJ_4",
+            "title": "OBJ_4",
+            "class": "NODE"
+        }
+    ],
+    "links": [
+        {
+            "name": "L0",
+            "title": "L0",
+            "class": "LINK",
+            "source": "OBJ_1",
+            "target": "OBJ_2"
+        },
+        {
+            "name": "L2",
+            "title": "L2",
+            "class": "LINK",
+            "source": "OBJ_1",
+            "target": "OBJ_4",
+	    "status": -1
+        },
+        {
+            "name": "L1",
+            "title": "L1",
+            "class": "LINK",
+            "source": "OBJ_1",
+            "target": "OBJ_3",
+	    "status": -1
+        }
+     ]
+}

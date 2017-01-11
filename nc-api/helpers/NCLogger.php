@@ -286,7 +286,9 @@ class NCLogger extends NCDB {
      * 
      * @return int
      * 
-     * number of items actually updated
+     * number of data fields actually updated
+     * (when updates say 2 fields in a single network node, returns 2)
+     * 
      */
     protected function batchCheckUpdateAnno($netid, $batch, $batchsize = 100000) {
 
@@ -314,7 +316,7 @@ class NCLogger extends NCDB {
         $sql .= implode(" OR ", $sqlcheck) . ")";
         $stmt = $this->qPE($sql, $params);
 
-        // scan throught the reported annotations and directly compare with the 
+        // scan through the reported annotations and directly compare with the 
         // "new" data in the batch set. Discrepant entries are moved to $toupdate
         $toupdate = [];
         while ($row = $stmt->fetch()) {
@@ -457,7 +459,7 @@ class NCLogger extends NCDB {
         $sql = "SELECT network_id, datetime, owner_id, root_id, parent_id, 
             anno_id, anno_type, anno_text FROM " . NC_TABLE_ANNOTEXT . "  
                 WHERE network_id = ? AND root_id = ?                  
-                  AND anno_type <= " . NC_DEFS . " AND anno_status=" . NC_ACTIVE ." ORDER BY anno_type ";
+                  AND anno_type <= " . NC_DEFS . " AND anno_status=" . NC_ACTIVE . " ORDER BY anno_type ";
         $stmt = $this->qPE($sql, [$netid, $rootid]);
         $result = [];
         while ($row = $stmt->fetch()) {
@@ -659,6 +661,59 @@ class NCLogger extends NCDB {
                 break;
             default:
                 break;
+        }
+    }
+
+    /**
+     * Helper, turns short codes like "nodes" into the table name, NC_TABLE_NODES
+     * 
+     * @param string $what
+     * 
+     * one of "link", "class" or "node"
+     * 
+     * @throws Exception
+     */
+    protected function getTableName($what) {
+        if ($what == "link") {
+            return NC_TABLE_LINKS;
+        } else if ($what == "class") {
+            return NC_TABLE_CLASSES;
+        } else if ($what == "node") {
+            return NC_TABLE_NODES;
+        } else {
+            throw new Exception("getTableName: invalid table type");
+        }
+    }
+
+    /**
+     * Ensures that a numeric code is a valid status code
+     * 
+     * @param int $code
+     * 
+     * a status code to standardize
+     * 
+     * @param string $mode
+     * 
+     * when set "AOD", return value is ACTIVE, OLD, or DEPRECATED
+     * when set otherwise, return values are just ACTIVE and DEPRECATED
+     * 
+     * default codes are DEPRECATED
+     *           
+     * @return int
+     * 
+     */
+    protected function standardizeStatus($code, $mode = "AOD") {
+        if (mode == "AOD") {
+            if ($code == NC_ACTIVE || $code == NC_OLD || $code == NC_DEPRECATED) {
+                return $code;
+            }
+            return NC_DEPRECATED;
+        } else {
+            if ($code == NC_ACTIVE) {
+                return $code;
+            } else {
+                return NC_DEPRECATED;
+            }
         }
     }
 
