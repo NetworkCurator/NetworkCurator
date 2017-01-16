@@ -195,7 +195,7 @@ class NCData extends NCGraphs {
             $this->logActivity($this->_uid, $this->_netid, "applied annotation changes from file", $filename, $changecounter);
         }
 
-        return " -- summary: changed: $changecounter\n";
+        return " -- summary: updated $changecounter fields\n";
     }
 
     /**
@@ -258,8 +258,7 @@ class NCData extends NCGraphs {
         }
 
         // track number of ontology operations and error messages
-        $numadded = 0;
-        $numskipped = 0;
+        $numadded = 0;        
         $numupdated = 0;
         $msgs = "";
 
@@ -271,11 +270,8 @@ class NCData extends NCGraphs {
                         $numupdated++;
                     } else if ($nowresult == "add") {
                         $numadded++;
-                    } else {
-                        $numskipped++;
-                    }
-                } catch (Exception $ex) {
-                    $numskipped++;
+                    } 
+                } catch (Exception $ex) {                    
                     $msgs .= $newdata[$i]['name'] . ": " . $ex->getMessage() . "\n";
                 }
             }
@@ -288,7 +284,7 @@ class NCData extends NCGraphs {
             $this->logActivity($this->_uid, $this->_netid, "updated ontology classes from file", $filename, $numupdated);
         }
 
-        return $msgs . " -- ontology: added $numadded / updated $numupdated / skipped $numskipped\n";
+        return $msgs . " -- ontology: added $numadded entries / updated $numupdated fields \n";
     }
 
     /**
@@ -368,7 +364,8 @@ class NCData extends NCGraphs {
     }
 
     /**
-     * Helper to batchUpdatesNodes
+     * Helper to batchUpdatesNodes. Checks status of all existing nodes or links.
+     * Compares with the given nodes and links. Changes db records when necessary.
      * 
      * @param string $netid
      * 
@@ -387,16 +384,16 @@ class NCData extends NCGraphs {
      * number of data fields actually updated
      * 
      */
-    private function batchCheckUpdateStatus($netid, $batch, $what) {
-
+    private function batchCheckUpdateStatusClass($batch, $what) {
+        
         $whattable = $this->getTableName($what);
 
         // fetch current status and classes from the db
-        $sql = "SELECT network_id, class_id AS class_id, " . $what . "_id AS id, "
+        $sql = "SELECT network_id, class_id, " . $what . "_id AS id, "
                 . $what . "_status AS status "
                 . " FROM $whattable WHERE network_id = :netid AND (";
         $sqlcheck = [];
-        $params = ['netid' => $netid];
+        $params = ['netid' => $this->_netid];
         $batchkeys = array_keys($batch);
         $n = count($batch);
         for ($i = 0; $i < $n; $i++) {
@@ -408,28 +405,40 @@ class NCData extends NCGraphs {
         $stmt = $this->qPE($sql, $params);
 
         // scan through the fetched data and compare with the "new" data in the batch set. 
-        // Discrepant entries are moved to $toupdate        
-        $toactive = [];
-        $toinactive = [];
+        // Discrepant entries are inserted into $changestatus and $changeclass
+        $changestatus = ['toactive'=>[], 'toinactive'=>[]];
+        $changeclass = [];
         while ($row = $stmt->fetch()) {
             $nowid = $row['id'];
+            // check the status code for the objects
             $nowstatus = $this->standardizeStatus($batch[$nowid]['status'], "AD");            
             if ($nowstatus != $row['status']) {
                 if ($nowstatus == NC_ACTIVE) {
-                    $toactive[] = $nowid;
+                    $changestatus['toactive'][] = $nowid;
                 } else {
-                    $toinactive[] = $nowid;
+                    $changestatus['toinactive'][] = $nowid;
                 }
             }
+            // check the class codes for the objects
+            $nowclass = $batch[$nowid]['class_id'];
+            if ($nowclass != $row['class_id']) {
+                $changeclass[$nowclass][] = $nowid;
+            }
         }
-
+                
         // set active and inactive components
-        $this->batchSetStatus($netid, $what, $toactive, NC_ACTIVE);
-        $this->batchSetStatus($netid, $what, $toinactive, NC_DEPRECATED);
-
-        return count($toactive) + count($toinactive);
+        $this->batchSetStatus($what, $changestatus['toactive'], NC_ACTIVE);
+        $this->batchSetStatus($what, $changestatus['toinactive'], NC_DEPRECATED);
+        $numchanges = count($changestatus['toactive']) + count($changestatus['toinactive']);
+        // set new class ids      
+        foreach (array_keys($changeclass) as $nowclass) {
+            $this->batchSetClass($what, $changeclass[$nowclass], $nowclass);
+            $numchanges += count($changeclass[$nowclass]);
+        }
+             
+        return $numchanges; 
     }
-
+       
     /**
      * Helper to importNodes. Update annotations, status codes, and node classes.
      * 
@@ -455,7 +464,7 @@ class NCData extends NCGraphs {
      * (when updates say 2 fields in a single network node, returns 2)     
      * 
      */
-    private function batchUpdateObjects($netid, $batch, $what, $batchsize = 100000) {
+    private function batchUpdateObjects($batch, $what, $batchsize = 100000) {
        
         $n = count($batch);
         if ($n == 0) {
@@ -466,11 +475,11 @@ class NCData extends NCGraphs {
         }
 
         // update the text annotations
-        $annoupdates = $this->batchCheckUpdateAnno($netid, $batch);
+        $annoupdates = $this->batchCheckUpdateAnno($this->_netid, $batch);
 
         // update the status codes
-        $statusupdates = $this->batchCheckUpdateStatus($netid, $batch, $what);
-
+        $statusupdates = $this->batchCheckUpdateStatusClass($batch, $what);
+       
         return $annoupdates + $statusupdates;
     }
 
@@ -492,13 +501,12 @@ class NCData extends NCGraphs {
 
         // start a log with output messages
         $msgs = "";
-
+        
         // all nodes require a name, class_name, title, status
         $defaults = ["name" => '', "title" => '', "abstract" => '', "content" => '',
             "class" => '', "status" => 1];
 
-        // loop throw the new data and make sure all entries have all fields    
-        $numskipped = 0;
+        // loop throw the new data and make sure all entries have all fields            
         for ($i = 0; $i < count($newdata); $i++) {
             if (array_key_exists('name', $newdata[$i])) {
                 $nowname = $newdata[$i]['name'];
@@ -514,12 +522,9 @@ class NCData extends NCGraphs {
                     $newdata[$i]['class_id'] = $nodedict[$nowclass];
                 } else {
                     $msgs .= "Skipping node $nowname because class '$nowclass' is undefined\n";
-                    unset($newdata[$i]['name']);
-                    $numskipped++;
+                    unset($newdata[$i]['name']);                    
                 }
-            } else {
-                $numskipped++;
-            }
+            } 
         }
 
         // collect data from all existing nodes
@@ -555,12 +560,12 @@ class NCData extends NCGraphs {
             //echo "updating nodes ".count($updateset)."! <br/>";
             for ($i = 0; $i < count($newset); $i+=$this->_atatime) {
                 $tempset = array_slice($updateset, $i, $this->_atatime);
-                $updatecount += $this->batchUpdateObjects($this->_netid, $tempset, 'node');
+                $updatecount += $this->batchUpdateObjects($tempset, 'node');
             }
             $this->logActivity($this->_uid, $this->_netid, "updated nodes from file", $filename, $updatecount);
         }
 
-        return $msgs . " -- nodes: added " . count($newset) . " / updated " . $updatecount . " / skipped $numskipped\n";
+        return $msgs . " -- nodes: added " . count($newset) . " entries / updated " . $updatecount . " fields\n";
     }
           
     /**
@@ -602,8 +607,7 @@ class NCData extends NCGraphs {
             $vdict[$key] = $val['id'];
         }
 
-        // loop throw the new data and make sure all entries have all fields    
-        $numskipped = 0;
+        // loop throw the new data and make sure all entries have all fields            
         for ($i = 0; $i < count($newdata); $i++) {
             if (array_key_exists('name', $newdata[$i])) {
                 $nowname = $newdata[$i]['name'];
@@ -632,14 +636,8 @@ class NCData extends NCGraphs {
                     $newdata[$i]['source_id'] = $vdict[$nowsource];
                     $newdata[$i]['target_id'] = $vdict[$nowtarget];
                 }
-
-                // after all this, check the link is still ok
-                if (!array_key_exists('name', $newdata[$i])) {
-                    $numskipped++;
-                }
-            } else {
-                $numskipped++;
-            }
+                
+            } 
         }
         // save a little memory by unsetting node information (no longer needed below)
         unset($allnodes, $vdict);
@@ -676,12 +674,12 @@ class NCData extends NCGraphs {
             //echo "updating links ".count($newset)."! <br/>";
             for ($i = 0; $i < count($updateset); $i+=$this->_atatime) {
                 $tempset = array_slice($updateset, $i, $this->_atatime);
-                $updatecount += $this->batchUpdateObjects($this->_netid, $tempset, 'link');
+                $updatecount += $this->batchUpdateObjects($tempset, 'link');
             }
             $this->logActivity($this->_uid, $this->_netid, "updated links from file", $filename, $updatecount);
         }
 
-        return $msgs . " -- links: added " . count($newset) . " / updated " . $updatecount . " / skipped $numskipped\n";
+        return $msgs . " -- links: added " . count($newset) . " entries / updated " . $updatecount . " fields\n";
     }
 
     /**

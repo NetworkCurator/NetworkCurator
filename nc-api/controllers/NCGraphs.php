@@ -116,7 +116,7 @@ class NCGraphs extends NCOntology {
         $nodeid = $nodeinfo['root_id'];
 
         // set the node status in the nodes table        
-        $this->batchSetStatus($this->_netid, 'node', [$nodeid], $newstatus);
+        $this->batchSetStatus('node', [$nodeid], $newstatus);
 
         $this->dbunlock();
 
@@ -246,11 +246,7 @@ class NCGraphs extends NCOntology {
     }
 
     /**
-     * Helper sets several components to a common status code
-     * 
-     * @param string $tablename
-     * 
-     * name of table (assumed already locked)
+     * Helper sets several db entries to a common status code
      * 
      * @param string $what
      * 
@@ -265,7 +261,7 @@ class NCGraphs extends NCOntology {
      * new status
      * 
      */
-    protected function batchSetStatus($netid, $what, $idarray, $newstatus) {
+    protected function batchSetStatus($what, $idarray, $newstatus) {
 
         if (count($idarray)==0) {
             return;
@@ -277,7 +273,7 @@ class NCGraphs extends NCOntology {
         // prepare and exec statement with multiple updates at once
         $sql = "UPDATE $tablename SET " . $what . "_status = " . $newstatus . " WHERE 
                      network_id = :netid AND (";
-        $params = ['netid' => $netid];
+        $params = ['netid' => $this->_netid];
         $sqlcheck = [];
         $n = count($idarray);
         for ($i = 0; $i < $n; $i++) {
@@ -289,6 +285,48 @@ class NCGraphs extends NCOntology {
         $this->qPE($sql, $params);
     }
 
+    /**
+     * Helper sets several db entries to a common class_id.
+     * Follows similar structure as batchSetStatus.
+     * 
+     * @param type $what
+     * 
+     * either "node" or "link"
+     * 
+     * @param type $idarray
+     * 
+     * array with node_id or link_id to change into the new class code
+     * 
+     * @param type $newclassid
+     * 
+     * new class code to assign to the objects in $idarray
+     * 
+     */
+    protected function batchSetClass($what, $idarray, $newclassid) {
+        
+        if (count($idarray)==0) {
+            return;
+        }
+        
+        // find the table that should be affected
+        $tablename = $this->getTableName($what);
+
+        // prepare and exec statement with multiple updates at once
+        $sql = "UPDATE $tablename SET class_id = '" . $newclassid . "' WHERE 
+                     network_id = :netid AND (";
+        $params = ['netid' => $this->_netid];
+        $sqlcheck = [];
+        $n = count($idarray);
+        for ($i = 0; $i < $n; $i++) {
+            $x = sprintf("%'.06d", $i);
+            $sqlcheck[] = " " . $what . "_id = :x_$x ";
+            $params["x_$x"] = $idarray[$i];
+        }
+        $sql .= implode("OR", $sqlcheck) . ")";
+        $this->qPE($sql, $params);
+        
+    }
+    
     /**
      * Helper function, adjust the status of a named link
      * 
@@ -310,7 +348,7 @@ class NCGraphs extends NCOntology {
         $linkid = $linkinfo['root_id'];
 
         // set the link status in the links table
-        $this->batchSetStatus($this->_netid, 'link', [$linkid], $newstatus);
+        $this->batchSetStatus('link', [$linkid], $newstatus);
 
         $this->dbunlock();
 
