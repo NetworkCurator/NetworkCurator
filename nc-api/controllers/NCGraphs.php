@@ -265,10 +265,10 @@ class NCGraphs extends NCOntology {
      */
     protected function batchSetStatus($what, $idarray, $newstatus) {
 
-        if (count($idarray)==0) {
+        if (count($idarray) == 0) {
             return;
         }
-        
+
         // find the table that should be affected
         $tablename = $this->getTableName($what);
 
@@ -305,11 +305,11 @@ class NCGraphs extends NCOntology {
      * 
      */
     protected function batchSetClass($what, $idarray, $newclassid) {
-        
-        if (count($idarray)==0) {
+
+        if (count($idarray) == 0) {
             return;
         }
-        
+
         // find the table that should be affected
         $tablename = $this->getTableName($what);
 
@@ -326,9 +326,8 @@ class NCGraphs extends NCOntology {
         }
         $sql .= implode("OR", $sqlcheck) . ")";
         $this->qPE($sql, $params);
-        
     }
-    
+
     /**
      * Helper function, adjust the status of a named link
      * 
@@ -701,30 +700,153 @@ class NCGraphs extends NCOntology {
      * 
      */
     public function getObjectClass() {
-        
+
         $params = $this->subsetArray($this->_params, ["query"]);
 
-        // simplify access to query id
-        $queryid = $params['query'];        
-
+        // check if this queryid is a node or link, fetch the class_id
         $result = [];
-        
-        // check if this queryid is in a node
-        $sql = "SELECT class_id FROM ".NC_TABLE_NODES." WHERE node_id = ?";
-        $stmt = $this->qPE($sql, [$params['query']]);
+        $sql = "SELECT class_id FROM " . NC_TABLE_NODES . " WHERE network_id = ? AND node_id = ?";
+        $stmt = $this->qPE($sql, [$this->_netid, $params['query']]);
         while ($row = $stmt->fetch()) {
             $result[] = $row;
         }
-        
-        // check if the queryid is a link
-        $sql = "SELECT class_id FROM ".NC_TABLE_LINKS." WHERE link_id = ?";
-        $stmt = $this->qPE($sql, [$params['query']]);
+        $sql = "SELECT class_id FROM " . NC_TABLE_LINKS . " WHERE network_id = ? AND link_id = ?";
+        $stmt = $this->qPE($sql, [$this->_netid, $params['query']]);
         while ($row = $stmt->fetch()) {
             $result[] = $row;
         }
-                
-        return $result;        
+
+        if (count($result) == 0) {
+            return "";
+        } else if (count($result) > 1) {
+            throw new Exception("Invalid object response");
+        }
+
+        // get name of the class
+        $classname = $this->getObjectName($this->_netid, $result[0]['class_id'], true);
+        return $classname['anno_text'];
     }
+
+    /**
+     * looks up an object id in various tables of the db to check what type of
+     * object it is (node, link, or class), e.g. converts "Labc01234" into "link"
+     * 
+     * @param string $objid
+     * 
+     * @return string 
+     * 
+     * a string "node" or "link" or "class"
+     * 
+     */
+    protected function isNodeOrLinkOrClass($objid) {
+
+        $sql = "SELECT class_id FROM " . NC_TABLE_NODES . " WHERE network_id = ? AND node_id = ?";
+        $stmt = $this->qPE($sql, [$this->_netid, $objid]);
+        if ($stmt->fetch()) {
+            return "node";
+        }
+
+        $sql = "SELECT class_id FROM " . NC_TABLE_LINKS . " WHERE network_id = ? AND link_id = ?";
+        $stmt = $this->qPE($sql, [$this->_netid, $objid]);
+        if ($stmt->fetch()) {
+            return "link";
+        }
+
+        $sql = "SELECT class_id FROM " . NC_TABLE_CLASSES . " WHERE network_id = ? AND class_id = ?";
+        $stmt = $this->qPE($sql, [$this->_netid, $objid]);
+        if ($stmt->fetch()) {
+            return "class";
+        }
+
+        // if reached here, its an invalid object
+        throw new Exception("Object id does not exist in database");
+    }
+
+    /**
+     * set a new class for a node or linke
+     * 
+     * @return int
+     * 
+     * 1 if the update went alright
+     * 
+     */
+    public function updateClass() {
+
+        $params = $this->subsetArray($this->_params, ['target_id', 'class']);
+               
+        // check if object exists and class name exists
+        $objtype = $this->isNodeOrLinkOrClass($params['target_id']);
+        $classid = $this->getNameAnnoRootId($this->_netid, $params['class'])['root_id'];
+
+        $tabname = NC_TABLE_LINKS;
+        if ($objtype == "node") {
+            $tabname = NC_TABLE_NODES;
+        } else if ($objtype == "link") {
+            $tabname = NC_TABLE_LINKS;
+        } else {
+            throw new Exception("Cannot update the class");
+        }
+
+        // check that the object does not already have that class_id
+        $sql = "SELECT class_id FROM $tabname WHERE network_id = ? and ".$objtype."_id = ?";
+        $stmt = $this->qPE($sql, [$this->_netid, $params['target_id']]);
+        $row = $stmt->fetch();
+        if (!$row) {
+            throw new Exception("Error reading from db");
+        }
+        if ($row['class_id'] == $classid) {
+            throw new Exception("Cannot update class (same as existing class)");
+        }
+        
+        // update the database table
+        $sql = "UPDATE $tabname SET class_id = ? WHERE network_id = ? AND " . $objtype . "_id = ? ";
+        $this->qPE($sql, [$classid, $this->_netid, $params['target_id']]);
+
+        // log the event        
+        $this->logActivity($this->_uid, $this->_netid, "updated class for $objtype ", $params['target_id'], $params['class']);
+        
+        return 1;
+    }
+
+    /**
+     * set a new owner for annotation pertaining to a node or link
+     * 
+     * @return int
+     * 
+     * 1 if all goes well. 
+     */
+    public function updateOwner() {
+        
+        $params = $this->subsetArray($this->_params, ['target_id', 'owner']);
+        
+        // check if object exists and class name exists
+        $objtype = $this->isNodeOrLinkOrClass($params['target_id']);        
+        $ownerperm = $this->getUserPermissions($this->_netid, $params['owner']);        
+        if ($ownerperm < NC_PERM_EDIT) {
+            throw new Exception("New owner does not exist or does not have sufficient permissions.");
+        }
+        
+        // fetch all the annotations that belong to the target_id
+        $sql = "SELECT datetime, anno_id, anno_type, owner_id, user_id, network_id, 
+                       root_id, parent_id, anno_text 
+                       FROM ".NC_TABLE_ANNOTEXT." WHERE network_id= ?  and root_id = ?";
+        $stmt = $this->qPE($sql, [$this->_netid, $params['target_id']]);
+        $result = [];
+        while ($row = $stmt->fetch()) {
+            // change the owner field here
+            $row['owner_id'] = $params['owner'];            
+            $result[] = $row;
+        }
+        
+        // re-send the annotation to the db. This will update the owner_id
+        $this->batchUpdateAnno($result);        
+             
+        // log the event        
+        $this->logActivity($this->_uid, $this->_netid, "updated ownership for $objtype ", $params['target_id'], $params['owner']);
+        
+        return 1;
+    }
+
 }
 
 ?>

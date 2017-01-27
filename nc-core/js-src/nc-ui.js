@@ -530,6 +530,29 @@ nc.ui.DropdownGeneric = function(textlab, btnval) {
 
 
 /**
+ * Creates an object that controls a dropdown field that contains a simple form
+ * 
+ */
+nc.ui.DropdownGenericForm = function(textlab, btnval) {
+    
+    // first create a simple dropdown button
+    var dropb = nc.ui.DropdownGeneric(textlab, btnval);        
+    
+    // add a form to the dropdown menu
+    var html = '<div class="dropdown-menu nc-dropdown-form">';
+    html += '<form class="form-inline" onsubmit="return false;">';        
+    html += '<div class="form-group">';
+    html += '<label class="col-form-label"></label>';
+    html += '<input class="form-control input-sm"></input>';    
+    html += '<button type="submit" class="btn btn-success btn-sm">Submit</button>';        
+    html += '</div>';
+    html += '</form></div>';
+    dropb.find('div.nc-dropdown-content').append(html);
+    
+    return dropb;  
+}
+
+/**
  * Create a button with a dropdown list
  * 
  * @param atype string prefix 
@@ -1030,3 +1053,103 @@ nc.ui.timelineEntry = function(x, v) {
     
     return $(html);
 }
+
+
+/* ====================================================================================
+ * Widgets for updating name/class/owner on Object pages
+ * ==================================================================================== */
+
+nc.ui.confirmmsg = "Are you sure you want to proceed?";
+
+
+/**
+ * A UI widget that displays an object name and contains a form to set a new object name
+ * 
+ */
+nc.ui.NameDropdown = function(objectname, objid) { 
+    var dropb = nc.ui.DropdownGenericForm("Object name: "+objectname, objid);        
+    dropb.addClass("nc-object-dropdown");  
+    dropb.attr("val", "name");
+    dropb.find('label').html("New name:");   
+    
+    var msg = "<p>This action will reset the name associated with this graph element.</p>";
+    msg += "<p>"+nc.ui.confirmmsg+"</p>";
+    
+    // attach an action for form submission   
+    dropb.find("form").on("submit", function() {                
+        var newname = $(this).find("input").val();   
+        var dngmodal = $('#nc-danger-modal');
+        dngmodal.find('#nc-danger-header').html("Setting new name");
+        dngmodal.find('#nc-danger-body').html(msg);
+        $('#nc-danger-modal').modal('show');
+        $('#nc-danger-modal button[val="nc-ok"]').unbind("click").click(function() {
+            nc.object.confirmUpdateClass(objid, newname); 
+            $(this).off("click");
+        }); 
+        
+    }); 
+    
+    return dropb;
+}
+
+
+/**
+ * A UI widget that displays a class name and contains a form to set a new class
+ * 
+ */
+nc.ui.ClassDropdown = function(classname, objid) {
+    var dropb = nc.ui.DropdownGenericForm("Ontology class: "+classname, objid);    
+    dropb.addClass("nc-object-dropdown");
+    dropb.attr("val", "class");
+    dropb.find('label').html("New class:"); 
+    
+    var msg = "<p>This action will reset the ontology class associated with this graph element.</p>";
+    msg += "<p>"+nc.ui.confirmmsg+"</p>";
+    
+    // attach an action for form submission   
+    dropb.find("form").on("submit", function() {                
+        var newclassname = $(this).find("input").val();   
+        var dngmodal = $('#nc-danger-modal');
+        dngmodal.find('#nc-danger-header').html("Setting new class name");
+        dngmodal.find('#nc-danger-body').html(msg);
+        $('#nc-danger-modal').modal('show');
+        $('#nc-danger-modal button[val="nc-ok"]').unbind("click").click(function() {
+            nc.object.confirmUpdateClass(objid, newclassname); 
+            $(this).off("click");
+        }); 
+        
+    }); 
+    
+    return dropb;
+}
+
+
+/**
+ * A UI widget that displays an object's owner and contains a form to set a new owner
+ * 
+ */
+nc.ui.OwnerDropdown = function(ownerid, objid) {
+    var dropb = nc.ui.DropdownGenericForm("Managed by: "+ownerid, objid);    
+    dropb.addClass("nc-object-dropdown"); 
+    dropb.attr("val", "owner");
+    dropb.find('label').html("New owner:");    
+    
+    var msg = "<p>This action will reset the owner for this graph element.</p>";
+    msg += "<p>"+nc.ui.confirmmsg+"</p>";
+    
+    // attach an action for form submission   
+    dropb.find("form").on("submit", function() {                
+        var newowner = $(this).find("input").val();   
+        var dngmodal = $('#nc-danger-modal');
+        dngmodal.find('#nc-danger-header').html("Setting new owner");
+        dngmodal.find('#nc-danger-body').html(msg);
+        $('#nc-danger-modal').modal('show');
+        $('#nc-danger-modal button[val="nc-ok"]').unbind("click").click(function() {
+            nc.object.confirmUpdateOwner(objid, newowner); 
+            $(this).off("click");
+        });         
+    }); 
+    
+    return dropb;
+}
+

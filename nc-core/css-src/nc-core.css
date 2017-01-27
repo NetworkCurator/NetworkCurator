@@ -600,7 +600,7 @@ svg.nc-symbol {
     min-width: 94px;
 }
 .nc-toolbar-group-new button.dropdown-toggle {
-   
+
 }
 .nc-toolbar-group span.caret {
     margin-left: 6px;
@@ -646,7 +646,7 @@ svg.nc-symbol {
     border-bottom: 1px solid #ddd;
 }    
 .nc-dropdown-form span {
-     white-space: nowrap;
+    white-space: nowrap;
 }
 span.info {
     color: #777777;
@@ -684,8 +684,7 @@ span.info {
  * ------------------------------------------------------------------------------------ */
 
 
-.nc-object-type {
-    font-size: 110%;
+.nc-object-type {    
     color: #ffffff;
     background-color: #777777;
     padding: 4px 10px;  
@@ -696,7 +695,27 @@ span.info {
 #nc-object-content, #nc-network-content {
     margin-bottom: 2em;
 }
-
+#nc-object-toolbar .btn-primary {
+    color: #ffffff;
+    background-color: #777777;
+    border-color: #707070;
+}
+#nc-object-toolbar button.disabled {
+    opacity: 1;
+}
+#nc-object-toolbar {
+    margin-bottom: 1em;
+}
+#nc-object-toolbar input {
+    width: 140px;
+    text-align: left;
+}
+#nc-object-toolbar .nc-dropdown-form {
+    min-width:400px;
+}
+#nc-object-toolbar label {
+    margin-right: 12px;
+}
 
 /* ------------------------------------------------------------------------------------
  * Tables 
@@ -758,7 +777,7 @@ img.nc-comment-response {
 
 /**
  * A label that appears nearby the markdown sandbox boxes
- */
+*/
 .nc-aside {
     opacity: 0.6;
 }

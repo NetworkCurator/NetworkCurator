@@ -21,11 +21,13 @@ echo "Building javascript and css files"
 cd nc-core
 rm -fr js
 mkdir js
-cat js-src/nc-core.js js-src/nc-utils.js \
+cat js-src/nc-core.js \
+    js-src/nc-utils.js \
     js-src/nc-admin.js \
     js-src/nc-data.js \
     js-src/nc-graph.js \
     js-src/nc-graphsim.js \
+    js-src/nc-object.js \
     js-src/nc-ontology.js \
     js-src/nc-sandbox.js \
     js-src/nc-ui.js \

@@ -208,12 +208,16 @@ nc.init.initComments = function() {
     $('#nc-newcomment').html(nc.ui.CommentBox(nc.userid, rootid, rootid, '', ''));    
 }
 
+
 /**
  * For all users, sets up boxes that display markdown content. 
  * For curators, provides access to page toggling
  * 
  */
 nc.init.initCuration = function() {
+    
+    // init the toolbar with buttons and dropdown
+    nc.object.initToolbar();           
     
     // all users need to have the anno edit boxes
     // these boxes actually displays content.        
@@ -251,6 +255,9 @@ nc.init.initCuration = function() {
             // for non-curators, only those components that are owned by them
             var targets = (nc.curator ? $('.nc-editable-text') : $('.nc-editable-text[owner="'+nc.userid+'"]'));            
             targets.toggleClass('nc-editable-text-visible');
+            // enable editing via dropdown boxes
+            $('#nc-object-toolbar span.nc-dropdown-caret').toggle();
+            $('#nc-object-toolbar button').toggleClass("disabled");
         });    
     
     $('.nc-curation-toolbox').css("font-size", $('body').css("font-size"));   

@@ -416,7 +416,7 @@ class NCLogger extends NCDB {
      * @param type $netname
      * @param type $nameanno
      * 
-     * @return string 
+     * @return array 
      * 
      * The root id, or empty string when the name annotation does not match
      */
@@ -435,6 +435,31 @@ class NCLogger extends NCDB {
         return $result;
     }
 
+    /**
+     * This is opposite of getNameAnnoRootId
+     * Suppose we have an id and we want to fetch the current name associated with that id
+     * 
+     * @param string $netid
+     * @param string $rootid
+     * @param boolean $throw
+     * 
+     * @return array 
+     */
+    protected function getObjectName($netid, $rootid, $throw=true) {
+        $sql = "SELECT anno_text, anno_status FROM " . NC_TABLE_ANNOTEXT . "
+                    WHERE BINARY network_id = ? AND root_id = ? AND
+                    anno_type = " . NC_NAME . " AND anno_status != " . NC_OLD;
+        $stmt = $this->qPE($sql, [$netid, $rootid]);
+        $result = $stmt->fetch();
+        if ($throw) {
+            if (!$result) {
+                throw new Exception("Object '$rootid' does not match any annotations");
+            }
+        }
+        return $result;
+    }
+    
+    
     /**
      * Get a full set of text annotations (name, title, etc) for a given root id.
      * e.g. use this to fetch summary information about a given network (rootid="Wxxxx")
