@@ -84,7 +84,8 @@ class NCGraphs extends NCOntology {
             throw new Exception("Node name already exists");
         }
 
-        // if reached here, create the new node (uses batch insert with one node)        
+        // if reached here, create the new node (uses batch insert with one node) 
+        $params['status'] = NC_ACTIVE;
         $nodeid = $this->batchInsertNodes([$params]);
 
         $this->dbunlock();
@@ -234,7 +235,8 @@ class NCGraphs extends NCOntology {
         $params['source_id'] = $this->getNodeId($this->_netid, $params['source']);
         $params['target_id'] = $this->getNodeId($this->_netid, $params['target']);
 
-        // if reached here, create the new node        
+        // if reached here, create the new node
+        $params['status'] = NC_ACTIVE;
         $linkid = $this->batchInsertLinks([$params]);
 
         $this->dbunlock();
@@ -694,6 +696,35 @@ class NCGraphs extends NCOntology {
         return $neighbors;
     }
 
+    /**
+     * fetch the class_id and class name associated with a node or link
+     * 
+     */
+    public function getObjectClass() {
+        
+        $params = $this->subsetArray($this->_params, ["query"]);
+
+        // simplify access to query id
+        $queryid = $params['query'];        
+
+        $result = [];
+        
+        // check if this queryid is in a node
+        $sql = "SELECT class_id FROM ".NC_TABLE_NODES." WHERE node_id = ?";
+        $stmt = $this->qPE($sql, [$params['query']]);
+        while ($row = $stmt->fetch()) {
+            $result[] = $row;
+        }
+        
+        // check if the queryid is a link
+        $sql = "SELECT class_id FROM ".NC_TABLE_LINKS." WHERE link_id = ?";
+        $stmt = $this->qPE($sql, [$params['query']]);
+        while ($row = $stmt->fetch()) {
+            $result[] = $row;
+        }
+                
+        return $result;        
+    }
 }
 
 ?>

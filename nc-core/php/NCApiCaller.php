@@ -167,9 +167,10 @@ class NCApiCaller {
     /**
      * get title, abstract, content associated with an object
      * 
-     * @param type $network
-     * @param type $object
-     * @return type
+     * @param string $network
+     * @param string $object
+     * @return array
+     * 
      */
     function getSummary($network, $object) {
         $params = $this->_p;
@@ -179,6 +180,23 @@ class NCApiCaller {
         $params['root_id'] = $object;
         $params = array_merge($params, ['name'=>1, 'title'=>1, 'abstract'=>1, 'content'=>1]);
         return $this->_caller->sendRequest($params);
+    }
+    
+    /**
+     * get the class_id and class name associated with an object
+     * 
+     * @param string $network
+     * @param string $object
+     * @return array
+     * 
+     */
+    function getObjectClass($network, $object) {
+        $params = $this->_p;
+        $params['controller'] = 'NCGraphs';
+        $params['action'] = 'getObjectClass';
+        $params['network'] = $network;
+        $params['query'] = $object;
+        return $this->_caller->sendRequest($params);        
     }
     
     /**
