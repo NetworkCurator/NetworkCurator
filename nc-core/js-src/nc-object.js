@@ -33,8 +33,9 @@ nc.object.initToolbar = function() {
     var oname = otbr.attr("objectname");
     var oclass = otbr.attr("objectclass");
     var oowner = otbr.attr("objectowner");
+    var annoid = otbr.attr("objectannoid");
     
-    otbr.append(nc.ui.NameDropdown(oname, oid));
+    otbr.append(nc.ui.NameDropdown(oname, annoid, oid));
     otbr.append(nc.ui.ClassDropdown(oclass, oid));
     otbr.append(nc.ui.OwnerDropdown(oowner, oid));        
     otbr.find('span.nc-dropdown-caret').hide();
@@ -74,9 +75,34 @@ nc.object.confirmUpdateClass = function(objid, newclassname) {
 /**
  * function called from a confirmatory modal
  * sends request to server to update the name annotation associated with an object id 
+ * 
+ * @param annoid - string, the target annotation id, e.g. Txxxxx0
+ * @param newname - string, the new object name
  */
-nc.object.confirmUpdateName = function(objid, newname) {
-    alert("confirm name "+objid+" "+newname);
+nc.object.confirmUpdateName = function(annoid, newname) {    
+    
+    // api call to update annotation. This is similar to nc.updateAnnotationText
+    // but here the end-handler also updates the object GUI component
+     $.post(nc.api, 
+    {
+        controller: "NCAnnotations", 
+        action: "updateAnnotationText", 
+        network: nc.network,
+        anno_id: annoid,
+        anno_text: newname
+    }, function(data) {           
+        nc.utils.alert(data);  
+        data = JSON.parse(data);
+         if (nc.utils.checkAPIresult(data)) {            
+            if (data['success']==false) {              
+                nc.msg('Error', data['errormsg']);                
+            } else {
+                // change the label on the ui button                
+                var btng = $('#nc-object-toolbar .btn-group[val="name"]');                
+                btng.find('span.nc-classname-span').html("Object name: "+newname);
+            }
+        }                  
+    });
 }
 
 /**

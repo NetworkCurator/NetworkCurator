@@ -1,8 +1,8 @@
 {
     "network": [
         {
-            "name": "net-status",
-            "title": "net-status",
+            "name": "nc-test-xray",
+            "title": "Network with updated status changes",
             "abstract": "network uploaded with some elements with status 0. Updated with new nodes and status changes."
         }
     ],

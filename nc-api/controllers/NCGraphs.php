@@ -53,7 +53,39 @@ class NCGraphs extends NCOntology {
         }
         return $nodeid;
     }
-
+        
+    /**
+     * Helper function checks if current user has permissions to edit the graph
+     */
+    private function checkEditPermissions() {
+        if ($this->_uperm < NC_PERM_EDIT) {
+            throw new Exception("Insufficient permissions to edit graph");
+        }
+    }
+    
+    /**
+     * Helper function checks if current user has permissions to edit a graph object
+     * 
+     * @return boolean
+     * 
+     * true if user is a curator, or has edit permissions and is the owner of an object
+     * 
+     * throws exception if not
+     * 
+     */
+    private function checkUpdatePermissions($targetid) {
+        if ($this->_uperm >= NC_PERM_CURATE) {
+            return true;
+        }
+        if ($this->_uperm == NC_PERM_EDIT) {
+            $targetowner = $this->getObjectOwner($this->_netid, $targetid);
+            if ($targetowner==$this->_uid) {
+                return true;
+            }
+        }       
+        throw new Exception("Insufficient permission to update graph object");
+    }
+    
     /**
      * Processes a request to create a new node in a network
      * 
@@ -65,6 +97,9 @@ class NCGraphs extends NCOntology {
         // check that required inputs are defined
         $params = $this->subsetArray($this->_params, array_merge(["class"], array_keys($this->_annotypes)));
 
+        // check required permission to edit the graph
+        $this->checkEditPermissions();
+        
         if (strlen($params['name']) < 2) {
             throw new Exception("Name too short");
         }
@@ -109,7 +144,7 @@ class NCGraphs extends NCOntology {
     private function toggleNode($nodename, $newstatus) {
 
         $newstatus = $this->standardizeStatus($newstatus, "AD");
-
+        
         $this->dblock([NC_TABLE_NODES, NC_TABLE_ANNOTEXT]);
 
         // check if this node name exists        
@@ -141,6 +176,10 @@ class NCGraphs extends NCOntology {
      */
     public function removeNode() {
         $params = $this->subsetArray($this->_params, ["name"]);
+        
+        // check required permission to edit the graph
+        $this->checkEditPermissions();
+                
         return $this->toggleNode($params['name'], NC_DEPRECATED);
     }
 
@@ -154,6 +193,10 @@ class NCGraphs extends NCOntology {
      */
     public function activateNode() {
         $params = $this->subsetArray($this->_params, ["name"]);
+        
+        // check required permission to edit the graph
+        $this->checkEditPermissions();
+                
         return $this->toggleNode($params['name'], NC_ACTIVE);
     }
 
@@ -212,6 +255,10 @@ class NCGraphs extends NCOntology {
         $params = $this->subsetArray($this->_params, array_merge(["class",
                     "source", "target"], array_keys($this->_annotypes)));
 
+        // check required permission to edit the graph
+        $this->checkEditPermissions();
+        
+        
         if (strlen($params['name']) < 2) {
             throw new Exception("Name too short");
         }
@@ -373,6 +420,10 @@ class NCGraphs extends NCOntology {
      */
     public function removeLink() {
         $params = $this->subsetArray($this->_params, ["name"]);
+        
+        // check required permission to edit the graph
+        $this->checkEditPermissions();
+        
         return $this->toggleLink($params['name'], NC_DEPRECATED);
     }
 
@@ -386,6 +437,10 @@ class NCGraphs extends NCOntology {
      */
     public function activateLink() {
         $params = $this->subsetArray($this->_params, ["name"]);
+        
+        // check required permission to edit the graph
+        $this->checkEditPermissions();
+        
         return $this->toggleLink($params['name'], NC_ACTIVE);
     }
 
@@ -774,6 +829,9 @@ class NCGraphs extends NCOntology {
 
         $params = $this->subsetArray($this->_params, ['target_id', 'class']);
                
+        // check required permission to update an existing graph object
+        $this->checkUpdatePermissions($params['target_id']);
+        
         // check if object exists and class name exists
         $objtype = $this->isNodeOrLinkOrClass($params['target_id']);
         $classid = $this->getNameAnnoRootId($this->_netid, $params['class'])['root_id'];
@@ -819,6 +877,9 @@ class NCGraphs extends NCOntology {
         
         $params = $this->subsetArray($this->_params, ['target_id', 'owner']);
         
+        // check required permission to update an existing graph object
+        $this->checkUpdatePermissions($params['target_id']);
+        
         // check if object exists and class name exists
         $objtype = $this->isNodeOrLinkOrClass($params['target_id']);        
         $ownerperm = $this->getUserPermissions($this->_netid, $params['owner']);        
@@ -828,8 +889,8 @@ class NCGraphs extends NCOntology {
         
         // fetch all the annotations that belong to the target_id
         $sql = "SELECT datetime, anno_id, anno_type, owner_id, user_id, network_id, 
-                       root_id, parent_id, anno_text 
-                       FROM ".NC_TABLE_ANNOTEXT." WHERE network_id= ?  and root_id = ?";
+                       root_id, parent_id, anno_text FROM ".NC_TABLE_ANNOTEXT." 
+                       WHERE network_id= ? AND root_id = ? AND anno_status = ".NC_ACTIVE;
         $stmt = $this->qPE($sql, [$this->_netid, $params['target_id']]);
         $result = [];
         while ($row = $stmt->fetch()) {

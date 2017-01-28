@@ -445,7 +445,7 @@ class NCLogger extends NCDB {
      * 
      * @return array 
      */
-    protected function getObjectName($netid, $rootid, $throw=true) {
+    protected function getObjectName($netid, $rootid, $throw = true) {
         $sql = "SELECT anno_text, anno_status FROM " . NC_TABLE_ANNOTEXT . "
                     WHERE BINARY network_id = ? AND root_id = ? AND
                     anno_type = " . NC_NAME . " AND anno_status != " . NC_OLD;
@@ -458,8 +458,31 @@ class NCLogger extends NCDB {
         }
         return $result;
     }
-    
-    
+
+    /**
+     * fetch the user name who is the designated owner of the rootid "name" annotation
+     * 
+     * @param type $netid
+     * @param type $rootid
+     * 
+     * @return array
+     * 
+     * the owner_id of the "name" annotation asociated with root_id=$rootid
+     * 
+     */
+    protected function getObjectOwner($netid, $rootid) {
+
+        $sql = "SELECT owner_id, anno_status FROM " . NC_TABLE_ANNOTEXT . " 
+             WHERE network_id= ? AND root_id = ? 
+             AND anno_type = " . NC_NAME . " AND anno_status = " . NC_ACTIVE;
+        $stmt = $this->qPE($sql, [$netid, $rootid]);
+        $result = $stmt->fetch();
+        if (!$result) {
+            throw new Exception("Object '$rootid' does not match any annotations");
+        }
+        return $result;
+    }
+
     /**
      * Get a full set of text annotations (name, title, etc) for a given root id.
      * e.g. use this to fetch summary information about a given network (rootid="Wxxxx")
@@ -740,6 +763,81 @@ class NCLogger extends NCDB {
                 return NC_DEPRECATED;
             }
         }
+    }
+
+    /**
+     * Generate a random string composed of characters
+     * 
+     * @param integer $stringlength
+     * @param string $okchars
+     * 
+     * string with characters that are allowed in the output random string. By 
+     * default the string holds alphanumeric characters without vowels. This 
+     * helps avoid 'funny' random string like 'poop'.
+     * 
+     * @return string
+     */
+    protected function makeRandomString($stringlength, $okchars = "1234567890bcdfghjklmnpqrstvwxyz") {
+
+        // helper object 
+        $oklen = strlen($okchars);
+
+        // generate random string one character at a time
+        $ans = "";
+        $anslen = 0;
+        while ($anslen < $stringlength) {
+            $temppos = rand(0, $oklen - 1);
+            $ans .= substr($okchars, $temppos, 1);
+            $anslen++;
+        }
+
+        return $ans;
+    }
+
+    /**
+     * validates if a string contains characters that are allowed
+     * 
+     * @param string $target
+     * 
+     * a string to validate
+     * 
+     * @param int $minlength
+     * 
+     * minimum number of characters in the target string
+     * 
+     * @param string $okchars
+     * 
+     * string containing all characters that are allowed in $target
+     * 
+     * @return boolean
+     * 
+     * true if target string is made up of valid characters. false if it contains 
+     * characters not in the accepted set
+     * 
+     */
+    function validateNameString($target, $minlength = 2, $okchars = "0123456789AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz-_") {
+
+        // check the length
+        $targetlen = strlen($target);
+        if ($targetlen < $minlength) {
+            return false;
+        }
+
+        // check the target composition   
+        // first convert okchars into an array
+        $okarr = [];
+        $oklen = strlen($okchars);
+        for ($i = 0; $i < $oklen; $i++) {
+            $okarr[substr($okchars, $i, 1)] = 1;
+        }
+        // then check each character in $target    
+        for ($j = 0; $j < $targetlen; $j++) {
+            if (!array_key_exists(substr($target, $j, 1), $okarr)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
 }

@@ -59,6 +59,8 @@ class NCAnnotations extends NCLogger {
             throw new Exception("Insufficient permission to edit annotation");
         }
 
+        $this->dblock([NC_TABLE_ANNOTEXT]);
+
         // need to find details of the existing annotation, user_id, root_id, etc.  
         $sql = "SELECT datetime, owner_id, root_id, parent_id, anno_type, network_id 
                   FROM " . NC_TABLE_ANNOTEXT . " 
@@ -76,8 +78,21 @@ class NCAnnotations extends NCLogger {
             }
         }
 
+        // for name annotation, make sure that new name is unique, i.e. not already used
+        if ($result['anno_type'] == NC_NAME) {            
+            $sql = "SELECT datetime, root_id FROM " . NC_TABLE_ANNOTEXT . " WHERE 
+                network_id = ? AND anno_type = " . NC_NAME . " 
+                    AND anno_text = ? AND anno_status= " . NC_ACTIVE;
+            $stmt = $this->qPE($sql, [$this->_netid, $params['anno_text']]);            
+            if ($stmt->fetch()) {
+                throw new Exception("Name is not available");
+            }
+        }
+
         // if reached here, edit the annotation              
         $this->batchUpdateAnno([array_merge($params, $result)]);
+
+        $this->dbunlock();
 
         // log the action       
         $this->logActivity($this->_uid, $this->_netid, "updated annotation text for", $params['anno_id'], $params['anno_text']);
@@ -210,7 +225,7 @@ class NCAnnotations extends NCLogger {
     public function getHistory() {
 
         $params = $this->subsetArray($this->_params, ["anno_id"]);
-        
+
         // fetch the annotation text from db
         $sql = "SELECT datetime, modified, user_id, anno_text 
                   FROM " . NC_TABLE_ANNOTEXT . "
@@ -220,9 +235,10 @@ class NCAnnotations extends NCLogger {
         while ($row = $stmt->fetch()) {
             $result[] = $row;
         }
-                
+
         return $result;
     }
+
 }
 
 ?>

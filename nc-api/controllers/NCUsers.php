@@ -50,11 +50,15 @@ class NCUsers extends NCLogger {
             throw new Exception("Insufficient permissions to create a user");
         }
 
+        // check the requested user_id is valide
+        if (!$this->validateNameString($params['target_id'])) {
+            throw new Exception("Invalid user name");
+        }
+        
         $this->dblock([NC_TABLE_USERS]);
 
         // check that the network does not already exist?                  
-        $sql = "SELECT user_id FROM " . NC_TABLE_USERS . " WHERE user_id = ? ";
-        //ncInterpolateQuery($sql, $params)
+        $sql = "SELECT user_id FROM " . NC_TABLE_USERS . " WHERE user_id = ? ";        
         $stmt = $this->qPE($sql, [$params['target_id']]);
         if ($stmt->fetchAll()) {
             throw new Exception("Target user id exists");
@@ -92,6 +96,59 @@ class NCUsers extends NCLogger {
     }
 
     /**
+     * Remove all data related to a user.
+     * Can be invoked only by admin user (mainly for developer use)
+     * 
+     * @return string
+     * 
+     * message with purge summary
+     * 
+     */
+    public function purgeUser() {
+
+        // this action only for admin
+        if ($this->_uid !== "admin") {
+            throw new Exception("Insufficient permissions to purge user");
+        }
+
+        $params = $this->subsetArray($this->_params, ["target"]);
+        $target = $params['target'];
+
+        // check that the user exists
+        // make sure the target user exist
+        $sql = "SELECT user_id FROM " . NC_TABLE_USERS . " WHERE user_id = ?";
+        $stmt = $this->qPE($sql, [$params['target']]);
+        if (!$stmt->fetch()) {
+            throw new Exception("Target user does not exist");
+        }
+        
+        // proceed to purge the network
+        // remove all entries from db tables
+        $alltables = [NC_TABLE_ACTIVITY, NC_TABLE_PERMISSIONS, NC_TABLE_ANNOTEXT, 
+            NC_TABLE_FILES, NC_TABLE_PERMISSIONS, NC_TABLE_USERS, NC_TABLE_LOG];
+        foreach ($alltables as $dbtable) {
+            $sql = "DELETE FROM $dbtable WHERE user_id = ?";
+            $this->qPE($sql, [$target]);
+        }
+        $alltables2 = [NC_TABLE_ANNOTEXT, NC_TABLE_NETWORKS];
+        foreach ($alltables2 as $dbtable) {
+            $sql = "DELETE FROM $dbtable WHERE owner_id = ?";
+            $this->qPE($sql, [$target]);
+        }
+
+        // remove data directory for the network
+        $targetdir = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/users/" . $target;
+        $result = "Removing user " . $target . ".\n User data is in directory: " . $targetdir .
+                ".\n Attempted to remove, but please verify.\n\n";
+        system("rm -fr $targetdir");
+
+        // record the action in the site log
+        $this->logAction($this->_uid, $this->_params['source_ip'], "NCUsers", "purgeUser", $target);
+
+        return $result;
+    }
+
+    /**
      * Update first/middle/last names, email, or password for an existing user
      * 
      * 
@@ -102,7 +159,6 @@ class NCUsers extends NCLogger {
         $params = $this->subsetArray($this->_params, [
             "target_firstname", "target_middlename", "target_lastname",
             "target_email", "target_id", "target_password", "target_newpassword"]);
-
 
         // perform tests on whether this user can create new user?
         if ($this->_uid !== "admin" && $this->_uid !== $params['target_id']) {

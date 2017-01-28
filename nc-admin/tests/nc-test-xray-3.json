@@ -1,7 +1,7 @@
 {
     "network": [
         {
-            "name": "net-status",
+            "name": "nc-test-xray",
             "title": "net-status",
             "abstract": "network uploaded with some elements with status 0"
         }

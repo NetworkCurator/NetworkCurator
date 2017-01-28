@@ -70,8 +70,8 @@ class NCNetworks extends NCLogger {
         // check that required parameters are defined
         $params = $this->subsetArray($this->_params, array_keys($this->_annotypes));
 
-        if (strlen($params['name']) < 2) {
-            throw new Exception("Network name too short");
+        if (!$this->validateNameString($params['name'])) {
+            throw new Exception("Invalid network name");
         }
 
         // perform tests on whether this user can create new network?

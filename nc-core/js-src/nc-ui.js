@@ -1066,24 +1066,28 @@ nc.ui.confirmmsg = "Are you sure you want to proceed?";
  * A UI widget that displays an object name and contains a form to set a new object name
  * 
  */
-nc.ui.NameDropdown = function(objectname, objid) { 
+nc.ui.NameDropdown = function(objectname, annoid, objid) { 
     var dropb = nc.ui.DropdownGenericForm("Object name: "+objectname, objid);        
     dropb.addClass("nc-object-dropdown");  
     dropb.attr("val", "name");
     dropb.find('label').html("New name:");   
-    
-    var msg = "<p>This action will reset the name associated with this graph element.</p>";
-    msg += "<p>"+nc.ui.confirmmsg+"</p>";
-    
+        
     // attach an action for form submission   
     dropb.find("form").on("submit", function() {                
-        var newname = $(this).find("input").val();   
+        var newname = $(this).find("input").val();
+        if (nc.utils.checkString(newname, 1)==0) { 
+            nc.msg('Hey!', 'Invalid name');  
+            return false;
+        }            
         var dngmodal = $('#nc-danger-modal');
         dngmodal.find('#nc-danger-header').html("Setting new name");
+        var msg = "<p>This action will reset the name associated with this graph element from <b>"+objectname+"</b> to <b>"+newname+"</b>.</p>";
+        msg += "<p>"+nc.ui.confirmmsg+"</p>";
+   
         dngmodal.find('#nc-danger-body').html(msg);
         $('#nc-danger-modal').modal('show');
         $('#nc-danger-modal button[val="nc-ok"]').unbind("click").click(function() {
-            nc.object.confirmUpdateClass(objid, newname); 
+            nc.object.confirmUpdateName(annoid, newname); 
             $(this).off("click");
         }); 
         
@@ -1102,15 +1106,18 @@ nc.ui.ClassDropdown = function(classname, objid) {
     dropb.addClass("nc-object-dropdown");
     dropb.attr("val", "class");
     dropb.find('label').html("New class:"); 
-    
-    var msg = "<p>This action will reset the ontology class associated with this graph element.</p>";
-    msg += "<p>"+nc.ui.confirmmsg+"</p>";
-    
+        
     // attach an action for form submission   
     dropb.find("form").on("submit", function() {                
-        var newclassname = $(this).find("input").val();   
+        var newclassname = $(this).find("input").val();
+        if (nc.utils.checkString(newclassname, 1)==0) { 
+            nc.msg('Hey!', 'Invalid name');  
+            return false;
+        }  
         var dngmodal = $('#nc-danger-modal');
         dngmodal.find('#nc-danger-header').html("Setting new class name");
+        var msg = "<p>This action will reset the ontology class from <b>"+classname+"</b> to <b>"+newclassname+"</b>.</p>";
+        msg += "<p>"+nc.ui.confirmmsg+"</p>";    
         dngmodal.find('#nc-danger-body').html(msg);
         $('#nc-danger-modal').modal('show');
         $('#nc-danger-modal button[val="nc-ok"]').unbind("click").click(function() {
@@ -1133,15 +1140,18 @@ nc.ui.OwnerDropdown = function(ownerid, objid) {
     dropb.addClass("nc-object-dropdown"); 
     dropb.attr("val", "owner");
     dropb.find('label').html("New owner:");    
-    
-    var msg = "<p>This action will reset the owner for this graph element.</p>";
-    msg += "<p>"+nc.ui.confirmmsg+"</p>";
-    
+        
     // attach an action for form submission   
     dropb.find("form").on("submit", function() {                
-        var newowner = $(this).find("input").val();   
+        var newowner = $(this).find("input").val();
+        if (nc.utils.checkString(newowner, 1)==0) { 
+            nc.msg('Hey!', 'Invalid name');  
+            return false;
+        }  
         var dngmodal = $('#nc-danger-modal');
         dngmodal.find('#nc-danger-header').html("Setting new owner");
+        var msg = "<p>This action will change the owner for this graph element from <b>"+ownerid+"</b> to <b>"+newowner+"</b>.</p>";
+        msg += "<p>"+nc.ui.confirmmsg+"</p>"; 
         dngmodal.find('#nc-danger-body').html(msg);
         $('#nc-danger-modal').modal('show');
         $('#nc-danger-modal button[val="nc-ok"]').unbind("click").click(function() {

@@ -1,42 +1,45 @@
 <?php
 
 /*
- * Tests for creating/adjusting ontology classes 
+ * Post-installation script that tests API controller: NCOntology
+ * (For debugging and testing only)
+ * 
+ * The tests that fetch ontology information report "ok" as long as there is no
+ * error/exception throw. To check if the db actually contains the proper data, 
+ * check the result manually
  * 
  */
 
-
 echo "\n";
-echo "NetworkCurator - some tests for NCOntology \n\n";
+echo "test-04-ontology: testing creating and updating ontology classes\n\n";
 include_once "test-prep.php";
+
 
 
 /* --------------------------------------------------------------------------
  * Create some classes for the zulu network
  * -------------------------------------------------------------------------- */
 
-
-$newclasses = array('NODE_A', 'NODE_B', 'NODE_C', 'Q');
-foreach ($newclasses as $abc) {
+$nodeclasses = array('NODE_A'=>true, 'NODE_B'=>true, 'NODE_C'=>true, 'Q'=>false);
+foreach ($nodeclasses as $abc => $expected) {
     echo "Creating node class $abc";
     $params = array('controller' => 'NCOntology', 'action' => 'createNewClass',
         'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
-        'network' => 'net-zulu', 'parent' => '', 'connector' => 0,
+        'network' => 'nc-test-zulu', 'parent' => '', 'connector' => 0,
         'directional' => 0, 'name' => $abc, 'title'=>$abc, 'abstract'=>'', 'content'=>'', 
         'defs'=>'');
-    tryreport($NCapi, $params);
+    tryreport($NCapi, $params, $expected);
 }
 
 
-$newclasses = array('LINK_X', 'LINK_Y', 'LINK_C', 'NODE_A');
-foreach ($newclasses as $abc) {
+$linkclasses = array('LINK_X'=>true, 'LINK_Y'=>true, 'LINK_C'=>true, 'NODE_A'=>false);
+foreach ($linkclasses as $abc => $expected) {
     echo "Creating link class $abc";
     $params = array('controller' => 'NCOntology', 'action' => 'createNewClass',
         'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
-        'network' => 'net-zulu', 'parent' => '', 'connector' => 1,
+        'network' => 'nc-test-zulu', 'parent' => '', 'connector' => 1,
         'directional' => 0, 'name' => $abc, 'title'=>$abc, 'abstract'=>'', 'content'=>'');
-
-    tryreport($NCapi, $params);
+    tryreport($NCapi, $params, $expected);
 }
 
 
@@ -44,20 +47,20 @@ foreach ($newclasses as $abc) {
  * Try updating classes
  * -------------------------------------------------------------------------- */
 
-echo "Updating NODE_C into NODE_B:NODE_C2";
+echo "Updating NODE_C into NODE_B;NODE_C2: ";
 $params = array('controller' => 'NCOntology', 'action' => 'updateClass',
     'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
-    'network' => 'net-zulu', 'target' => 'NODE_C', 'name' => 'NODE_C2',
+    'network' => 'nc-test-zulu', 'target' => 'NODE_C', 'name' => 'NODE_C2',
     'title'=>'', 'abstract'=>'', 'content'=>'',
     'parent' => 'NODE_B', 'connector' => 0, 'directional' => 0,
     'status' => 1, 'defs'=>'');
-tryreport($NCapi, $params);
+tryreport($NCapi, $params, true);
 
-echo "Deactivating LINK_C";
+echo "Deactivating LINK_C: ";
 $params = array('controller' => 'NCOntology', 'action' => 'removeClass',
     'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
-    'network' => 'net-zulu', 'name' => 'LINK_C');
-tryreport($NCapi, $params);
+    'network' => 'nc-test-zulu', 'name' => 'LINK_C');
+tryreport($NCapi, $params, true);
 
 
 
@@ -65,19 +68,19 @@ tryreport($NCapi, $params);
  * Try fetching ontologies
  * -------------------------------------------------------------------------- */
 
-echo "Fetching node ontology";
+echo "Fetching node ontology: ";
 $params = array('controller' => 'NCOntology', 'action' => 'getNodeOntology',
     'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
-    'network' => 'net-zulu');
-$result = tryreport($NCapi, $params, true);
+    'network' => 'nc-test-zulu');
+$result = tryreport($NCapi, $params, true, true);
 //print_r($result);
 
 
-echo "Fetching ontology disctionary";
+echo "Fetching ontology disctionary: ";
 $params = array('controller' => 'NCOntology', 'action' => 'getOntologyDictionary',
     'user_id' => 'admin', 'user_extpwd' => $upw, 'user_ip' => 'install-testdata',
-    'network' => 'net-zulu');
-$result = tryreport($NCapi, $params, true);
+    'network' => 'nc-test-zulu');
+$result = tryreport($NCapi, $params, true, true);
 //print_r($result);
 
 

@@ -1,7 +1,7 @@
 {
-    "network": [
+    "net": [
         {
-            "name": "net-zuli",
+            "name": "nc-test-xray",
             "title": "Import title",
             "contents": "http://www.screensignatures.org"
         }

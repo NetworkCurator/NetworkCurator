@@ -1,12 +1,20 @@
+#!/bin/bash
 
-cd ../install/
-php install.php
+## Run all the test scripts
 
-cd ../tests
-php test-create.php
-##php test-networks.php
-php test-permissions.php
-php test-ontology.php
-php test-graph.php
+php test-01-create.php
+php test-02-networks.php
+php test-03-permissions.php
+php test-04-ontology.php
+php test-05-graph.php
 
+php test-10-import.php
+php test-11-update.php
+
+
+## By default, the script also runs the purge component
+## This removes users, networks, objects created during testing
+## To see those objects in the GUI, and thus check proper behavior,
+## comment the next line.
+##php test-99-purge.php
 

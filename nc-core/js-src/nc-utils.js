@@ -204,8 +204,7 @@ nc.utils.sanitize =function(x, allowstyle) {
     var oktags = nc.utils.allowedTags.slice(0);
     if (allowstyle) {
         oktags.push('style');
-    }       
-    //alert("A: "+JSON.stringify(oktags)+" ++++ "+JSON.stringify(nc.utils.allowedAttributes));
+    }           
     return sanitizeHtml(x, {
         allowedTags: oktags,
         allowedAttributes: nc.utils.allowedAttributes 
