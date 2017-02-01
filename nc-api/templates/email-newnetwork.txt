@@ -1,4 +1,4 @@
-# New network [NETWORK]
+# New network "[NETWORK]"
 
 Dear [FIRSTNAME],
 

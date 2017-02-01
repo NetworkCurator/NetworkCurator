@@ -87,8 +87,8 @@ try {
 
     // log most actions, except user confirmation    
     if ($action == "verify") {
-        if (isset($params['target_password'])) {
-            $params['target_password'] = 'password';
+        if (isset($params['target_password'])) {            
+            unset($params['target_password']);
         }
 
         $logger = new NCLogger($db, ["user_id"=> $params['user_id']]);
