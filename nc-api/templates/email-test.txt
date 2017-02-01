@@ -1,0 +1,8 @@
+# Test email
+
+Dear [FIRSTNAME],
+
+This is a test email. 
+
+
+Thanks

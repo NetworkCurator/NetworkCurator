@@ -22,8 +22,7 @@ class NCDB {
         $this->_db = $db;
     }
 
-    protected function dblock($tables) {
-        //$this->_db->beginTransaction();        
+    protected function dblock($tables) {        
         $sql = "LOCK TABLES " . implode(" WRITE, ", $tables)." WRITE ";        
         $this->_db->exec($sql);                
         $this->_db->beginTransaction();        
@@ -37,8 +36,14 @@ class NCDB {
     /**
      * Preps and executes a query.
      * 
-     * @param type $sql
-     * @param type $bind
+     * @param string $sql
+     * 
+     * SQL statement to execute
+     * 
+     * @param array $arr
+     * 
+     * parameters to bind into the SQL statement
+     * 
      * @return PDOStatement
      * 
      * The output can be used to fetch() results of the query
@@ -50,7 +55,14 @@ class NCDB {
         return $stmt;
     }
        
-    
+    /**
+     * Simpler version of qPE where the statement is executed without binding and
+     * without providing any output/return object.
+     * 
+     * @param string $sql
+     * 
+     * simple SQL statement
+     */
     protected function q($sql) {
         $this->_db->query($sql);
     }

@@ -70,6 +70,18 @@ if (!defined("NC_SITE_NAME")) {
 }
 
 
+// domain name for website, e.g. networkcurator.org
+if (!defined("NC_SITE_DOMAIN")) {
+    define("NC_SITE_DOMAIN", "networkcurator.org");
+}
+
+
+// URL for website, e.g. https://www.networkcurator.org
+if (!defined("NC_SITE_URL")) {
+    define("NC_SITE_URL", "https://www.networkcurator.org");    
+}
+
+
 // initial password for site admin
 if (!defined("NC_SITE_ADMIN_PASSWORD")) {
     define("NC_SITE_ADMIN_PASSWORD", "admin123");

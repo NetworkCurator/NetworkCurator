@@ -2,10 +2,13 @@
 
 include_once "NCDB.php";
 include_once "NCTimer.php";
+include_once "NCEmail.php";
 
 /*
  * Class handling logging activity into the _activity and _log tables.
- * It also forms the basis for all the controllers.
+ * It forms the basis for all the controllers.
+ * 
+ * The class also contains a number of miscellaneous functions
  * 
  * Functions assume that the NC configuration definitions are already loaded
  * 
@@ -691,26 +694,7 @@ class NCLogger extends NCDB {
             $result[$key . $suffix] = $value;
         }
         return $result;
-    }
-
-    private function annocode2string($x) {
-        switch ($x) {
-            case NC_NAME:
-                $nowtype = "name";
-                break;
-            case NC_TITLE:
-                $nowtype = "title";
-                break;
-            case NC_ABSTRACT:
-                $nowtype = "abstract";
-                break;
-            case NC_CONTENT:
-                $nowtype = "content";
-                break;
-            default:
-                break;
-        }
-    }
+    }  
 
     /**
      * Helper, turns short codes like "nodes" into the table name, NC_TABLE_NODES
@@ -815,7 +799,7 @@ class NCLogger extends NCDB {
      * characters not in the accepted set
      * 
      */
-    function validateNameString($target, $minlength = 2, $okchars = "0123456789AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz-_") {
+    protected function validateNameString($target, $minlength = 2, $okchars = "0123456789AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz-_") {
 
         // check the length
         $targetlen = strlen($target);
@@ -839,7 +823,7 @@ class NCLogger extends NCDB {
 
         return true;
     }
-
+   
 }
 
 ?>

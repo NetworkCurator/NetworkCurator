@@ -12,6 +12,7 @@ include_once "../config/nc-config-local.php";
 include_once "../../nc-api/helpers/nc-db.php";
 include_once "../../nc-api/helpers/nc-generic.php";
 include_once "../../nc-api/helpers/GeneralApiCaller.php";
+include_once "../../nc-api/helpers/NCLogger.php";
 
 $db = connectDB(NC_DB_SERVER, NC_DB_NAME, NC_DB_ADMIN, NC_DB_ADMIN_PASSWD);
 

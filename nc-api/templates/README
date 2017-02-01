@@ -1,0 +1,13 @@
+# README for templates
+
+This folder should hold files with extension .txt. Each file is a template for an
+automated email sent from the NetworkCurator API to users. 
+
+The first line in each template should start with a hash and will be interpreted as
+the email subject. 
+
+Following lines will form the body of the email. 
+
+Templates can contain placeholders that will be filled-in by the automated sender. The
+format is to enclose a simple string in brackets, e.g. [FIRSTNAME].
+

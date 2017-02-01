@@ -13,9 +13,12 @@ cd nc-ui
 git pull
 cd ..
 
+echo ""
+echo "Updating NetworkCurator configuration"
+cd nc-admin/install
+php configure.php
+cd ../..
 
-
-## build dist js
 echo ""
 echo "Building javascript and css files"
 cd nc-core

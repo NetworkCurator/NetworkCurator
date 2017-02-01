@@ -1,0 +1,17 @@
+# Welcome to [SITENAME]
+
+Dear [FIRSTNAME],
+
+Welcome to [SITENAME]! Your new account details are below:
+
+User ID: [USERID]
+Password: [PASSWORD]
+Email: [EMAIL]
+
+To change your details and password, log in to the site and 
+use the form on your user account page.
+
+
+Thanks.
+
+[This is an automated email]

@@ -1,0 +1,13 @@
+# New network [NETWORK]
+
+Dear [FIRSTNAME],
+
+You have just created a new network.
+
+Network name: [NETWORK]
+
+
+
+Thanks
+
+[This is an automated email]
