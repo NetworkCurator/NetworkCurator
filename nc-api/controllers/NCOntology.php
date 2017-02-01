@@ -334,9 +334,10 @@ class NCOntology extends NCLogger {
         $newid = $this->createNewClassWork($params);
         $this->dbunlock();
 
-        // log the activity
+        // log the activity and send email
         $this->logActivity($this->_uid, $this->_netid, "created new class", $params['name'], $newid);
-
+        $this->sendNewClassEmail($params['name']);
+                
         return $newid;
     }
 
@@ -357,24 +358,24 @@ class NCOntology extends NCLogger {
      * 
      * true if the hierarchy is ok, false otherwise
      */
-    private function canBeParent($parentid, $childid) {        
-                        
+    private function canBeParent($parentid, $childid) {
+
         // edge case for recursion
-        if ($parentid=="") {
+        if ($parentid == "") {
             return true;
         }
-        
+
         // get information about this id
         $queryrecord = $this->getClassRecord($parentid);
-                        
+
         // check for bad hierarchy, or keep checking
-        if ($queryrecord['parent_id']==$childid) {        
+        if ($queryrecord['parent_id'] == $childid) {
             return false;
-        } else {            
+        } else {
             return $this->canBeParent($queryrecord['parent_id'], $childid);
         }
     }
-    
+
     /**
      * 
      * Helper function applies db transformations on an ontology class
@@ -426,7 +427,7 @@ class NCOntology extends NCLogger {
                     throw new Exception("Incompatible directional status (parent is a directional link)");
                 }
             }
-            
+
             // make sure there is hierarchy, i.e. none of the parents themselves refer to this class            
             if (!$this->canBeParent($parentid, $classid)) {
                 throw new Exception("Incorrect hierarchy (ancenstor lists class as a parent)");
@@ -531,13 +532,16 @@ class NCOntology extends NCLogger {
         // perform logging based on what actions were performed
         if ($action == 1) {
             $this->logActivity($this->_uid, $this->_netid, "updated class name", $params['target'], $params['name']);
+            $this->sendUpdateClassEmail("new class name");
         }
         if ($action == 2 || $action == 3) {
             $this->logActivity($this->_uid, $this->_netid, "updated class style", $params['target'], $params['name']);
+            $this->sendUpdateClassEmail("new class style");
         }
         if ($action >= 4) {
             $value = $params['parent'] . "," . $params['directional'] . "," . $params['status'];
             $this->logActivity($this->_uid, $this->_netid, "updated class properties for class", $params['target'], $value);
+            $this->sendUpdateClassEmail("new class properties");
         }
 
         return 1;
@@ -627,8 +631,10 @@ class NCOntology extends NCLogger {
         // log the action
         if ($action) {
             $this->logActivity($this->_uid, $this->_netid, "deleted class", $classname, $classname);
+            $this->sendUpdateClassEmail("deleted class");
         } else {
             $this->logActivity($this->_uid, $this->_netid, "deprecated class", $classname, $classname);
+            $this->sendUpdateClassEmail("depreacted");
         }
 
         return $action;
@@ -689,8 +695,32 @@ class NCOntology extends NCLogger {
 
         // log the activity
         $this->logActivity($this->_uid, $this->_netid, "re-activated class", $classname, $classname);
-
+        $this->sendUpdateClassEmail("activate class");
+        
         return true;
+    }
+
+    /**
+     * Send an email with a summary of the ontology update to curators
+     */
+    private function sendUpdateClassEmail($updatetype) {        
+        $ncemail = new NCEmail($this->_db);
+        $emaildata = ['NETWORK'=>$this->_network, 
+            'CLASS'=>$this->_params['name'], 
+            'USER'=>$this->_uid,
+            'UPDATE'=>$updatetype];
+        $ncemail->sendEmailToCurators("email-updateclass", $emaildata, $this->_netid);
+    }
+
+    /**
+     * Send an email about a new ontology class to curators
+     */
+    private function sendNewClassEmail() {
+        $ncemail = new NCEmail($this->_db);
+        $emaildata = ['NETWORK'=>$this->_network, 
+            'CLASS'=>$this->_params['name'], 
+            'USER'=>$this->_uid];
+        $ncemail->sendEmailToCurators("email-newclass", $emaildata, $this->_netid);
     }
 
 }

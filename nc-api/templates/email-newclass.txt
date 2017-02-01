@@ -1,0 +1,17 @@
+# New class "[CLASS]" in network "[NETWORK]"
+
+Dear [FIRSTNAME],
+
+A new class has just been created in network "[NETWORK]".
+
+Class: [CLASS]
+User: [USER]
+
+You can view the network ontology here:
+
+Network ontology: [SITEURL]/?network=[NETWORK]&view=ontology 
+
+
+Thanks.
+
+[This is an automated email]

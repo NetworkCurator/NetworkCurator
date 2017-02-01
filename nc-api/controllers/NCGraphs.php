@@ -53,7 +53,7 @@ class NCGraphs extends NCOntology {
         }
         return $nodeid;
     }
-        
+
     /**
      * Helper function checks if current user has permissions to edit the graph
      */
@@ -62,7 +62,7 @@ class NCGraphs extends NCOntology {
             throw new Exception("Insufficient permissions to edit graph");
         }
     }
-    
+
     /**
      * Helper function checks if current user has permissions to edit a graph object
      * 
@@ -79,13 +79,13 @@ class NCGraphs extends NCOntology {
         }
         if ($this->_uperm == NC_PERM_EDIT) {
             $targetowner = $this->getObjectOwner($this->_netid, $targetid);
-            if ($targetowner==$this->_uid) {
+            if ($targetowner == $this->_uid) {
                 return true;
             }
-        }       
+        }
         throw new Exception("Insufficient permission to update graph object");
     }
-    
+
     /**
      * Processes a request to create a new node in a network
      * 
@@ -99,7 +99,7 @@ class NCGraphs extends NCOntology {
 
         // check required permission to edit the graph
         $this->checkEditPermissions();
-        
+
         if (strlen($params['name']) < 2) {
             throw new Exception("Name too short");
         }
@@ -127,7 +127,8 @@ class NCGraphs extends NCOntology {
 
         // log entry for creation
         $this->logActivity($this->_uid, $this->_netid, "created node", $params['name'], $params['title']);
-
+        $this->sendNewObjectEmail("node");
+        
         return $nodeid;
     }
 
@@ -144,7 +145,7 @@ class NCGraphs extends NCOntology {
     private function toggleNode($nodename, $newstatus) {
 
         $newstatus = $this->standardizeStatus($newstatus, "AD");
-        
+
         $this->dblock([NC_TABLE_NODES, NC_TABLE_ANNOTEXT]);
 
         // check if this node name exists        
@@ -176,10 +177,10 @@ class NCGraphs extends NCOntology {
      */
     public function removeNode() {
         $params = $this->subsetArray($this->_params, ["name"]);
-        
+
         // check required permission to edit the graph
         $this->checkEditPermissions();
-                
+
         return $this->toggleNode($params['name'], NC_DEPRECATED);
     }
 
@@ -193,10 +194,10 @@ class NCGraphs extends NCOntology {
      */
     public function activateNode() {
         $params = $this->subsetArray($this->_params, ["name"]);
-        
+
         // check required permission to edit the graph
         $this->checkEditPermissions();
-                
+
         return $this->toggleNode($params['name'], NC_ACTIVE);
     }
 
@@ -257,8 +258,8 @@ class NCGraphs extends NCOntology {
 
         // check required permission to edit the graph
         $this->checkEditPermissions();
-        
-        
+
+
         if (strlen($params['name']) < 2) {
             throw new Exception("Name too short");
         }
@@ -290,7 +291,8 @@ class NCGraphs extends NCOntology {
 
         // log entry for creation
         $this->logActivity($this->_uid, $this->_netid, "created link", $params['name'], $params['title']);
-
+        $this->sendNewObjectEmail("link");        
+        
         return $linkid;
     }
 
@@ -420,10 +422,10 @@ class NCGraphs extends NCOntology {
      */
     public function removeLink() {
         $params = $this->subsetArray($this->_params, ["name"]);
-        
+
         // check required permission to edit the graph
         $this->checkEditPermissions();
-        
+
         return $this->toggleLink($params['name'], NC_DEPRECATED);
     }
 
@@ -437,10 +439,10 @@ class NCGraphs extends NCOntology {
      */
     public function activateLink() {
         $params = $this->subsetArray($this->_params, ["name"]);
-        
+
         // check required permission to edit the graph
         $this->checkEditPermissions();
-        
+
         return $this->toggleLink($params['name'], NC_ACTIVE);
     }
 
@@ -828,10 +830,10 @@ class NCGraphs extends NCOntology {
     public function updateClass() {
 
         $params = $this->subsetArray($this->_params, ['target_id', 'class']);
-               
+
         // check required permission to update an existing graph object
         $this->checkUpdatePermissions($params['target_id']);
-        
+
         // check if object exists and class name exists
         $objtype = $this->isNodeOrLinkOrClass($params['target_id']);
         $classid = $this->getNameAnnoRootId($this->_netid, $params['class'])['root_id'];
@@ -846,7 +848,7 @@ class NCGraphs extends NCOntology {
         }
 
         // check that the object does not already have that class_id
-        $sql = "SELECT class_id FROM $tabname WHERE network_id = ? and ".$objtype."_id = ?";
+        $sql = "SELECT class_id FROM $tabname WHERE network_id = ? and " . $objtype . "_id = ?";
         $stmt = $this->qPE($sql, [$this->_netid, $params['target_id']]);
         $row = $stmt->fetch();
         if (!$row) {
@@ -855,14 +857,14 @@ class NCGraphs extends NCOntology {
         if ($row['class_id'] == $classid) {
             throw new Exception("Cannot update class (same as existing class)");
         }
-        
+
         // update the database table
         $sql = "UPDATE $tabname SET class_id = ? WHERE network_id = ? AND " . $objtype . "_id = ? ";
         $this->qPE($sql, [$classid, $this->_netid, $params['target_id']]);
 
         // log the event        
         $this->logActivity($this->_uid, $this->_netid, "updated class for $objtype ", $params['target_id'], $params['class']);
-        
+
         return 1;
     }
 
@@ -874,38 +876,62 @@ class NCGraphs extends NCOntology {
      * 1 if all goes well. 
      */
     public function updateOwner() {
-        
+
         $params = $this->subsetArray($this->_params, ['target_id', 'owner']);
-        
+
         // check required permission to update an existing graph object
         $this->checkUpdatePermissions($params['target_id']);
-        
+
         // check if object exists and class name exists
-        $objtype = $this->isNodeOrLinkOrClass($params['target_id']);        
-        $ownerperm = $this->getUserPermissions($this->_netid, $params['owner']);        
+        $objtype = $this->isNodeOrLinkOrClass($params['target_id']);
+        $ownerperm = $this->getUserPermissions($this->_netid, $params['owner']);
         if ($ownerperm < NC_PERM_EDIT) {
             throw new Exception("New owner does not exist or does not have sufficient permissions.");
         }
-        
+
         // fetch all the annotations that belong to the target_id
         $sql = "SELECT datetime, anno_id, anno_type, owner_id, user_id, network_id, 
-                       root_id, parent_id, anno_text FROM ".NC_TABLE_ANNOTEXT." 
-                       WHERE network_id= ? AND root_id = ? AND anno_status = ".NC_ACTIVE;
+                       root_id, parent_id, anno_text FROM " . NC_TABLE_ANNOTEXT . " 
+                       WHERE network_id= ? AND root_id = ? AND anno_status = " . NC_ACTIVE;
         $stmt = $this->qPE($sql, [$this->_netid, $params['target_id']]);
         $result = [];
         while ($row = $stmt->fetch()) {
             // change the owner field here
-            $row['owner_id'] = $params['owner'];            
+            $row['owner_id'] = $params['owner'];
             $result[] = $row;
         }
-        
+
         // re-send the annotation to the db. This will update the owner_id
-        $this->batchUpdateAnno($result);        
-             
+        $this->batchUpdateAnno($result);
+
         // log the event        
         $this->logActivity($this->_uid, $this->_netid, "updated ownership for $objtype ", $params['target_id'], $params['owner']);
-        
+
         return 1;
+    }
+
+    /**
+     * Send an email about a new graph object
+     */
+    private function sendNewObjectEmail($type) {
+        
+        $ncemail = new NCEmail($this->_db);
+        $emaildata = ['NETWORK' => $this->_network,
+            'CLASS' => $this->_params['class'],
+            'USER' => $this->_uid];
+
+        if ($type == "node") {
+            $emaildata['NODE'] = $this->_params["name"];
+            $ncemail->sendEmailToCurators("email-newnode", $emaildata, $this->_netid);
+        } else if ($type == "link") {
+            $emaildata['LINK'] = $this->_params["name"];
+            $emaildata['SOURCE'] = $this->_params["source"];
+            $emaildata['TARGET'] = $this->_params["target"];
+            $ncemail->sendEmailToCurators("email-newlink", $emaildata, $this->_netid);
+        } else {
+            throw new Exception("Sending new object email, unknown object type");
+        }
+        
     }
 
 }

@@ -1,0 +1,18 @@
+# New node "[NODE]" in network "[NETWORK]"
+
+Dear [FIRSTNAME],
+
+A new node has just been created in network "[NETWORK]".
+
+Node name: [NODE]
+Class: [CLASS]
+User: [USER]
+
+You can view the network graph here:
+
+Network graph: [SITEURL]/?network=[NETWORK]&view=graph 
+
+
+Thanks.
+
+[This is an automated email]

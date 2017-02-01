@@ -1,0 +1,20 @@
+# New link "[LINK]" in network "[NETWORK]"
+
+Dear [FIRSTNAME],
+
+A new link has just been created in network "[NETWORK]".
+
+Link name: [LINK]
+Source: [SOURCE]
+Target: [TARGET]
+Class: [CLASS]
+User: [USER]
+
+You can view the network graph here:
+
+Network graph: [SITEURL]/?network=[NETWORK]&view=graph 
+
+
+Thanks.
+
+[This is an automated email]
