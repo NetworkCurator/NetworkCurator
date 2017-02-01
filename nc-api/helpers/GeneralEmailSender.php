@@ -75,16 +75,20 @@ class GeneralEmailSender {
         $subject = substr(array_shift($content), 1);         
         $content = trim(implode("\n", $content))."\n";        
 
-        //echo "\n";
-        //echo "Sending to: $address \n\n";
-        //echo "Subject: " . $subject . "\n";
-        //echo "Content: " . $content;
+        echo "\n";
+        echo "Sending to: $address \n";
+        echo "Sending from: ". $this->_sender."\n";
+        echo "Subject: " . $subject . "\n";
+        echo "Content: " . $content;
 
         // prepare email headers
         $headers = 'From: '. $this->_sender. " \r\n" .
                 'Reply-To: '.$this->_sender . " \r\n" .
                 'X-Mailer: PHP/' . phpversion();
-        mail($address, $subject, $content, $headers);
+        print_r($headers);
+        $result = mail($address, $subject, $content, $headers);
+        
+        echo "result was: ".$result."\n";
     }
 
 }

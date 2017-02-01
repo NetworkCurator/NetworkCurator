@@ -72,7 +72,7 @@ if (!defined("NC_SITE_NAME")) {
 
 // domain name for website, e.g. networkcurator.org
 if (!defined("NC_SITE_DOMAIN")) {
-    define("NC_SITE_DOMAIN", "networkcurator.org");
+    define("NC_SITE_DOMAIN", "localhost");
 }
 
 

@@ -17,9 +17,9 @@ include_once "test-prep.php";
 
 $emaildir = "../../nc-api/templates";
 
-$ncemail = new NCEmail($db, $emaildir, "tokonopka@gmail.com");
+$ncemail = new NCEmail($db, $emaildir, "admin@".NC_SITE_DOMAIN);
 
-$ncemail->sendEmailToUsers("email-test", ["userid"=>"admin"], ["admin", "alpha"]);
+$ncemail->sendEmailToUsers("email-test", ["userid"=>"admin"], ["admin"]);
 
 
 

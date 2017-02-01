@@ -359,6 +359,7 @@ echo "\n";
  * Create configuration files for the site
  * -------------------------------------------------------------------------- */
 
+echo "Writing site config file:\t";
 include_once "configure.php";
 
 

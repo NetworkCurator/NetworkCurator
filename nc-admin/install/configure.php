@@ -31,7 +31,6 @@ $ncpath = NC_PATH;
 $ncappkey = makeRandomHexString(32);
 
 // Create a configuration file for the 
-echo "Writing site config file:\t";
 $myconf = "<?php\n";
 $myconf .= "\n// Configuration for connecting to the database\n";
 $myconf .= "define('NC_DB_SERVER',\t\t'" . DB_SERVER . "');\n";
@@ -70,7 +69,7 @@ $myconf .= "define('NC_SITE_URL',\t'" . NC_SITE_URL . "');\n";
 $myconf .= "define('NC_SITE_DOMAIN',\t'" . NC_SITE_DOMAIN . "');\n";
 $myconf .= "\n?>";
 file_put_contents("../config/nc-config-local.php", $myconf);
-echo "ok\n";
+echo "Done\n";
 
 
 
