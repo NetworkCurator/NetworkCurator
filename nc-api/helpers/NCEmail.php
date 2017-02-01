@@ -36,7 +36,7 @@ class NCEmail extends NCDB {
     public function __construct($db) {
         parent::__construct($db);
         $this->_ges = new GeneralEmailSender(dirname(__FILE__) . "/../templates",
-                        "admin@" . NC_SITE_DOMAIN);
+                        '"'.NC_SITE_DOMAIN. '" <admin@' . NC_SITE_DOMAIN.'>');
     }
 
     /**

@@ -42,7 +42,8 @@ class NCUsers extends NCLogger {
             "target_email", "target_id", "target_password"]);
 
         // create a hashes for the user password
-        $targetpwd = password_hash($params['target_password'], PASSWORD_BCRYPT);
+        $plainpwd = $params['target_password'];
+        $targetpwd = password_hash($plainpwd, PASSWORD_BCRYPT);
         $params['target_password'] = $targetpwd;
 
         // perform tests on whether this user can create new user?
@@ -94,7 +95,7 @@ class NCUsers extends NCLogger {
 
         // send a welcome email to the user
         $ncemail = new NCEmail($this->_db);
-        $emaildata = ['PASSWORD'=>$pp['target_password'], 'EMAIL'=>$pp['target_email']];
+        $emaildata = ['PASSWORD'=>$plainpwd, 'EMAIL'=>$pp['target_email']];
         $ncemail->sendEmailToUsers("email-newuser", $emaildata, [$pp['target_id']]);
         
         return true;
@@ -148,7 +149,7 @@ class NCUsers extends NCLogger {
         // record the action in the site log
         $this->logAction($this->_uid, $this->_params['source_ip'], "NCUsers", "purgeUser", $target);
 
-        $result = "Removing user" . $target . ".\n";
+        $result = "Removing user " . $target . ".\n";
         return $result;
     }
 
