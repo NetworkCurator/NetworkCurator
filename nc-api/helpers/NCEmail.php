@@ -33,9 +33,10 @@ class NCEmail extends NCDB {
      * when data directory is mis-specified
      * 
      */
-    public function __construct($db, $templatedir, $senderaddress) {
+    public function __construct($db) {
         parent::__construct($db);
-        $this->_ges = new GeneralEmailSender($templatedir, $senderaddress);
+        $this->_ges = new GeneralEmailSender(dirname(__FILE__) . "/../templates",
+                        "admin@" . NC_SITE_DOMAIN);
     }
 
     /**
@@ -47,7 +48,9 @@ class NCEmail extends NCDB {
      * 
      * @param array $params
      * 
-     * Array of parameters used to fill-in the email template
+     * Array of parameters used to fill-in the email template.
+     * Parameters FIRSTNAME, USERID, SITENAME, SITEURL are filled in by the function 
+     * and do not need to be specified.
      * 
      * @param array $targetusers
      * 
@@ -68,16 +71,18 @@ class NCEmail extends NCDB {
         }
         $sql .= implode("OR", $sqltargets);
         $stmt = $this->qPE($sql, $sqldata);
-        
+
         // loop through results and send email to each target user
         while ($row = $stmt->fetch()) {
             $emailparams = $params;
-            $emailparams['FIRSTNAME'] = $row['user_firstname'];            
+            $emailparams['FIRSTNAME'] = $row['user_firstname'];
+            $emailparams['USERID'] = $row['user_id'];
+            $emailparams['SITENAME'] = NC_SITE_NAME;
+            $emailparams['SITEURL'] = NC_SITE_URL;
             $this->_ges->sendEmail($template, $emailparams, $row['user_email']);
         }
-       
     }
-    
+
     /**
      * Send email to a group of users determined by the 
      * 
@@ -95,19 +100,18 @@ class NCEmail extends NCDB {
      * 
      */
     public function sendEmailToCurators($template, $params, $netid) {
-        
+
         // find all the curators associated with the network id
-        $sql = "SELECT user_id FROM ".NC_TABLE_PERMISSIONS. " WHERE network_id = ? AND
-            permissions = ".NC_PERM_CURATE;
+        $sql = "SELECT user_id FROM " . NC_TABLE_PERMISSIONS . " WHERE network_id = ? AND
+            permissions = " . NC_PERM_CURATE;
         $stmt = $this->qPE($sql, [$netid]);
-        $curators = [];        
-        while ($row=$stmt->fetch()) {
+        $curators = [];
+        while ($row = $stmt->fetch()) {
             $curators[] = $row['user_id'];
         }
-        
+
         // send email to users
         $this->sendEmailToUsers($template, $params, $curators);
-        
     }
 
 }

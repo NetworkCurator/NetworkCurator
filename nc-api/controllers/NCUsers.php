@@ -92,6 +92,11 @@ class NCUsers extends NCLogger {
         $this->logActivity($this->_uid, '', "created user account", $this->_params['target_id'], $fullname);
         $this->logAction($this->_uid, $this->_params['source_ip'], "NCUsers", "createNewUser", $this->_params['target_id'] . ": " . $fullname);
 
+        // send a welcome email to the user
+        $ncemail = new NCEmail($this->_db);
+        $emaildata = ['PASSWORD'=>$pp['target_password'], 'EMAIL'=>$pp['target_email']];
+        $ncemail->sendEmailToUsers("email-newuser", $emaildata, [$pp['target_id']]);
+        
         return true;
     }
 
@@ -136,15 +141,14 @@ class NCUsers extends NCLogger {
             $this->qPE($sql, [$target]);
         }
 
-        // remove data directory for the network
-        $targetdir = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/users/" . $target;
-        $result = "Removing user " . $target . ".\n User data is in directory: " . $targetdir .
-                ".\n Attempted to remove, but please verify.\n\n";
-        system("rm -fr $targetdir");
+        // remove user data/profile img 
+        $targetimg = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/users/" . $target.".png";       
+        system("rm -f $targetimg");
 
         // record the action in the site log
         $this->logAction($this->_uid, $this->_params['source_ip'], "NCUsers", "purgeUser", $target);
 
+        $result = "Removing user" . $target . ".\n";
         return $result;
     }
 

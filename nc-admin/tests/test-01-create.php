@@ -30,7 +30,7 @@ foreach (array_keys($newusers) as $nu) {
         'target_extpwd' => $upw, 'user_ip' => 'install-testdata',
         'target_firstname' => $nu, 'target_middlename' => '', 
         'target_lastname' => 'Test' . $nu,
-        'target_email' => 'test@test.com',
+        'target_email' => 'admin@'.NC_SITE_DOMAIN,
         'target_id' => strtolower($nu), 'target_password' => strtolower($nu) . '123');
     tryreport($NCapi, $params, $newusers[$nu]);
 }
@@ -44,7 +44,7 @@ foreach (array_keys($newusers) as $nu) {
         'target_extpwd' => $upw, 'user_ip' => 'install-testdata',
         'target_firstname' => $nu, 'target_middlename' => '', 
         'target_lastname' => 'Test' . $nu,
-        'target_email' => 'test@test.com',
+        'target_email' => 'admin@'.NC_SITE_DOMAIN,
         'target_id' => strtolower($nu), 'target_password' => strtolower($nu) . '123');
     tryreport($NCapi, $params, $newusers[$nu]);
 }

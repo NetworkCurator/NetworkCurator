@@ -2,12 +2,12 @@
 
 Dear [FIRSTNAME],
 
-You have just created a new network.
+You just created a new network.
 
 Network name: [NETWORK]
+Summary page: [SITEURL]/?page=network&network=[NETWORK]
 
 
-
-Thanks
+Thanks.
 
 [This is an automated email]

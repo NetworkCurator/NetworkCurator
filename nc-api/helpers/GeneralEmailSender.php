@@ -58,7 +58,7 @@ class GeneralEmailSender {
      */
     public function sendEmail($template, $params, $address) {
 
-        // fetch data from template
+        // fetch template content from file on disk
         $tfile = $this->_tdir . "/" . $template . ".txt";
         if (!file_exists($tfile)) {
             throw new Exception("Email template file does not exist");
@@ -74,21 +74,14 @@ class GeneralEmailSender {
         $content = explode("\n", $content);        
         $subject = substr(array_shift($content), 1);         
         $content = trim(implode("\n", $content))."\n";        
-
-        echo "\n";
-        echo "Sending to: $address \n";
-        echo "Sending from: ". $this->_sender."\n";
-        echo "Subject: " . $subject . "\n";
-        echo "Content: " . $content;
-
+        
         // prepare email headers
         $headers = 'From: '. $this->_sender. " \r\n" .
                 'Reply-To: '.$this->_sender . " \r\n" .
                 'X-Mailer: PHP/' . phpversion();
-        print_r($headers);
-        $result = mail($address, $subject, $content, $headers);
         
-        echo "result was: ".$result."\n";
+        // send mail and return boolean code
+        return mail($address, $subject, $content, $headers);        
     }
 
 }

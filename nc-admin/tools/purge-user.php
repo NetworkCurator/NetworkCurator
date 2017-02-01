@@ -2,20 +2,20 @@
 
 /*
  * Command line tool.
- * Purges all data related to a network from the local database 
- * 
+ * Purges all data related to a user from the local database 
+ *  
  */
 
 // print a usage message if called without any arguments
 if (count($argv)<2) {
-    echo "USAGE: php purge-network NETWORKNAME\n";
+    echo "USAGE: php purge-user USERNAME\n";
     exit();
 }
 
 // extract target network name from first argument (after purge-network.php)
-$network = $argv[1];
+$target = $argv[1];
 
-echo "NetworkCurator - purging network $network: ";
+echo "NetworkCurator - purging user $target: ";
 
 /* --------------------------------------------------------------------------
  * Prep - get admin user information
@@ -46,10 +46,9 @@ $NCapi = new GeneralApiCaller(NC_APP_ID, NC_APP_KEY, NC_API_PATH);
  * Send command to purge a network
  * -------------------------------------------------------------------------- */
 
-$params = array('controller' => 'NCNetworks', 'action' => 'purgeNetwork',
+$params = array('controller' => 'NCUsers', 'action' => 'purgeUser',
     'user_id' => 'admin', 'user_extpwd' => $upw,
-    'target_extpwd' => $upw, 'user_ip' => 'local-tools',
-    'network' => $network);
+    'user_ip' => 'local-tools', 'target' => $target);
 
 $result = null;
 try {

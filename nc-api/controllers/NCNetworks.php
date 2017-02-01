@@ -111,13 +111,18 @@ class NCNetworks extends NCLogger {
         $stmt = $this->_db->prepare($sql);
         $stmt->execute(['admin', $netid, NC_PERM_SUPER]);
         $stmt->execute(['guest', $netid, NC_PERM_NONE]);
-
-        $this->dbunlock();
-
+        
         // create starting annotations for the title, abstract, contents
         // insert annotation for network name   
         $this->batchInsertAnnoSets($netid, [$params], [$netid]);
 
+        $this->dbunlock();
+        
+        // send a welcome email
+        $ncemail = new NCEmail($this->_db);
+        $emaildata = ['NETWORK'=>$params['name']];
+        $ncemail->sendEmailToUsers("email-newnetwork", $emaildata, ['admin']);
+                
         return true;
     }
 

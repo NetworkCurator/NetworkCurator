@@ -4,6 +4,9 @@
  * Post-installation script that tests email-sending capabilities
  * (For debugging and testing only)
  * 
+ * The test will attempt to send an email to the admin user. You should verify
+ * manually that the email has been received.
+ * 
  */
 
 echo "\n";
