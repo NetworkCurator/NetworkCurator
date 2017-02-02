@@ -922,12 +922,12 @@ class NCGraphs extends NCOntology {
 
         if ($type == "node") {
             $emaildata['NODE'] = $this->_params["name"];
-            $ncemail->sendEmailToCurators("email-newnode", $emaildata, $this->_netid);
+            $ncemail->sendEmailToCurators("email-new-node", $emaildata, $this->_netid);
         } else if ($type == "link") {
             $emaildata['LINK'] = $this->_params["name"];
             $emaildata['SOURCE'] = $this->_params["source"];
             $emaildata['TARGET'] = $this->_params["target"];
-            $ncemail->sendEmailToCurators("email-newlink", $emaildata, $this->_netid);
+            $ncemail->sendEmailToCurators("email-new-link", $emaildata, $this->_netid);
         } else {
             throw new Exception("Sending new object email, unknown object type");
         }

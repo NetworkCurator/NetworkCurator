@@ -2,7 +2,7 @@
 
 Dear [FIRSTNAME],
 
-Your permissions for network "[NETWORK]" have just been updated.
+User permissions for network "[NETWORK]" have just been updated.
 
 User id: [TARGETID]
 Permissions: [PERMISSIONS]

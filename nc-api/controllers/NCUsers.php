@@ -94,10 +94,8 @@ class NCUsers extends NCLogger {
         $this->logAction($this->_uid, $this->_params['source_ip'], "NCUsers", "createNewUser", $this->_params['target_id'] . ": " . $fullname);
 
         // send a welcome email to the user
-        $ncemail = new NCEmail($this->_db);
-        $emaildata = ['PASSWORD' => $plainpwd, 'EMAIL' => $pp['target_email']];
-        $ncemail->sendEmailToUsers("email-newuser", $emaildata, [$pp['target_id']]);
-
+        $this->sendNewUserEmail($plainpwd);
+        
         return true;
     }
 
@@ -438,6 +436,16 @@ class NCUsers extends NCLogger {
         return $result;
     }
 
+    
+    /**
+     * Send an email about a new user
+     */
+    private function sendNewUserEmail($plainpwd) {        
+        $ncemail = new NCEmail($this->_db);       
+        $emaildata = ['PASSWORD' => $plainpwd, 'EMAIL' => $this->_params['target_email']];
+        $ncemail->sendEmailToUsers("email-new-user", $emaildata, [$this->_params['target_id']]);        
+    }
+    
     /**
      * Send an email about a new graph object
      * 

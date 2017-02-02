@@ -709,7 +709,7 @@ class NCOntology extends NCLogger {
             'CLASS'=>$this->_params['name'], 
             'USER'=>$this->_uid,
             'UPDATE'=>$updatetype];
-        $ncemail->sendEmailToCurators("email-updateclass", $emaildata, $this->_netid);
+        $ncemail->sendEmailToCurators("email-update-class", $emaildata, $this->_netid);
     }
 
     /**
@@ -720,7 +720,7 @@ class NCOntology extends NCLogger {
         $emaildata = ['NETWORK'=>$this->_network, 
             'CLASS'=>$this->_params['name'], 
             'USER'=>$this->_uid];
-        $ncemail->sendEmailToCurators("email-newclass", $emaildata, $this->_netid);
+        $ncemail->sendEmailToCurators("email-new-class", $emaildata, $this->_netid);
     }
 
 }

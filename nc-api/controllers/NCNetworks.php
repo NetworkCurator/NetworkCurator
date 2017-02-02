@@ -111,18 +111,16 @@ class NCNetworks extends NCLogger {
         $stmt = $this->_db->prepare($sql);
         $stmt->execute(['admin', $netid, NC_PERM_SUPER]);
         $stmt->execute(['guest', $netid, NC_PERM_NONE]);
-        
+
         // create starting annotations for the title, abstract, contents
         // insert annotation for network name   
         $this->batchInsertAnnoSets($netid, [$params], [$netid]);
 
         $this->dbunlock();
-        
+
         // send a welcome email
-        $ncemail = new NCEmail($this->_db);
-        $emaildata = ['NETWORK'=>$params['name']];
-        $ncemail->sendEmailToUsers("email-newnetwork", $emaildata, ['admin']);
-                
+        $this->sendNewNetworkEmail();
+
         return true;
     }
 
@@ -186,7 +184,7 @@ FROM $ta JOIN $tp ON $ta.$ni = $tp.$ni
     AND $ta.root_id LIKE 'W%'
     AND $ta.anno_status = 1 AND $tac <=" . NC_ABSTRACT . "
 GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id ORDER BY title";
-        
+
         $stmt = $this->_db->query($sql);
         $result = array();
         while ($row = $stmt->fetch()) {
@@ -423,6 +421,15 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id ORDER BY title";
         $this->logAction($this->_uid, $this->_params['source_ip'], "NCNetworks", "purgeNetwork", $this->_netid . ": " . $this->_network);
 
         return $result;
+    }
+
+    /**
+     * Send an email about a new network
+     */
+    private function sendNewNetworkEmail() {
+        $ncemail = new NCEmail($this->_db);
+        $emaildata = ['NETWORK' => $this->_params['name']];
+        $ncemail->sendEmailToUsers("email-new-network", $emaildata, ['admin']);
     }
 
 }
