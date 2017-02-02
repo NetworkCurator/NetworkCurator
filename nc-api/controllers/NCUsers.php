@@ -287,7 +287,7 @@ class NCUsers extends NCLogger {
 
         // check that required parameters are defined
         $params = $this->subsetArray($this->_params, ["user_id",
-            "target_id", "network_name", "permissions"]);
+            "target_id", "network", "permissions"]);
 
         if ($params['target_id'] == "admin") {
             throw new Exception("Cannot change permissions for admin");
@@ -297,7 +297,7 @@ class NCUsers extends NCLogger {
         $newperm = (int) $params['permissions'];
 
         // get the netid that matches the network name
-        $netid = $this->getNetworkId($params['network_name']);
+        $netid = $this->getNetworkId($params['network']);
 
         // get permissions for the asking user
         // only curators and admin can update permissions        
@@ -338,7 +338,7 @@ class NCUsers extends NCLogger {
 
         // log the activity           
         $this->logActivity($this->_uid, $netid, "updated permissions for user", $targetid, $newperm);
-        $this->sendUpdatePermissionsEmail();
+        $this->sendUpdatePermissionsEmail($netid);
 
         return $userinfo;
     }
@@ -440,29 +440,32 @@ class NCUsers extends NCLogger {
 
     /**
      * Send an email about a new graph object
+     * 
+     * @param string $netid
+     * 
+     * network id code (it is not automatically determined in the constructor in NCUsers)
+     * 
      */
-    private function sendUpdatePermissionsEmail() {
-        
+    private function sendUpdatePermissionsEmail($netid) {
+
         $ncemail = new NCEmail($this->_db);
-        
+
         // prepare email fillers (for now set PERMISSIONS to a dummy value)
-        $emaildata = ['NETWORK' => $this->_network,
-            'TARGETID' => $this->_params['class'],
-            'PERMISSIONS' => 'none',
-            'USER' => $this->_uid];
-        
+        $emaildata = ['NETWORK' => $this->_params['network'],
+            'TARGETID' => $this->_params['target_id'],
+            'PERMISSIONS' => 'none', 'USER' => $this->_uid];
+
         // set the real PERMISSIONS text
-        $permcodes = ["curate"=>NC_PERM_CURATE, "edit"=>NC_PERM_EDIT, "comment"=>NC_PERM_COMMENT,
-            "view"=>NC_PERM_VIEW, "none"=>NC_PERM_NONE];
-        foreach ($permcodes as $key=>$val) {
-            if ($this->_params['permissions']==$val) {
+        $permcodes = ["curate" => NC_PERM_CURATE, "edit" => NC_PERM_EDIT, "comment" => NC_PERM_COMMENT,
+            "view" => NC_PERM_VIEW, "none" => NC_PERM_NONE];
+        foreach ($permcodes as $key => $val) {
+            if ($this->_params['permissions'] == $val) {
                 $emaildata['PERMISSIONS'] = $key;
             }
-        }        
-        
-        // send the email to all curators and to the user affected
-        $ncemail->sendEmailToCurators("email-update-permissions", $emaildata, 
-                $this->_netid, [$emaildata['TARGETID']]);        
+        }
+
+        // send the email to all curators and to the user affected       
+        $ncemail->sendEmailToCurators("email-update-permissions", $emaildata, $netid, [$emaildata['TARGETID']]);
         
     }
 

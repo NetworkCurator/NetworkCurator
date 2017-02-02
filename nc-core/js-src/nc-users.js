@@ -214,7 +214,7 @@ nc.users.updatePermissionsGeneric = function(targetid, perm, f) {
     {
         controller: "NCUsers", 
         action: "updatePermissions", 
-        network_name: nc.network,
+        network: nc.network,
         target_id: targetid,
         permissions: perm
     }, f );   

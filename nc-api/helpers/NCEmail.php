@@ -36,7 +36,7 @@ class NCEmail extends NCDB {
     public function __construct($db) {
         parent::__construct($db);
         $this->_ges = new GeneralEmailSender(dirname(__FILE__) . "/../templates",
-                        '"'.NC_SITE_DOMAIN. '" <admin@' . NC_SITE_DOMAIN.'>');
+                        '"' . NC_SITE_DOMAIN . '" <admin@' . NC_SITE_DOMAIN . '>');
     }
 
     /**
@@ -79,7 +79,10 @@ class NCEmail extends NCDB {
             $emailparams['USERID'] = $row['user_id'];
             $emailparams['SITENAME'] = NC_SITE_NAME;
             $emailparams['SITEURL'] = NC_SITE_URL;
-            $this->_ges->sendEmail($template, $emailparams, $row['user_email']);
+            if (strlen($row['user_email']) > 2) {
+                // send an email (only if the field has three or more characters)
+                $this->_ges->sendEmail($template, $emailparams, $row['user_email']);
+            }
         }
     }
 
@@ -121,7 +124,7 @@ class NCEmail extends NCDB {
                 $targets[] = $val;
             }
         }
-                
+
         // send email to users
         $this->sendEmailToUsers($template, $params, $targets);
     }
