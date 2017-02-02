@@ -2,11 +2,11 @@
 
 Dear [FIRSTNAME],
 
-A class network "[NETWORK]" has just been updated.
+The ontology in network "[NETWORK]" has just been updated.
 
 Class: [CLASS]
 Update: [UPDATE]
-User: [USER]
+By: [USER]
 
 You can view the network ontology here:
 

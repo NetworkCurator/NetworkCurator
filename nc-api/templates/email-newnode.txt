@@ -6,7 +6,7 @@ A new node has just been created in network "[NETWORK]".
 
 Node name: [NODE]
 Class: [CLASS]
-User: [USER]
+By: [USER]
 
 You can view the network graph here:
 

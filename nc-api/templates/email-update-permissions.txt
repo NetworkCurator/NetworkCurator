@@ -1,0 +1,18 @@
+# Update of permissions for network "[NETWORK]"
+
+Dear [FIRSTNAME],
+
+Your permissions for network "[NETWORK]" have just been updated.
+
+User id: [TARGETID]
+Permissions: [PERMISSIONS]
+By: [USER]
+
+You can see the users participating in the network here:
+
+Summary page: [SITEURL]/?page=network&network=[NETWORK]
+
+
+Thanks.
+
+[This is an automated email]

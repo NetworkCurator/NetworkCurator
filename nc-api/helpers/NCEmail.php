@@ -98,20 +98,32 @@ class NCEmail extends NCDB {
      * 
      * id for a network, e.g. Wxxxxx
      * 
+     * $param array $users
+     * 
+     * ids of additional users to send to 
+     * (e.g. if email should go to curators and a set of users affected by an event)
+     * 
      */
-    public function sendEmailToCurators($template, $params, $netid) {
+    public function sendEmailToCurators($template, $params, $netid, $users = []) {
 
         // find all the curators associated with the network id
         $sql = "SELECT user_id FROM " . NC_TABLE_PERMISSIONS . " WHERE network_id = ? AND
             permissions = " . NC_PERM_CURATE;
         $stmt = $this->qPE($sql, [$netid]);
-        $curators = [];
+        $targets = [];
         while ($row = $stmt->fetch()) {
-            $curators[] = $row['user_id'];
+            $targets[] = $row['user_id'];
         }
 
+        // add additional targets into the $curators array
+        foreach ($users as $val) {
+            if (!in_array($val, $targets)) {
+                $targets[] = $val;
+            }
+        }
+                
         // send email to users
-        $this->sendEmailToUsers($template, $params, $curators);
+        $this->sendEmailToUsers($template, $params, $targets);
     }
 
 }

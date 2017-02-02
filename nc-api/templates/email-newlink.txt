@@ -8,7 +8,7 @@ Link name: [LINK]
 Source: [SOURCE]
 Target: [TARGET]
 Class: [CLASS]
-User: [USER]
+By: [USER]
 
 You can view the network graph here:
 

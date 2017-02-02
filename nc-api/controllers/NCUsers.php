@@ -55,11 +55,11 @@ class NCUsers extends NCLogger {
         if (!$this->validateNameString($params['target_id'])) {
             throw new Exception("Invalid user name");
         }
-        
+
         $this->dblock([NC_TABLE_USERS]);
 
         // check that the network does not already exist?                  
-        $sql = "SELECT user_id FROM " . NC_TABLE_USERS . " WHERE user_id = ? ";        
+        $sql = "SELECT user_id FROM " . NC_TABLE_USERS . " WHERE user_id = ? ";
         $stmt = $this->qPE($sql, [$params['target_id']]);
         if ($stmt->fetchAll()) {
             throw new Exception("Target user id exists");
@@ -95,9 +95,9 @@ class NCUsers extends NCLogger {
 
         // send a welcome email to the user
         $ncemail = new NCEmail($this->_db);
-        $emaildata = ['PASSWORD'=>$plainpwd, 'EMAIL'=>$pp['target_email']];
+        $emaildata = ['PASSWORD' => $plainpwd, 'EMAIL' => $pp['target_email']];
         $ncemail->sendEmailToUsers("email-newuser", $emaildata, [$pp['target_id']]);
-        
+
         return true;
     }
 
@@ -127,10 +127,10 @@ class NCUsers extends NCLogger {
         if (!$stmt->fetch()) {
             throw new Exception("Target user does not exist");
         }
-        
+
         // proceed to purge the network
         // remove all entries from db tables
-        $alltables = [NC_TABLE_ACTIVITY, NC_TABLE_PERMISSIONS, NC_TABLE_ANNOTEXT, 
+        $alltables = [NC_TABLE_ACTIVITY, NC_TABLE_PERMISSIONS, NC_TABLE_ANNOTEXT,
             NC_TABLE_FILES, NC_TABLE_PERMISSIONS, NC_TABLE_USERS, NC_TABLE_LOG];
         foreach ($alltables as $dbtable) {
             $sql = "DELETE FROM $dbtable WHERE user_id = ?";
@@ -143,7 +143,7 @@ class NCUsers extends NCLogger {
         }
 
         // remove user data/profile img 
-        $targetimg = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/users/" . $target.".png";       
+        $targetimg = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/users/" . $target . ".png";
         system("rm -f $targetimg");
 
         // record the action in the site log
@@ -338,6 +338,7 @@ class NCUsers extends NCLogger {
 
         // log the activity           
         $this->logActivity($this->_uid, $netid, "updated permissions for user", $targetid, $newperm);
+        $this->sendUpdatePermissionsEmail();
 
         return $userinfo;
     }
@@ -435,6 +436,34 @@ class NCUsers extends NCLogger {
             $result[] = $row;
         }
         return $result;
+    }
+
+    /**
+     * Send an email about a new graph object
+     */
+    private function sendUpdatePermissionsEmail() {
+        
+        $ncemail = new NCEmail($this->_db);
+        
+        // prepare email fillers (for now set PERMISSIONS to a dummy value)
+        $emaildata = ['NETWORK' => $this->_network,
+            'TARGETID' => $this->_params['class'],
+            'PERMISSIONS' => 'none',
+            'USER' => $this->_uid];
+        
+        // set the real PERMISSIONS text
+        $permcodes = ["curate"=>NC_PERM_CURATE, "edit"=>NC_PERM_EDIT, "comment"=>NC_PERM_COMMENT,
+            "view"=>NC_PERM_VIEW, "none"=>NC_PERM_NONE];
+        foreach ($permcodes as $key=>$val) {
+            if ($this->_params['permissions']==$val) {
+                $emaildata['PERMISSIONS'] = $key;
+            }
+        }        
+        
+        // send the email to all curators and to the user affected
+        $ncemail->sendEmailToCurators("email-update-permissions", $emaildata, 
+                $this->_netid, [$emaildata['TARGETID']]);        
+        
     }
 
 }
