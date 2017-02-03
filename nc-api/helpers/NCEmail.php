@@ -60,6 +60,11 @@ class NCEmail extends NCDB {
      */
     public function sendEmailToUsers($template, $params, $targetusers) {
 
+        // avoid any work if the set of users is empty
+        if (count($targetusers)==0) {
+            return;
+        }
+        
         // find all target users and email addresses
         $sql = "SELECT user_id, user_firstname, user_email FROM " . NC_TABLE_USERS . " WHERE ";
         $sqltargets = [];

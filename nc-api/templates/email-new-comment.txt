@@ -1,4 +1,4 @@
-# New comment in network "[NETWORK]"
+# New comment on "[OBJECT]" in network "[NETWORK]"
 
 Dear [FIRSTNAME],
 
