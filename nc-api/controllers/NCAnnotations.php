@@ -79,11 +79,11 @@ class NCAnnotations extends NCLogger {
         }
 
         // for name annotation, make sure that new name is unique, i.e. not already used
-        if ($result['anno_type'] == NC_NAME) {            
+        if ($result['anno_type'] == NC_NAME) {
             $sql = "SELECT datetime, root_id FROM " . NC_TABLE_ANNOTEXT . " WHERE 
                 network_id = ? AND anno_type = " . NC_NAME . " 
                     AND anno_text = ? AND anno_status= " . NC_ACTIVE;
-            $stmt = $this->qPE($sql, [$this->_netid, $params['anno_text']]);            
+            $stmt = $this->qPE($sql, [$this->_netid, $params['anno_text']]);
             if ($stmt->fetch()) {
                 throw new Exception("Name is not available");
             }
@@ -117,7 +117,7 @@ class NCAnnotations extends NCLogger {
 
         // determine the comment level from the parent id
         $annolevel = NC_COMMENT;
-        $tat = "" . NC_TABLE_ANNOTEXT;
+        $tat = "" . NC_TABLE_ANNOTEXT;        
 
         if ($params['parent_id'] === '') {
             $params['parent_id'] = $this->_netid;
@@ -135,13 +135,18 @@ class NCAnnotations extends NCLogger {
             }
         }
         // check the root annotation is valid and active
-        $sql = "SELECT anno_status FROM $tat WHERE 
+        $sql = "SELECT anno_status, root_id, owner_id FROM $tat WHERE 
                 network_id = ? AND anno_id = ? AND anno_status = " . NC_ACTIVE;
         $stmt = $this->qPE($sql, [$this->_netid, $params['root_id']]);
-        if (!$stmt->fetch()) {
+        $rootdata = $stmt->fetch();
+        if (!$rootdata) {
             throw new Exception("Root annotation does not exist");
         }
 
+        // identify the owners of the parent and root annotations 
+        $owners = array_unique([$rootdata['owner_id'],
+            $this->getAnnoOwner($this->_netid, $params['parent_id'])]);          
+        
         // if reached here, insert the comment, log it, and finish
         $pp = array('network_id' => $this->_netid,
             'owner_id' => $this->_uid, 'user_id' => $this->_uid,
@@ -149,6 +154,7 @@ class NCAnnotations extends NCLogger {
             'anno_text' => $params['anno_text'], 'anno_type' => $annolevel);
         $newid = $this->insertAnnoText($pp);
         $this->logActivity($this->_uid, $this->_netid, 'wrote a comment', $newid, $params['anno_text']);
+        $this->sendNewCommentEmail($rootdata['root_id'], $owners, $annolevel);
 
         return $newid;
     }
@@ -237,6 +243,42 @@ class NCAnnotations extends NCLogger {
         }
 
         return $result;
+    }
+
+    /**
+     * Send an email about a new comment. Send to network curators and the owner
+     * of the comment or root object.
+     * 
+     * @param string $objectid
+     * 
+     * a code like Wxxxxx, Vxxxxxx, or Lxxxxxx for the object being commented on
+     * 
+     * @param string $objectowners
+     * 
+     * array with user names 
+     * 
+     * @param int $type
+     * 
+     * one of NC_COMMENT or NC_SUBCOMMENT
+     *      
+     */
+    private function sendNewCommentEmail($objectid, $objectowners, $type) {
+
+        // fetch the name of the annotated object
+        $objectname = $this->getObjectName($this->_netid, $objectid)['anno_text'];
+
+        $ncemail = new NCEmail($this->_db);
+        $emaildata = ['NETWORK' => $this->_network,
+            'OBJECT' => $objectname, 'OBJECTID' => $objectid,
+            'USER' => $this->_uid];
+
+        if ($type == NC_COMMENT) {
+            $emaildata['TYPE'] = "comment";
+        } else if ($type == NC_SUBCOMMENT) {
+            $emaildata['TYPE'] = "comment response";
+        }
+
+        $ncemail->sendEmailToCurators("email-new-comment", $emaildata, $this->_netid, $objectowners);
     }
 
 }

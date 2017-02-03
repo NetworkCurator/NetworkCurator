@@ -53,7 +53,7 @@ class GeneralEmailSender {
      * @param type $address
      * 
      * Target email address
-     * 
+     *
      * 
      */
     public function sendEmail($template, $params, $address) {

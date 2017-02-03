@@ -1,0 +1,18 @@
+# New comment in network "[NETWORK]"
+
+Dear [FIRSTNAME],
+
+A new comment has just been submitted in network "[NETWORK]".
+
+Object: [OBJECT]
+Type: [TYPE]
+By: [USER]
+
+You can see the comment here:
+
+Page: [SITEURL]/?network=[NETWORK]&object=[OBJECTID]
+
+
+Thanks.
+
+[This is an automated email]

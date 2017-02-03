@@ -465,8 +465,8 @@ class NCLogger extends NCDB {
     /**
      * fetch the user name who is the designated owner of the rootid "name" annotation
      * 
-     * @param type $netid
-     * @param type $rootid
+     * @param string $netid
+     * @param string $rootid
      * 
      * @return array
      * 
@@ -482,6 +482,25 @@ class NCLogger extends NCDB {
         $result = $stmt->fetch();
         if (!$result) {
             throw new Exception("Object '$rootid' does not match any annotations");
+        }
+        return $result;
+    }
+    
+    /**
+     * fetch the username who is designated as owner of the specified anno_id
+     * 
+     * @param string $netid
+     * @param string $annoid
+     * @return array
+     *      
+     */
+    protected function getAnnoOwner($netid, $annoid) {
+        $sql = "SELECT owner_id, anno_status FROM " . NC_TABLE_ANNOTEXT . " 
+             WHERE network_id= ? AND anno_id = ? AND anno_status = " . NC_ACTIVE;
+        $stmt = $this->qPE($sql, [$netid, $annoid]);
+        $result = $stmt->fetch();
+        if (!$result) {
+            throw new Exception("Annotation '$annoid' does not exist or is not active");
         }
         return $result;
     }
