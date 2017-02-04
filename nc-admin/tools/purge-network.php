@@ -8,7 +8,7 @@
 
 // print a usage message if called without any arguments
 if (count($argv)<2) {
-    echo "USAGE: php purge-network NETWORKNAME\n";
+    echo "USAGE: php purge-network.php NETWORKNAME\n";
     exit();
 }
 

@@ -2,6 +2,7 @@
 
 ## Run all the test scripts
 
+
 php test-01-create.php
 php test-02-networks.php
 php test-03-permissions.php
@@ -10,6 +11,9 @@ php test-05-graph.php
 
 php test-10-import.php
 php test-11-update.php
+
+## test for tools
+php test-80-minify.php
 
 
 ## By default, the script also runs the purge component

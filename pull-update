@@ -21,6 +21,8 @@ cd ../..
 
 echo ""
 echo "Building javascript and css files"
+
+## build javascript
 cd nc-core
 rm -fr js
 mkdir js
@@ -37,11 +39,12 @@ cat js-src/nc-core.js \
     js-src/nc-users.js \
     js-src/nc-history.js \
       > js/networkcurator.js
+php ../nc-admin/tools/simple-minify.php js/networkcurator.js js/networkcurator.min.js
 
-## build dist css
+## build css
 rm -fr css
 mkdir css
 cat css-src/nc-core.css > css/nc-core.css
-
+php ../nc-admin/tools/simple-minify.php css/nc-core.css css/nc-core.min.css
 
 echo "Done"

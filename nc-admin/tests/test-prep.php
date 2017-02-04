@@ -31,11 +31,26 @@ $upw = $row['user_extpwd'];
 $NCapi = new GeneralApiCaller(NC_APP_ID, NC_APP_KEY, NC_API_PATH);
 
 
-// helper function to attempt api requests and provide feedback
-// $api - instance of GeneralApiCaller
-// $params - array with data for the ApiCaller
-// $success - boolean (true to designated an expected success, false to signal expected exception)
-// $return - boolean (true to return data from the API call)
+/**
+ * 
+ * @param type $api
+ * 
+ * instance of GeneralApiCaller
+ * 
+ * @param array $params
+ * 
+ * data for the ApiCaller
+ * 
+ * @param boolean $success
+ * 
+ * (true to designated an expected success, false to signal expected exception)
+ * 
+ * @param boolean $return
+ * 
+ * (true to return data from the API call)
+ * 
+ * @return null
+ */
 function tryreport($api, $params, $success=true, $return = false) {
     $result = null;
         
@@ -61,5 +76,22 @@ function tryreport($api, $params, $success=true, $return = false) {
         return null;
     }
 }
+
+/**
+ * Another helper function for testing. This one compares expected and actual
+ * 
+ * @param type $expected
+ * @param type $empirical
+ *
+ */
+function comparereport($expected, $empirical) {
+    if ($expected==$empirical) {
+        echo "\tok\n";        
+    } else {
+        echo "\tfail\n";
+        echo "\t[Expected: $expected]\n\t[Empirical: $empirical]\n";        
+    }       
+}
+
 
 ?>
