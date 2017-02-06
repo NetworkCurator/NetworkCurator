@@ -69,17 +69,23 @@ nc.data.sendData = function(filename, filedesc, fileurl, networkname) {
     var btn = $('#nc-import-form button[type="submit"]');
     btn.toggleClass("btn-success btn-default disabled").html("Uploading (please wait)");
     
+    // for gz files, read as binary, otherwise read as text    
+    var filegz = filename.endsWith(".gz");    
+        
     // set up file reader and open/read the specified file
     var reader = new FileReader();
     reader.onload = function(e) {                                 
-        // clean the data here with JSON.parse
-        try {
-            var filedata = JSON.stringify(JSON.parse(reader.result))            
-        } catch(ex) {
-            nc.msg('Error', 'File contents does not appear to be valid JSON');                
-            return;
+                        
+        if (!filegz) {        
+            // perform an extra check for valid JSON
+            try {
+                JSON.parse(reader.result);
+            } catch(ex) {
+                nc.msg('Error', 'File contents does not appear to be valid JSON');                
+                return;
+            }
         }
-                
+         
         $.post(nc.api, 
         {
             controller: "NCData", 
@@ -87,8 +93,8 @@ nc.data.sendData = function(filename, filedesc, fileurl, networkname) {
             network: networkname,
             file_name: filename,
             file_desc: filedesc,
-            data: filedata
-        }, function(data) {             
+            data: reader.result
+        }, function(data) {               
             nc.utils.alert(data);        
             data = JSON.parse(data);            
             if (nc.utils.checkAPIresult(data)) {
@@ -104,7 +110,12 @@ nc.data.sendData = function(filename, filedesc, fileurl, networkname) {
         }
         );    
     };   
-    reader.readAsText(fileurl);    
+    
+    if (filegz) {
+        reader.readAsDataURL(fileurl);
+    } else {
+        reader.readAsText(fileurl);    
+    }
 
 }
 

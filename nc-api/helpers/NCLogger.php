@@ -485,7 +485,7 @@ class NCLogger extends NCDB {
         }
         return $result;
     }
-    
+
     /**
      * fetch the username who is designated as owner of the specified anno_id
      * 
@@ -659,6 +659,25 @@ class NCLogger extends NCDB {
     }
 
     /**
+     * make sure that all keys in a set are present in an array
+     * @param array $array
+     * @param array $keys
+     */
+    protected function checkArrayKeys($array, $keys) {
+
+        $missing = "";
+        for ($i = 0; $i < count($keys); $i++) {
+            if (!array_key_exists($keys[$i], $array)) {
+                $missing .= " " . $keys[$i];
+            }
+        }
+        if ($missing != "") {
+            throw new Exception("Missing keys: $missing");
+        }
+
+    }
+
+    /**
      * Get a small array using only a few elements from a larger (assoc) array
      * 
      * @param array $array
@@ -713,7 +732,7 @@ class NCLogger extends NCDB {
             $result[$key . $suffix] = $value;
         }
         return $result;
-    }  
+    }
 
     /**
      * Helper, turns short codes like "nodes" into the table name, NC_TABLE_NODES
@@ -842,7 +861,7 @@ class NCLogger extends NCDB {
 
         return true;
     }
-   
+
 }
 
 ?>

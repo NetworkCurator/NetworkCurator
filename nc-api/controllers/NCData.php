@@ -33,6 +33,30 @@ class NCData extends NCGraphs {
     }
 
     /**
+     * Helper called from importData(). This looks at contentsof params['data']
+     * and decodes that into an array. Function can decode from a simple string
+     * or from a compressed object (determined by associated filename).
+     * 
+     * @return array
+     * 
+     * array holding the decoded data from params['data']     
+     */
+    private function decodeFileData() {
+        $filename = $this->_params["file_name"];
+        $datastring = "";
+        if (preg_match('/\.gz$/', $filename)) {
+            // remove header, decode the string, then uncompress
+            $datastring = base64_decode(substr($this->_params['data'], 28));
+            $datastring = gzdecode($datastring);
+        } else {
+            // interpret the data as a text string
+            $datastring = $this->_params['data'];
+        }
+        // convert the string (assumes JSON) into a php array
+        return json_decode($datastring, true);
+    }
+
+    /**
      * 
      * @return boolean
      * 
@@ -51,7 +75,7 @@ class NCData extends NCGraphs {
             throw new Exception("Insufficient permissions " . $this->_uperm);
         }
 
-        $filedata = json_decode($params['data'], true);
+        $filedata = $this->decodeFileData();
         unset($params['data']);
 
         // check if the file data matches the requested network
@@ -147,12 +171,17 @@ class NCData extends NCGraphs {
         $filestring = json_encode($filedata, JSON_PRETTY_PRINT);
         $this->dblock([NC_TABLE_FILES, NC_TABLE_ACTIVITY]);
 
-        // store the file on disk
+        // store the file on disk (compressed)
         $networkdir = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/networks/" . $this->_netid;
         $fileid = $this->makeRandomID(NC_TABLE_FILES, 'file_id', NC_PREFIX_FILE, NC_ID_LEN);
         $filepath = $networkdir . "/" . $fileid . ".json";
-        file_put_contents($filepath, $filestring);
-        chmod($filepath, 0777);
+        $gzippath = $filepath . ".gz";
+        // file_put_contents($filepath, $filestring);        
+        // write the data into a compressed archive   
+        $gzip = gzopen($gzippath, 'w9');
+        gzwrite($gzip, $filestring);
+        gzclose($gzip);
+        chmod($gzippath, 0777);
 
         // store a record of the file in the db        
         $sql = "INSERT INTO " . NC_TABLE_FILES . "
@@ -258,7 +287,7 @@ class NCData extends NCGraphs {
         }
 
         // track number of ontology operations and error messages
-        $numadded = 0;        
+        $numadded = 0;
         $numupdated = 0;
         $msgs = "";
 
@@ -270,8 +299,8 @@ class NCData extends NCGraphs {
                         $numupdated++;
                     } else if ($nowresult == "add") {
                         $numadded++;
-                    } 
-                } catch (Exception $ex) {                    
+                    }
+                } catch (Exception $ex) {
                     $msgs .= $newdata[$i]['name'] . ": " . $ex->getMessage() . "\n";
                 }
             }
@@ -312,9 +341,9 @@ class NCData extends NCGraphs {
         }
 
         // if reached here, the class already exists. Perhaps adjust.
-        if ($newentry['status'] == 1) {
+        if ($newentry['status'] == NC_ACTIVE) {
             // perhaps adjust the status
-            if ($ontology[$classname]['status'] == 0) {
+            if ($ontology[$classname]['status'] == NC_DEPRECATED) {
                 $this->activateClassWork($classname);
                 $activated = true;
                 $updated = true;
@@ -348,8 +377,8 @@ class NCData extends NCGraphs {
             }
             $this->batchUpdateAnno($batchupdate);
         } else {
-            // here new entry has 0 status
-            if ($ontology[$classname]['status'] == 1) {
+            // here new entry has non-active status
+            if ($ontology[$classname]['status'] == NC_ACTIVE) {
                 // requires de-activation             
                 $this->removeClassWork($classname);
                 $updated = true;
@@ -385,7 +414,7 @@ class NCData extends NCGraphs {
      * 
      */
     private function batchCheckUpdateStatusClass($batch, $what) {
-        
+
         $whattable = $this->getTableName($what);
 
         // fetch current status and classes from the db
@@ -406,12 +435,12 @@ class NCData extends NCGraphs {
 
         // scan through the fetched data and compare with the "new" data in the batch set. 
         // Discrepant entries are inserted into $changestatus and $changeclass
-        $changestatus = ['toactive'=>[], 'toinactive'=>[]];
+        $changestatus = ['toactive' => [], 'toinactive' => []];
         $changeclass = [];
         while ($row = $stmt->fetch()) {
             $nowid = $row['id'];
             // check the status code for the objects
-            $nowstatus = $this->standardizeStatus($batch[$nowid]['status'], "AD");            
+            $nowstatus = $this->standardizeStatus($batch[$nowid]['status'], "AD");
             if ($nowstatus != $row['status']) {
                 if ($nowstatus == NC_ACTIVE) {
                     $changestatus['toactive'][] = $nowid;
@@ -425,7 +454,7 @@ class NCData extends NCGraphs {
                 $changeclass[$nowclass][] = $nowid;
             }
         }
-                
+
         // set active and inactive components
         $this->batchSetStatus($what, $changestatus['toactive'], NC_ACTIVE);
         $this->batchSetStatus($what, $changestatus['toinactive'], NC_DEPRECATED);
@@ -435,10 +464,10 @@ class NCData extends NCGraphs {
             $this->batchSetClass($what, $changeclass[$nowclass], $nowclass);
             $numchanges += count($changeclass[$nowclass]);
         }
-             
-        return $numchanges; 
+
+        return $numchanges;
     }
-       
+
     /**
      * Helper to importNodes. Update annotations, status codes, and node classes.
      * 
@@ -465,7 +494,7 @@ class NCData extends NCGraphs {
      * 
      */
     private function batchUpdateObjects($batch, $what, $batchsize = 100000) {
-       
+
         $n = count($batch);
         if ($n == 0) {
             return;
@@ -479,7 +508,7 @@ class NCData extends NCGraphs {
 
         // update the status codes
         $statusupdates = $this->batchCheckUpdateStatusClass($batch, $what);
-       
+
         return $annoupdates + $statusupdates;
     }
 
@@ -501,7 +530,7 @@ class NCData extends NCGraphs {
 
         // start a log with output messages
         $msgs = "";
-        
+
         // all nodes require a name, class_name, title, status
         $defaults = ["name" => '', "title" => '', "abstract" => '', "content" => '',
             "class" => '', "status" => 1];
@@ -522,9 +551,9 @@ class NCData extends NCGraphs {
                     $newdata[$i]['class_id'] = $nodedict[$nowclass];
                 } else {
                     $msgs .= "Skipping node $nowname because class '$nowclass' is undefined\n";
-                    unset($newdata[$i]['name']);                    
+                    unset($newdata[$i]['name']);
                 }
-            } 
+            }
         }
 
         // collect data from all existing nodes
@@ -567,7 +596,7 @@ class NCData extends NCGraphs {
 
         return $msgs . " -- nodes: added " . count($newset) . " entries / updated " . $updatecount . " fields\n";
     }
-          
+
     /**
      * Helper function processes updates on links
      * 
@@ -636,8 +665,7 @@ class NCData extends NCGraphs {
                     $newdata[$i]['source_id'] = $vdict[$nowsource];
                     $newdata[$i]['target_id'] = $vdict[$nowtarget];
                 }
-                
-            } 
+            }
         }
         // save a little memory by unsetting node information (no longer needed below)
         unset($allnodes, $vdict);
