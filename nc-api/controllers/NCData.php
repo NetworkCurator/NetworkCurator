@@ -155,8 +155,12 @@ class NCData extends NCGraphs {
 
         $this->dbunlock();
         $timer->recordTime("import end");
+        $status .= "\n" . $timer->showTimes();
 
-        return "$status\n" . $timer->showTimes();
+        // send email
+        $this->sendDataImportEmail($status);
+
+        return $status;
     }
 
     /**
@@ -943,6 +947,16 @@ class NCData extends NCGraphs {
         }
 
         return $result;
+    }
+
+    /**
+     * Send an email about a data import
+     */
+    private function sendDataImportEmail($summary) {
+        $ncemail = new NCEmail($this->_db);
+        $emaildata = ['NETWORK' => $this->_network, 'USER' => $this->_uid,
+            'SUMMARY' => $summary, 'DESCRIPTION' => $this->_params['file_desc']];
+        $ncemail->sendEmailToCurators("email-data-import", $emaildata, $this->_netid, [$this->_uid]);
     }
 
 }

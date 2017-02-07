@@ -439,7 +439,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id ORDER BY title";
      */
     private function sendPurgeNetworkEmail() {
         $ncemail = new NCEmail($this->_db);
-        $emaildata = ['NETWORK' => $this->_params['name'], 'USER' => $this->_uid];
+        $emaildata = ['NETWORK' => $this->_network, 'USER' => $this->_uid];
         $ncemail->sendEmailToNetwork("email-purge-network", $emaildata, $this->_netid, ['admin']);
     }
 

@@ -1,0 +1,17 @@
+# Data import for network "[NETWORK]"
+
+Dear [FIRSTNAME],
+
+Some data has just been uploaded to network "[NETWORK]".
+
+Network name: [NETWORK]
+Comment/Description: [DESCRIPTION]
+By: [USER]
+
+Import summary:
+[SUMMARY]
+
+
+Thanks.
+
+[This is an automated email]
