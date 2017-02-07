@@ -402,6 +402,9 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id ORDER BY title";
         }
 
         // proceed to purge the network
+        // send email first - requires access to users associated with the network
+        $this->sendPurgeNetworkEmail();
+
         // remove all entries from db tables
         $alltables = [NC_TABLE_PERMISSIONS, NC_TABLE_ANNOTEXT,
             NC_TABLE_CLASSES, NC_TABLE_FILES, NC_TABLE_ACTIVITY, NC_TABLE_NETWORKS, NC_TABLE_NODES,
@@ -413,8 +416,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id ORDER BY title";
 
         // remove data directory for the network
         $networkdir = $_SERVER['DOCUMENT_ROOT'] . NC_DATA_PATH . "/networks/" . $this->_netid;
-        $result = "Removing network " . $this->_network . ".\n Network data is in directory: " . $this->_netid .
-                ".\n Attempted to remove, but please verify.\n\n";
+        $result = "Removed network " . $this->_network . " [" . $this->_netid . "] \n";
         system("rm -fr $networkdir");
 
         // record the action in the site log
@@ -430,6 +432,15 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id ORDER BY title";
         $ncemail = new NCEmail($this->_db);
         $emaildata = ['NETWORK' => $this->_params['name']];
         $ncemail->sendEmailToUsers("email-new-network", $emaildata, ['admin']);
+    }
+
+    /**
+     * Send an email about a network purge
+     */
+    private function sendPurgeNetworkEmail() {
+        $ncemail = new NCEmail($this->_db);
+        $emaildata = ['NETWORK' => $this->_params['name'], 'USER' => $this->_uid];
+        $ncemail->sendEmailToNetwork("email-purge-network", $emaildata, $this->_netid, ['admin']);
     }
 
 }

@@ -1,0 +1,13 @@
+# Purge network "[NETWORK]"
+
+Dear [FIRSTNAME],
+
+The network "[NETWORK]" has been deleted.
+
+Network name: [NETWORK]
+By: [USER]
+
+
+Thanks.
+
+[This is an automated email]

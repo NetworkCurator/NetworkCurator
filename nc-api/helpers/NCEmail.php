@@ -61,10 +61,10 @@ class NCEmail extends NCDB {
     public function sendEmailToUsers($template, $params, $targetusers) {
 
         // avoid any work if the set of users is empty
-        if (count($targetusers)==0) {
+        if (count($targetusers) == 0) {
             return;
         }
-        
+
         // find all target users and email addresses
         $sql = "SELECT user_id, user_firstname, user_email FROM " . NC_TABLE_USERS . " WHERE ";
         $sqltargets = [];
@@ -92,7 +92,7 @@ class NCEmail extends NCDB {
     }
 
     /**
-     * Send email to a group of users determined by the 
+     * Send email to the curators of a network (+manually set users)
      * 
      * @param string $template
      * 
@@ -123,7 +123,51 @@ class NCEmail extends NCDB {
             $targets[] = $row['user_id'];
         }
 
-        // add additional targets into the $curators array
+        // perhaps add additional targets into the $targets array
+        foreach ($users as $val) {
+            if (!in_array($val, $targets)) {
+                $targets[] = $val;
+            }
+        }
+
+        // send email to users
+        $this->sendEmailToUsers($template, $params, $targets);
+    }
+
+    /**
+     * Send email to all users of a network (+manually set users)
+     * 
+     * @param string $template
+     * 
+     * Name of file with email template
+     * 
+     * @param array $params
+     * 
+     * Set of parameters to fill-in email template
+     * 
+     * @param string $netid
+     * 
+     * id for a network, e.g. Wxxxxx
+     * 
+     * $param array $users
+     * 
+     * ids of additional users to send to 
+     * (e.g. if email should go to curators and a set of users affected by an event)
+     * 
+     */
+    public function sendEmailToNetwork($template, $params, $netid, $users = []) {
+
+        // find all users associated with the network id
+        $sql = "SELECT user_id FROM " . NC_TABLE_PERMISSIONS . " WHERE network_id = ? AND
+            permissions <= " . NC_PERM_CURATE." AND permissions >= ".NC_PERM_VIEW." 
+            AND user_id != 'guest'";
+        $stmt = $this->qPE($sql, [$netid]);
+        $targets = [];
+        while ($row = $stmt->fetch()) {
+            $targets[] = $row['user_id'];
+        }
+
+        // perhaps add additional targets into the $targets array
         foreach ($users as $val) {
             if (!in_array($val, $targets)) {
                 $targets[] = $val;
