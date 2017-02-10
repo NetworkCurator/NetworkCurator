@@ -434,10 +434,10 @@ form {
  * New nodes 
  * ------------------------------------------------------------------------------------ */
 
-.nc-default-node {
+.nc-node {
     fill: #449944;    
 }
-.nc-default-link {
+.nc-link {
     stroke: #999999;
     stroke-width: 5;
 }

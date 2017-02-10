@@ -414,11 +414,7 @@ nc.graph.makeSaveBtn = function() {
     
     // attach actions to the save lins
     savebtn.find('a[val="diagram"]').click(nc.graph.saveGraphSVG);
-    
-    savebtn.find('a[val="definition"]').click(function() {
-        alert("TO DO: save graph definition");
-    });
-    
+            
     // save the current visible nodes
     savebtn.find('a[val="nodes"]').click(function() {        
         // generate a nodelist (current view only)
@@ -445,10 +441,37 @@ nc.graph.saveGraphSVG = function() {
     var height = parseInt(nc.graph.svg.style("height"));
     // create text with svg content
     var svgdef = '<svg width="'+width+'" height="'+height+'">';
-    var nowview = svgdef+$('#nc-graph-svg').html()+'</svg>';        
-    // save to file
-    var filename = nc.network+"_"+nc.userid+"_network.svg";                
-    nc.utils.saveToFile(nowview, filename);
+    // create copy of the svg (will simplify before saving)
+    var nowsvg = $('#nc-graph-svg').clone();
+    // helper function to report a number to 5 sig fig
+    var sf5 = function(x) {
+        return Number(x).toPrecision(5);
+    }   
+    // remove tooltip
+    nowsvg.find('#nc-svg-tooltip').remove();
+    // remove spurious styles
+    nowsvg.find('use,rect,line,text')
+    .css('-webkit-tap-highlight-color', '')
+    .css('pointer-events', '');
+    // round the x, y coordinates of nodes and text elements
+    nowsvg.find('use,text').each(function() {
+        var nn = $(this);
+        nn.attr("x", sf5(nn.attr("x")));
+        nn.attr("y", sf5(nn.attr("y")));
+    });
+    // round the x1, y1, x2, y2 coordinates of links
+    nowsvg.find('line').each(function() {
+        var nn = $(this);
+        nn.attr("x1", sf5(nn.attr("x1")));
+        nn.attr("y1", sf5(nn.attr("y1")));
+        nn.attr("x2", sf5(nn.attr("x2")));
+        nn.attr("y2", sf5(nn.attr("y2")));
+    });
+
+    svgdef += nowsvg.html()+'</svg>';        
+    // save to file    
+    var filename = nc.network+"_network.svg";                
+    nc.utils.saveToFile(svgdef, filename);
 }
 
 
@@ -579,7 +602,7 @@ nc.graph.makeSearchBox = function() {
             }          
             searchreset(result>0); 
         } else if (e.keyCode==40) {
-            // processing down key? (could get it to work)            
+        // processing down key? (could get it to work)            
         } else {
             // respond to other characters
             nc.graph.populateSearchSuggestions(nowval);

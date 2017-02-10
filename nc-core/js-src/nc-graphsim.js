@@ -48,8 +48,8 @@ nc.graph.initSimulation = function() {
     // create default definitions for objects
     var newnode = '<circle id="nc-newnode" cx=0 cy=0 r=9></circle>';    
     // create default styles (ncstyle0 for defaults, ncstyle1 for high-priority style)
-    var ncstyles0 = 'use.nc-default-node { fill: #449944; }\n';
-    ncstyles0 += 'line.nc-default-link { stroke: #999999; stroke-width: 5; }\n';    
+    var ncstyles0 = 'use.nc-node { fill: #449944; }\n';
+    ncstyles0 += 'line.nc-link { stroke: #999999; stroke-width: 5; }\n';    
     ncstyles0 += 'use.nc-newnode { stroke: #000000; stroke-width: 2; stroke-dasharray: 3 3; fill: #dddddd; }\n';
     ncstyles0 += 'line.nc-newlink, line.nc-draggedlink { stroke: #aaaaaa; stroke-width: 6; stroke-dasharray: 7 5; }\n';
     ncstyles0 += 'text { text-anchor: middle; }\n';
@@ -68,9 +68,10 @@ nc.graph.initSimulation = function() {
     var nonstyles = "";
     for (var i=0; i<temp.length; i++) {     
         var nowdef = $('<div>').html(temp[i].defs)
-        var nowstyle = nowdef.find('style').html();
+        // fetch the style definition, minify the whitespace
+        var nowstyle = nowdef.find('style').html().replace(/\s+/g, ' ').replace(/^\s/,'');
         if (nowstyle !== undefined) {
-            newstyles += nowstyle;
+            newstyles += nowstyle+'\n';
             nowdef.find('style').remove();            
         } 
         nonstyles += nowdef.html();                
@@ -150,7 +151,7 @@ nc.graph.simStart = function() {
     .data(nc.graph.links)
     .enter().append("line")
     .attr("class", function(d) {        
-        return "nc-default-link "+d["class"] + (d["status"]<1 ? " nc-inactive": "");        
+        return "nc-link "+d["class"] + (d["status"]<1 ? " nc-inactive": "");        
     })   
     .attr("id", function(d) {
         return d.id;
@@ -187,7 +188,7 @@ nc.graph.simStart = function() {
         return d.id;
     })
     .attr("class",function(d) {        
-        return "nc-default-node "+d["class"]+ (d["status"]<1 ? " nc-inactive": "");        
+        return "nc-node "+d["class"]+ (d["status"]<1 ? " nc-inactive": "");        
     })
     .call(nodedrag).on("click", nc.graph.selectObject).on("dblclick", nc.graph.toggleSearchNode)
     .on('mouseover', tooltipshow).on('mouseout', tooltiphide);  

@@ -282,9 +282,9 @@ nc.ui.ClassTreeRowWidget = function(classrow) {
     var classvg = '<svg class="nc-symbol" val="'+cid+'"><defs>'+cdefs+'</defs>';
     classvg += '<g transform="translate(18,18)">';
     if (classrow['connector']==1) {
-        classvg+='<line class="nc-default-link '+cname+'" x1=-17 x2=17 y1=0 y2=0/>';
+        classvg+='<line class="nc-link '+cname+'" x1=-17 x2=17 y1=0 y2=0/>';
     } else {
-        classvg+='<use xlink:href="#'+cname+'" class="nc-default-node '+cname+'"/>';
+        classvg+='<use xlink:href="#'+cname+'" class="nc-node '+cname+'"/>';
     }    
     classvg+='</g></svg>';
     
