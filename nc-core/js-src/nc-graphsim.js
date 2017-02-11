@@ -69,9 +69,9 @@ nc.graph.initSimulation = function() {
     for (var i=0; i<temp.length; i++) {     
         var nowdef = $('<div>').html(temp[i].defs)
         // fetch the style definition, minify the whitespace
-        var nowstyle = nowdef.find('style').html().replace(/\s+/g, ' ').replace(/^\s/,'');
+        var nowstyle = nowdef.find('style').html();
         if (nowstyle !== undefined) {
-            newstyles += nowstyle+'\n';
+            newstyles += nowstyle.replace(/\s+/g, ' ').replace(/^\s/,'')+'\n';
             nowdef.find('style').remove();            
         } 
         nonstyles += nowdef.html();                
