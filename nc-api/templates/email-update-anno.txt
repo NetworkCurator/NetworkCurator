@@ -5,7 +5,7 @@ Dear [FIRSTNAME],
 An annotation in network "[NETWORK]" has just been updated.
 
 Name: [OBJECT]
-Update: [UPDATE]
+Type: [TYPE]
 By: [USER]
 
 You can view the object page here
