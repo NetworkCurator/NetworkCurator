@@ -1,8 +1,8 @@
-# Update for [TYPE] "[OBJECT]" in network "[NETWORK]"
+# Annotation update for "[OBJECT]" in network "[NETWORK]"
 
 Dear [FIRSTNAME],
 
-A [TYPE] in network "[NETWORK]" has just been updated.
+An annotation in network "[NETWORK]" has just been updated.
 
 Name: [OBJECT]
 Update: [UPDATE]

@@ -974,7 +974,7 @@ class NCGraphs extends NCOntology {
         $emaildata = ['NETWORK' => $this->_network,
             'TYPE' => $type,
             'OBJECT' => $objname,
-            'OBJID' => $this->_params['target_id'],
+            'OBJECTID' => $this->_params['target_id'],
             'UPDATE' => $update,
             'USER' => $this->_uid];
 

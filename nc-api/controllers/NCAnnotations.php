@@ -70,6 +70,8 @@ class NCAnnotations extends NCLogger {
         if (!$result) {
             throw new Exception("Error retrieving current annotation");
         }
+        $objectid = $result['root_id'];
+        $ownerid = $result['owner_id'];
 
         // curator can edit anything, but others can only edit their own items
         if ($this->_uperm < NC_PERM_CURATE) {
@@ -96,6 +98,7 @@ class NCAnnotations extends NCLogger {
 
         // log the action       
         $this->logActivity($this->_uid, $this->_netid, "updated annotation text for", $params['anno_id'], $params['anno_text']);
+        $this->sendUpdateAnnoEmail($objectid, [$ownerid], $result['anno_type']);
 
         return true;
     }
@@ -117,7 +120,7 @@ class NCAnnotations extends NCLogger {
 
         // determine the comment level from the parent id
         $annolevel = NC_COMMENT;
-        $tat = "" . NC_TABLE_ANNOTEXT;        
+        $tat = "" . NC_TABLE_ANNOTEXT;
 
         if ($params['parent_id'] === '') {
             $params['parent_id'] = $this->_netid;
@@ -145,8 +148,8 @@ class NCAnnotations extends NCLogger {
 
         // identify the owners of the parent and root annotations 
         $owners = array_unique([$rootdata['owner_id'],
-            $this->getAnnoOwner($this->_netid, $params['parent_id'])]);          
-        
+            $this->getAnnoOwner($this->_netid, $params['parent_id'])]);
+
         // if reached here, insert the comment, log it, and finish
         $pp = array('network_id' => $this->_netid,
             'owner_id' => $this->_uid, 'user_id' => $this->_uid,
@@ -272,13 +275,48 @@ class NCAnnotations extends NCLogger {
             'OBJECT' => $objectname, 'OBJECTID' => $objectid,
             'USER' => $this->_uid];
 
-        if ($type == NC_COMMENT) {
-            $emaildata['TYPE'] = "comment";
-        } else if ($type == NC_SUBCOMMENT) {
-            $emaildata['TYPE'] = "comment response";
-        }
+        foreach ($this->_commenttypes as $key => $val) {
+            if ($type == $val) {
+                $emaildata['TYPE'] = $key;
+            }
+        };
 
         $ncemail->sendEmailToCurators("email-new-comment", $emaildata, $this->_netid, $objectowners);
+    }
+
+    /**
+     * send an email to curators and object owner about an annotation update
+     * 
+     * @param string $objectid
+     * 
+     * identifier for the affects object, e.g. Nxxxxxx
+     * 
+     * @param array $objectowners
+     * 
+     * array with user names that should be included in the email
+     * 
+     * @param integer $type
+     * 
+     * one of NC_NAME, NC_TITLE, NC_ABSTRACT, NC_CONTENT
+     */
+    private function sendUpdateAnnoEmail($objectid, $objectowners, $type) {
+
+        // fetch the name of the annotated object
+        $objectname = $this->getObjectName($this->_netid, $objectid)['anno_text'];
+
+        $ncemail = new NCEmail($this->_db);
+        $emaildata = ['NETWORK' => $this->_network,
+            'OBJECT' => $objectname, 'OBJECTID' => $objectid,
+            'USER' => $this->_uid];
+
+        $atypes = array_merge($this->_annotypeslong, $this->_commenttypes);
+        foreach ($atypes as $key => $val) {
+            if ($type == $val) {
+                $emaildata['TYPE'] = $key;
+            }
+        };
+
+        $ncemail->sendEmailToCurators("email-update-anno", $emaildata, $this->_netid, $objectowners);
     }
 
 }

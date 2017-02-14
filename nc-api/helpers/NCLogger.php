@@ -26,7 +26,8 @@ class NCLogger extends NCDB {
         "abstract" => NC_ABSTRACT, "content" => NC_CONTENT];
     protected $_annotypeslong = ["name" => NC_NAME, "title" => NC_TITLE,
         "abstract" => NC_ABSTRACT, "content" => NC_CONTENT, "defs" => NC_DEFS];
-
+    protected $_commenttypes = ["comment" => NC_COMMENT, "comment response"=>NC_SUBCOMMENT];
+    
     /**
      * Constructor with connection to database
      * 
