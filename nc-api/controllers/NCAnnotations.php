@@ -70,7 +70,7 @@ class NCAnnotations extends NCLogger {
         if (!$result) {
             throw new Exception("Error retrieving current annotation");
         }
-        $objectid = $result['root_id'];
+        $objectid = $result['parent_id'];
         $ownerid = $result['owner_id'];
 
         // curator can edit anything, but others can only edit their own items
@@ -298,15 +298,31 @@ class NCAnnotations extends NCLogger {
      * @param integer $type
      * 
      * one of NC_NAME, NC_TITLE, NC_ABSTRACT, NC_CONTENT
+     * 
+     * NOTE: perhaps the objectid checking could be done more elegantly here...
      */
     private function sendUpdateAnnoEmail($objectid, $objectowners, $type) {
 
         // fetch the name of the annotated object
         if ($type == NC_COMMENT || $type == NC_SUBCOMMENT) {
-            $objectname = "comment";
-        } else {
-            $objectname = $this->getObjectName($this->_netid, $objectid)['anno_text'];
+            // for a comment, need to fetch the parent/root id of node/link first
+            $sql = "SELECT owner_id, root_id, parent_id FROM " . NC_TABLE_ANNOTEXT . "  
+                WHERE network_id = ? AND anno_id = ? AND anno_status=" . NC_ACTIVE;
+            $stmt = $this->qPE($sql, [$this->_netid, $objectid]);
+            $result = $stmt->fetch();
+            $objectid = $result['parent_id'];
+            $objectowners[] = $result['owner_id'];
         }
+        if ($type == NC_SUBCOMMENT) {
+            // for a subcomment, need to fetch owner of main comment and owner of object
+            $sql = "SELECT owner_id, root_id, parent_id FROM " . NC_TABLE_ANNOTEXT . "  
+                WHERE network_id = ? AND anno_id = ? AND anno_status=" . NC_ACTIVE;
+            $stmt = $this->qPE($sql, [$this->_netid, $objectid]);
+            $result = $stmt->fetch();
+            $objectid = $result['root_id'];
+            $objectowners[] = $result['owner_id'];
+        }
+        $objectname = $this->getObjectName($this->_netid, $objectid)['anno_text'];
 
         $ncemail = new NCEmail($this->_db);
         $emaildata = ['NETWORK' => $this->_network,
