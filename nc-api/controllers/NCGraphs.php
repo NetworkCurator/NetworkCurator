@@ -128,7 +128,7 @@ class NCGraphs extends NCOntology {
         // log entry for creation
         $this->logActivity($this->_uid, $this->_netid, "created node", $params['name'], $params['title']);
         $this->sendNewObjectEmail("node");
-        
+
         return $nodeid;
     }
 
@@ -291,8 +291,8 @@ class NCGraphs extends NCOntology {
 
         // log entry for creation
         $this->logActivity($this->_uid, $this->_netid, "created link", $params['name'], $params['title']);
-        $this->sendNewObjectEmail("link");        
-        
+        $this->sendNewObjectEmail("link");
+
         return $linkid;
     }
 
@@ -837,6 +837,7 @@ class NCGraphs extends NCOntology {
         // check if object exists and class name exists
         $objtype = $this->isNodeOrLinkOrClass($params['target_id']);
         $classid = $this->getNameAnnoRootId($this->_netid, $params['class'])['root_id'];
+        $objowner = $this->getObjectOwner($this->_netid, $params['target_id']);
 
         $tabname = NC_TABLE_LINKS;
         if ($objtype == "node") {
@@ -864,6 +865,7 @@ class NCGraphs extends NCOntology {
 
         // log the event        
         $this->logActivity($this->_uid, $this->_netid, "updated class for $objtype ", $params['target_id'], $params['class']);
+        $this->sendUpdateObjectEmail($objtype, 'Class change: ' . $this->_params['class'], [$objowner]);
 
         return 1;
     }
@@ -882,6 +884,11 @@ class NCGraphs extends NCOntology {
         // check required permission to update an existing graph object
         $this->checkUpdatePermissions($params['target_id']);
 
+        $objowner = $this->getObjectOwner($this->_netid, $params['target_id']);
+        if ($objowner == $params['owner']) {
+            throw new Exception("New owner is the same as old owner");
+        }
+
         // check if object exists and class name exists
         $objtype = $this->isNodeOrLinkOrClass($params['target_id']);
         $ownerperm = $this->getUserPermissions($this->_netid, $params['owner']);
@@ -896,9 +903,12 @@ class NCGraphs extends NCOntology {
         $stmt = $this->qPE($sql, [$this->_netid, $params['target_id']]);
         $result = [];
         while ($row = $stmt->fetch()) {
-            // change the owner field here
+            // change the owner field here            
             $row['owner_id'] = $params['owner'];
             $result[] = $row;
+            if ($row['anno_type'] == NC_NAME) {
+                $this->_params['object'] = $row['anno_text'];
+            }
         }
 
         // re-send the annotation to the db. This will update the owner_id
@@ -906,6 +916,7 @@ class NCGraphs extends NCOntology {
 
         // log the event        
         $this->logActivity($this->_uid, $this->_netid, "updated ownership for $objtype ", $params['target_id'], $params['owner']);
+        $this->sendUpdateObjectEmail($objtype, 'New owner: ' . $this->_params['owner'], [$objowner, $this->_params['owner']]);
 
         return 1;
     }
@@ -914,7 +925,11 @@ class NCGraphs extends NCOntology {
      * Send an email about a new graph object
      */
     private function sendNewObjectEmail($type) {
-        
+
+        if ($type != "node" && $type != "link") {
+            throw new Exception("Sending new object email, unknown object type");
+        }
+
         $ncemail = new NCEmail($this->_db);
         $emaildata = ['NETWORK' => $this->_network,
             'CLASS' => $this->_params['class'],
@@ -928,10 +943,42 @@ class NCGraphs extends NCOntology {
             $emaildata['SOURCE'] = $this->_params["source"];
             $emaildata['TARGET'] = $this->_params["target"];
             $ncemail->sendEmailToCurators("email-new-link", $emaildata, $this->_netid);
-        } else {
-            throw new Exception("Sending new object email, unknown object type");
         }
-        
+    }
+
+    /**
+     * Send an email about an update to an object
+     * 
+     * @param string $type 
+     * 
+     * use "node" or "link" to designate the type of object that has been updated
+     * 
+     * @param string $update
+     * 
+     * A short string that describes the action performed on the object, e.g. "Owner change"
+     * 
+     * @param array $users
+     * 
+     * A set of users to definitely include in the email. Curators will be 
+     * included automatically.
+     * 
+     */
+    private function sendUpdateObjectEmail($type, $update, $users) {
+
+        if ($type != "node" && $type != "link" && $type != "class") {
+            throw new Exception("Sending update object email, unknown object type");
+        }
+
+        $objname = $this->getObjectName($this->_netid, $this->_params['target_id'])['anno_text'];
+        $ncemail = new NCEmail($this->_db);
+        $emaildata = ['NETWORK' => $this->_network,
+            'TYPE' => $type,
+            'OBJECT' => $objname,
+            'OBJID' => $this->_params['target_id'],
+            'UPDATE' => $update,
+            'USER' => $this->_uid];
+
+        $ncemail->sendEmailToCurators("email-update-object", $emaildata, $this->_netid, $users);
     }
 
 }

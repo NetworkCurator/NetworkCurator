@@ -1,0 +1,18 @@
+# Update for [TYPE] "[OBJECT]" in network "[NETWORK]"
+
+Dear [FIRSTNAME],
+
+A [TYPE] in network "[NETWORK]" has just been updated.
+
+Name: [OBJECT]
+Update: [UPDATE]
+By: [USER]
+
+You can view the object page here
+
+Object page: [SITEURL]/?network=[NETWORK]&object=[OBJID]
+
+
+Thanks.
+
+[This is an automated email]
