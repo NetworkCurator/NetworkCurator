@@ -302,7 +302,11 @@ class NCAnnotations extends NCLogger {
     private function sendUpdateAnnoEmail($objectid, $objectowners, $type) {
 
         // fetch the name of the annotated object
-        $objectname = $this->getObjectName($this->_netid, $objectid)['anno_text'];
+        if ($type == NC_COMMENT || $type == NC_SUBCOMMENT) {
+            $objectname = "comment";
+        } else {
+            $objectname = $this->getObjectName($this->_netid, $objectid)['anno_text'];
+        }
 
         $ncemail = new NCEmail($this->_db);
         $emaildata = ['NETWORK' => $this->_network,
