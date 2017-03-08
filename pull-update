@@ -40,6 +40,8 @@ cat js-src/nc-core.js \
     js-src/nc-history.js \
       > js/networkcurator.js
 php ../nc-admin/tools/simple-minify.php js/networkcurator.js js/networkcurator.min.js
+cat includes/*/*min.js includes/*/*/*min.js > js/networkcurator-includes.min.js
+
 
 ## build css
 rm -fr css
