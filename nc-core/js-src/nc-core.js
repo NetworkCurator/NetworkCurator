@@ -1,9 +1,5 @@
-/* 
- * nc-core.js
- *  
- * 
- * 
- */
+/* nc-core.js. Copyright 2017 Tomasz Konopka. */
+ 
 
 
 /**
@@ -58,12 +54,13 @@ nc.msg = function(h, b) {
     $('#nc-msg-header').html(h);
     $('#nc-msg-body').html(b);
     $('#nc-msg-modal').modal('show');
-}
+};
 
 
 /* ====================================================================================
  * Startup
  * ==================================================================================== */
+
 
 /**
  * runs several startup functions. Each function determines if its content
@@ -72,8 +69,7 @@ nc.msg = function(h, b) {
  */
 nc.init.all = function() {        
     var speed = nc.ui.speed;
-    nc.ui.speed = 0;
-    
+    nc.ui.speed = 0;    
     nc.init.initNetwork();
     nc.init.initPermissions();
     nc.init.initLog();    
@@ -84,9 +80,8 @@ nc.init.all = function() {
     nc.init.initGraph();       
     nc.init.initHistory();
     nc.init.browserCheck();
-
     nc.ui.speed = speed;
-}
+};
 
 /**
  * Invoked at page startup - builds widgets for managing guest and user permissions 
@@ -99,7 +94,7 @@ nc.init.initPermissions = function() {
     if (adminnetwork.length>0) {
         adminnetwork.hide();
     }
-    if (guestperms.length==0 || usersperms.length==0) return;
+    if (guestperms.length===0 || usersperms.length===0) return;
         
     // creat widgets
     guestperms.append(nc.ui.PermissionsWidget(nc.permissions.guest));                
@@ -110,11 +105,12 @@ nc.init.initPermissions = function() {
     }); 
     
     // for super-user, create administration widget    
-    if (adminnetwork.length>0 || nc.curator==1) {
+    if (adminnetwork.length>0 || nc.curator===1) {
         adminnetwork.append(nc.ui.AdministrationWidget());
         adminnetwork.show();
     }
-}
+};
+
 
 /**
  * Invoked at startup to generate ontology trees
@@ -128,12 +124,13 @@ nc.init.initOntology = function() {
     // check if this function applies on the page
     var ontnodes = $('#nc-ontology-nodes');
     var ontlinks = $('#nc-ontology-links');        
-    if (ontnodes.length==0 || ontlinks.length==0) return;
+    if (ontnodes.length===0 || ontlinks.length===0) return;
          
     // add ontology trees     
     ontnodes.html(nc.ui.ClassTreeWidget(nc.ontology.nodes, false));                    
     ontlinks.html(nc.ui.ClassTreeWidget(nc.ontology.links, true));               
-}
+};
+
 
 /** 
  * Run at page startup to create a log widget with buttons and log content
@@ -142,7 +139,7 @@ nc.init.initOntology = function() {
 nc.init.initLog = function() {      
     // check if the log div is present 
     var logdiv = $('#nc-activity-log');
-    if (logdiv.length==0) return;        
+    if (logdiv.length===0) return;        
       
     // fetch the total number of rows and a first set of log data
     $.post(nc.api, 
@@ -156,7 +153,8 @@ nc.init.initLog = function() {
         logdiv.append(nc.ui.ActivityLogToolbar(logsize, 50));           
         nc.loadActivity(0, 50);
     });  
-}
+};
+
 
 /**
  * Initialize a graph editing toolbar and graph viewer
@@ -166,6 +164,7 @@ nc.init.initGraph = function() {
     nc.graph.initGraph();    
 }
 
+
 /**
 * run at startup, fetches comments associated with the nc-comments box.
 */
@@ -173,7 +172,7 @@ nc.init.initComments = function() {
         
     // find out if this page has a space for comments
     var cbox = $('#nc-comments');
-    if (cbox.length==0) {
+    if (cbox.length===0) {
         return;
     }
         
@@ -206,7 +205,7 @@ nc.init.initComments = function() {
     
     var rootid = $('#nc-newcomment').attr('val');
     $('#nc-newcomment').html(nc.ui.CommentBox(nc.userid, rootid, rootid, '', ''));    
-}
+};
 
 
 /**
@@ -267,7 +266,8 @@ nc.init.initCuration = function() {
         $('#nc-permissions-tab').hide(); 
     }
     
-}
+};
+
 
 /**
 * run at startup to convert data in a global object nc_md into html
@@ -291,7 +291,7 @@ nc.init.initMarkdown = function() {
             temp.html(html);
         }            
     });        
-}
+};
 
 
 /**
@@ -299,7 +299,7 @@ nc.init.initMarkdown = function() {
  */
 nc.init.initNetwork = function() {   
     
-    if (nc.networktitle!='') {
+    if (nc.networktitle!=='') {
         $('#nc-nav-network-title').html(nc.networktitle);        
         $('body').addClass('nc-body2');
     }
@@ -308,16 +308,16 @@ nc.init.initNetwork = function() {
     if (!nc.curator) $('.nc-curator').hide();        
     if (!nc.editor) $('.nc-editor').hide();    
     if (!nc.commentator) $('.nc-commentator').hide();    
-}
+};
 
 
 /**
  * Initialize a history page
  */
 nc.init.initHistory = function() {
-    if ($('#nc-history-timeline').length==0) return; 
+    if ($('#nc-history-timeline').length===0) return; 
     nc.history.initHistory();    
-}
+};
 
 
 /**
@@ -325,7 +325,7 @@ nc.init.initHistory = function() {
  */
 nc.init.browserCheck = function() {
     var warnalerts = $('.nc-browser-warning');
-    if (warnalerts.length==0) return;
+    if (warnalerts.length===0) return;
 
     // by default hide the warnings (should be hidden in css)
     warnalerts.hide();
@@ -337,7 +337,7 @@ nc.init.browserCheck = function() {
     if (agent.indexOf('MSIE ')>=0 || agent.indexOf('Edge/')>=0 || agent.indexOf('Trident/')>=0) {        
         warnalerts.show();
     }        
-}
+};
 
 
 /* ====================================================================================
@@ -374,8 +374,7 @@ nc.loadActivity = function(pagenum, pagelen) {
         }
     });
 
-}
-
+};
 
 
 /* ====================================================================================
@@ -391,8 +390,8 @@ nc.loadActivity = function(pagenum, pagelen) {
 */
 nc.updateAnnotationText = function(annoid, annomd) {  
 
-    if (nc.network=='') return;        
-    if (annomd=='') {
+    if (nc.network==='') return;        
+    if (annomd==='') {
         nc.msg("Hey", "Annotation text cannot be blank");
         return;
     }
@@ -411,20 +410,19 @@ nc.updateAnnotationText = function(annoid, annomd) {
             nc.msg("Hey!", "Got error response from server: "+data['data']);            
         }        
     });
-}
+};
 
 
 /* ====================================================================================
 * Commenting
 * ==================================================================================== */
 
-
 /**
 * run when user presses "save" and tries to submit a new comment
 */
 nc.createComment = function(annomd, rootid, parentid) {
         
-    if (nc.network=='') return; 
+    if (nc.network==='') return; 
     
     // avoid sending a comment that is too short
     if (annomd.length<2) return;        
@@ -466,13 +464,13 @@ nc.createComment = function(annomd, rootid, parentid) {
             anno_text: annomd
         };        
         nc.ui.addCommentBox(comdata);
-        if (rootid!=parentid) {
+        if (rootid!==parentid) {
             $('.media-body .media[val=""]').hide();    
         }
         $('#nc-newcomment textarea').val('');
     });
 
-}
+};
 
 
 /* ====================================================================================
