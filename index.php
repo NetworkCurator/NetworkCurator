@@ -93,6 +93,10 @@ if ($page == "login" || $page == "admin" || $page=="user") {
 }
 
 // the footer is common to all pages
+$localfooter = "$UP/nc-ui-local.php";
+if (file_exists($localfooter)) {
+    include_once $localfooter;
+}
 include_once "$UP/nc-ui-footer.php";
 
 
