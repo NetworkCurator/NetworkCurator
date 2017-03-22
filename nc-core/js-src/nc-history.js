@@ -6,7 +6,10 @@
  * 
  */
 
-if (typeof nc == "undefined") {
+/* global nc */
+
+
+if (typeof nc === "undefined") {
     throw new Error("nc is undefined");
 }
 nc.history = {
@@ -14,7 +17,6 @@ nc.history = {
     data: []    // will hold data from server
 };
     
-
 
 /* ====================================================================================
  * Setup at the beginning
@@ -26,7 +28,7 @@ nc.history = {
 nc.history.initHistory = function() {
     
     // abort if annoid is not set
-    if (nc.history.annoid=="") {
+    if (nc.history.annoid==="") {
         return;        
     }
     
@@ -50,7 +52,7 @@ nc.history.initHistory = function() {
 /**
  * invoked after history data dd is obtained from server
  * 
- * dd - object with a summary of historical changes to an annotation object
+ * @param dd object with a summary of historical changes to an annotation object
  * 
  */
 nc.history.makeHistory = function(dd) {
@@ -76,7 +78,7 @@ nc.history.makeHistory = function(dd) {
     
     // trigger a click on the first element to preview the most recent version
     hline.find('.nc-timeline-entry[val="0"]').click();    
-}
+};
 
 
 

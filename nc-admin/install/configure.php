@@ -11,14 +11,14 @@
 // without re-running the full installation. (A full installation drops existing tables!)
 //
 
-include "../../nc-api/helpers/nc-generic.php";
+include_once "../../nc-api/helpers/nc-generic.php";
 
 // load the settings (also local settings)
 $localfile = "install-settings-local.php";
 if (file_exists($localfile)) {
-    include $localfile;
+    include_once $localfile;
 }
-include "install-settings.php";
+include_once "install-settings.php";
 
 
 

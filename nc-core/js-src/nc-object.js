@@ -5,13 +5,13 @@
  * 
  */
 
+/* global nc */
 
-if (typeof nc == "undefined") {
+
+if (typeof nc === "undefined") {
     throw new Error("nc is undefined");
 }
 nc.object = {};
-
-
 
 
 /* ====================================================================================
@@ -26,7 +26,7 @@ nc.object = {};
 nc.object.initToolbar = function() {
     
     var otbr = $('#nc-object-toolbar');    
-    if (otbr.length==0) {
+    if (otbr.length===0) {
         return;
     }       
     var oid = otbr.attr("objectid");
@@ -40,12 +40,14 @@ nc.object.initToolbar = function() {
     otbr.append(nc.ui.OwnerDropdown(oowner, oid));        
     otbr.find('span.nc-dropdown-caret').hide();
     otbr.find('button').addClass("disabled");
-}
+};
     
 
 /**
  * function called from a confirmatory modal 
  * sends a request to server to update the classname associated with an object id
+ * @param objid
+ * @param newclassname
  */
 nc.object.confirmUpdateClass = function(objid, newclassname) {    
     
@@ -61,7 +63,7 @@ nc.object.confirmUpdateClass = function(objid, newclassname) {
         nc.utils.alert(data);        
         data = JSON.parse(data);        
         if (nc.utils.checkAPIresult(data)) {            
-            if (data['success']==false) {              
+            if (!data['success']) {  
                 nc.msg('Error', data['errormsg']);                
             } else {
                 // change the label on the ui button                
@@ -70,7 +72,8 @@ nc.object.confirmUpdateClass = function(objid, newclassname) {
             }
         }      
     });
-}
+};
+
 
 /**
  * function called from a confirmatory modal
@@ -94,7 +97,7 @@ nc.object.confirmUpdateName = function(annoid, newname) {
         nc.utils.alert(data);  
         data = JSON.parse(data);
          if (nc.utils.checkAPIresult(data)) {            
-            if (data['success']==false) {              
+            if (!data['success']) {
                 nc.msg('Error', data['errormsg']);                
             } else {
                 // change the label on the ui button                
@@ -103,11 +106,14 @@ nc.object.confirmUpdateName = function(annoid, newname) {
             }
         }                  
     });
-}
+};
+
 
 /**
  * function called from a confirmatory modal
  * sends request to server to update the owner of an object
+ * @param objid
+ * @param newowner
  */
 nc.object.confirmUpdateOwner = function(objid, newowner) {
     
@@ -123,7 +129,7 @@ nc.object.confirmUpdateOwner = function(objid, newowner) {
         nc.utils.alert(data);        
         data = JSON.parse(data);        
         if (nc.utils.checkAPIresult(data)) {            
-            if (data['success']==false) {              
+            if (!data['success']) {              
                 nc.msg('Error', data['errormsg']);                
             } else {
                 // change the label on the ui button                
@@ -132,6 +138,5 @@ nc.object.confirmUpdateOwner = function(objid, newowner) {
             }
         }      
     });
-}
-
+};
 

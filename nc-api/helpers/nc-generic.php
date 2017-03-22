@@ -113,11 +113,24 @@ function ncInterpolateQuery($query, $params) {
         }
     }
 
-    $query = preg_replace($keys, $params, $query, 1, $count);
+    return preg_replace($keys, $params, $query, 1, $count);   
+}
 
-    #trigger_error('replaced '.$count.' keys');
 
-    return $query;
+/**
+ * Execute a query and report "ok" or "Error"
+ * (Used for command line db queries)
+ * 
+ * @param type $db
+ * @param type $s
+ */
+function ncQueryAndReport($db, $s) {
+    try {
+        $db->query($s);
+        echo "\tok\n";
+    } catch (Exception $ex) {
+        echo "\tError: " . $ex->getMessage();
+    }
 }
 
 ?>

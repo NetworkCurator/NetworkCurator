@@ -8,15 +8,14 @@
  * 
  */
 
-/* global nc */
-/* global d3 */
-/* global Infinity */
+/* global nc, d3, Infinity */
 
 
 if (typeof nc === "undefined") {
     throw new Error("nc is undefined");
 }
 nc.graph = {
+    nodepositions: [], // store fx, fy positions of all nodes
     rawnodes: [], // store for raw data on nodes
     rawlinks: [], // store for raw data on links
     nodes: [], // store active nodes in the viz
@@ -71,26 +70,28 @@ nc.graph.initGraph = function () {
                 controller: "NCOntology",
                 action: "getLinkOntology",
                 network: nc.network
-            }, function (data) {
-        data = JSON.parse(data);
-        if (nc.utils.checkAPIresult(data)) {
-            nc.ontology.links = nc.ontology.addLongnames(data['data']);
-            numloaded++;
-        }
-    }
+            },
+            function (data) {
+                data = JSON.parse(data);
+                if (nc.utils.checkAPIresult(data)) {
+                    nc.ontology.links = nc.ontology.addLongnames(data['data']);
+                    numloaded++;
+                }
+            }
     );
     $.post(nc.api,
             {
                 controller: "NCOntology",
                 action: "getNodeOntology",
                 network: nc.network
-            }, function (data) {
-        data = JSON.parse(data);
-        if (nc.utils.checkAPIresult(data)) {
-            nc.ontology.nodes = nc.ontology.addLongnames(data['data']);
-            numloaded++;
-        }
-    }
+            },
+            function (data) {
+                data = JSON.parse(data);
+                if (nc.utils.checkAPIresult(data)) {
+                    nc.ontology.nodes = nc.ontology.addLongnames(data['data']);
+                    numloaded++;
+                }
+            }
     );
 
     // load all graph data 
@@ -99,35 +100,51 @@ nc.graph.initGraph = function () {
                 controller: "NCGraphs",
                 action: "getAllNodes",
                 network: nc.network
-            }, function (data) {
-        data = JSON.parse(data);
-        if (nc.utils.checkAPIresult(data)) {
-            nc.graph.rawnodes = data['data'];
-            numloaded++;
-        }
-    }
+            },
+            function (data) {
+                data = JSON.parse(data);
+                if (nc.utils.checkAPIresult(data)) {
+                    nc.graph.rawnodes = data['data'];
+                    numloaded++;
+                }
+            }
     );
     $.post(nc.api,
             {
                 controller: "NCGraphs",
                 action: "getAllLinks",
                 network: nc.network
-            }, function (data) {
-        data = JSON.parse(data);
-        if (nc.utils.checkAPIresult(data)) {
-            nc.graph.rawlinks = data['data'];
-            numloaded++;
-        }
-    }
+            },
+            function (data) {
+                data = JSON.parse(data);
+                if (nc.utils.checkAPIresult(data)) {
+                    nc.graph.rawlinks = data['data'];
+                    numloaded++;
+                }
+            }
+    );
+    $.post(nc.api,
+            {
+                controller: "NCGraphs",
+                action: "getNodePositions",
+                network: nc.network
+            },
+            function (data) {
+                data = JSON.parse(data);
+                if (nc.utils.checkAPIresult(data)) {
+                    nc.graph.nodepositions = []; //data['data'];
+                    numloaded++;
+                }
+            }
     );
 
     // function to wait for all ajax data before starting the graph init sequence
     var checkAndInit = function () {
-        if (numloaded >= 4) {
+        if (numloaded >= 5) {
             $('#nc-graph-svg-container').find('span').remove();
+            nc.graph.fillNodePositions();
             nc.graph.initInterface();
             nc.graph.initSimulation();
-            //nc.graph.simUnpause();
             return;
         }
         // if reached here, not loaded yet
@@ -156,8 +173,9 @@ nc.graph.initInterface = function () {
     var svgcontainer = $('#nc-graph-svg-container');
     svgcontainer.parent().prepend(nc.graph.makeSearchBox());
 
-    // create buttons on the svg
+    // create buttons/info field on the svg
     svgcontainer.prepend(nc.graph.makeIconToolbar());
+    svgcontainer.append('<div id="nc-graph-summary"></div>');
 
     // set the status codes to integers
     $.each(nc.graph.rawnodes, function (key) {
@@ -220,6 +238,9 @@ nc.graph.initInterface = function () {
     // make a button with Save buttons
     toolbar.append(nc.graph.makeSaveBtn());
 
+    // make button for saving layout
+    //toolbar.append(nc.graph.makeSaveLayoutBtn());
+
     // create behaviors in the svg based on the toolbar        
     var jsvg = $('#nc-graph-svg');
     jsvg.mouseenter(function () {
@@ -259,13 +280,13 @@ nc.graph.makeIconToolbar = function () {
     var obj = $(nc.ui.graphIconToolbar());
 
     // add handlers for the buttons
-    obj.find('.glyphicon-zoom-in').click(function () {        
+    obj.find('.glyphicon-zoom-in').click(function () {
         var svgbg = document.querySelector('#nc-graph-svg');
         var nowscale = d3.zoomTransform(svgbg);
         nowscale.k = nowscale.k * 1.1;
         nc.graph.svg.select('.nc-svg-background').call(nc.graph.zoombehavior.transform, nowscale);
     });
-    obj.find('.glyphicon-zoom-out').click(function () {        
+    obj.find('.glyphicon-zoom-out').click(function () {
         var svgbg = document.querySelector('#nc-graph-svg');
         var nowscale = d3.zoomTransform(svgbg);
         nowscale.k = nowscale.k / 1.1;
@@ -295,7 +316,8 @@ nc.graph.makeIconToolbar = function () {
 
 /**
  * Helper function to initInterface() - creates a button with view node/link options
- * 
+ * @param nodes
+ * @param links
  */
 nc.graph.makeViewBtn = function (nodes, links) {
     var viewbtn = nc.ui.DropdownOntoView(nodes, links);
@@ -364,6 +386,7 @@ nc.graph.makeSettingsBtn = function () {
 
 /**
  * Toggles between wide and narrow view
+ * @param gowide logical 
  */
 nc.graph.toggleWideScreen = function (gowide) {
     var iconset = $('.nc-svgtools');
@@ -442,6 +465,47 @@ nc.graph.makeSaveBtn = function () {
 };
 
 
+/**
+ * Helper function to initInterface() - creates one button 
+ * to allow curator to save layout
+ * 
+ * @returns btn object
+ */
+nc.graph.makeSaveLayoutBtn = function () {
+    if (nc.curator === 0) {
+        console.log("regular user");
+        return "";
+    }
+    var btn = nc.ui.ButtonGroup(['Remember Layout']);
+    btn.find("button").removeClass("btn-primary").addClass("btn-default btn-curator");
+    btn.click(nc.graph.sendNodePositions);
+    return btn;
+};
+
+
+/**
+ * Display summary of current visualization state in a div 
+ */
+nc.graph.fillSummary = function () {
+    var summarydiv = $('#nc-graph-summary');
+    // count number of items in x that are expected to be showing (active only vs all)
+    var numshow = function (x) {
+        if (nc.graph.settings.inactive) {
+            return x.length;
+        }
+        return x.reduce(function (a, b) {
+            return a + (b.status > 0);
+        }, 0);
+    };
+    var nco = [numshow(nc.graph.rawnodes), numshow(nc.graph.nodes)];
+    var lco = [numshow(nc.graph.rawlinks), numshow(nc.graph.links)];
+    var cof = function (x) {
+        return "<span class='nc-highlight'>" + x[1] + "</span>/" + x[0];
+    };
+    summarydiv.html("Showing: " + cof(nco) + " nodes, " + cof(lco) + " links");
+};
+
+
 // captures current graph state and triggers an svg file download
 nc.graph.saveGraphSVG = function () {
     // find dimensions of the svg
@@ -501,6 +565,7 @@ nc.graph.getSearchElements = function () {
 
 /**
  * queries whether the search div has an element with name x
+ * @param x string to search for
  */
 nc.graph.hasSearchElement = function (x) {
     var nowitems = nc.graph.getSearchElements();
@@ -510,11 +575,12 @@ nc.graph.hasSearchElement = function (x) {
 
 /**
  * removes one element from the search box
+ * @param x
  */
 nc.graph.removeSearchElement = function (x) {
     x = x.trim();
     $('#nc-graph-search span.nc-search-item').each(function () {
-        if ($(this).text() == x) {
+        if ($(this).text() === x) {
             $(this).remove();
         }
     });
@@ -549,6 +615,8 @@ nc.graph.addSearchElement = function (x, restart) {
 /**
  * compares a user input to the node names, 
  * shows auto-complete suggestions in a dropdown
+ * 
+ * @param x
  */
 nc.graph.populateSearchSuggestions = function (x) {
     var searchlist = $('#nc-graph-search ul');
@@ -560,7 +628,7 @@ nc.graph.populateSearchSuggestions = function (x) {
     // helper function creates new <li> object 
     var newli = function (y) {
         return $('<li><a>' + y + '</a></li>');
-    }
+    };
 
     // scan nodes and add to searchlist
     searchlist.html('').show().css("left", $('#nc-input').position().left + "px");
@@ -725,6 +793,7 @@ nc.graph.addClassedLink = function (classid, classname, styleclass) {
 
 /**
  * Run when user clicks on a node or link in the graph
+ * @param d
  */
 nc.graph.selectObject = function (d) {
 
@@ -777,9 +846,9 @@ nc.graph.selectObject = function (d) {
 };
 
 /**
- * Remove all highlight styling from components in the graph
+ * Remove all highlight styling from components in the graph 
  */
-nc.graph.unselect = function (d) {
+nc.graph.unselect = function () {
     nc.graph.svg.selectAll('use').classed('nc-node-highlight', false);
     nc.graph.svg.selectAll('line').classed('nc-link-highlight', false);
     $('#nc-graph-newnode,#nc-graph-newlink,#nc-graph-details').hide();
@@ -849,6 +918,7 @@ nc.graph.displayInfo = function (d) {
  * Upon completion, it calls nd.graph.selectObject(d) to again select the object and 
  * actually display the information.
  * 
+ * @param d 
  */
 nc.graph.getInfo = function (d) {
     // send a request to server
@@ -885,6 +955,10 @@ nc.graph.getInfo = function (d) {
 
 /**
  * Invoked by user clicking to remove/activate a node or link
+ * @param objid
+ * @param objname
+ * @param objtype
+ * @param objstatus
  */
 nc.graph.toggleObject = function (objid, objname, objtype, objstatus) {
 
@@ -907,7 +981,7 @@ nc.graph.toggleObject = function (objid, objname, objtype, objstatus) {
                     nc.graph.svg.select('line[id="' + objid + '"]')
                             .classed('nc-inactive', objstatus === 1);
                     for (var i = 0; i < nc.graph.rawlinks.length; i++) {
-                        if (nc.graph.rawlinks[i].id == objid) {
+                        if (nc.graph.rawlinks[i].id === objid) {
                             nc.graph.rawlinks[i].status = +(objstatus < 1);
                         }
                     }
@@ -952,7 +1026,7 @@ nc.graph.filterNodes = function () {
         // check if the ontology allows this class to display
         if (nonto[iclassid].show > 0) {
             // check if the status of the node and ontology is visible
-            if (nc.graph.settings.inactive === 1 ||
+            if (nc.graph.settings.inactive ||
                     (rawnodes[i].status > 0 && nonto[iclassid].status > 0)) {
                 iok = true;
             }
@@ -1075,6 +1149,7 @@ nc.graph.filterNeighborhood = function () {
 /**
  * Called when user double-clicks on a node/text linked with a node
  * Adds/removes the node from the search box
+ * @param d
  */
 nc.graph.toggleSearchNode = function (d) {
     // early exit if nothing needs to be changed
@@ -1088,6 +1163,7 @@ nc.graph.toggleSearchNode = function (d) {
 
 /**
  * Unpin the position of a node
+ * @param d
  */
 nc.graph.pinToggle = function (d) {
     if ("index" in d) {
@@ -1215,14 +1291,14 @@ nc.graph.panned = function () {
  */
 nc.graph.zoom = function () {
     // get existing transformation
-    var oldtrans = nc.graph.getTransformation();    
+    var oldtrans = nc.graph.getTransformation();
     var oldscale = oldtrans[2];
     // apply a scaling transformation manually    
-    var newscale = d3.event.transform.k;    
+    var newscale = d3.event.transform.k;
     var sw2 = parseInt(nc.graph.svg.style("width").replace("px", "")) / 2;
     var sh2 = parseInt(nc.graph.svg.style("height").replace("px", "")) / 2;
     var newtrans = [sw2 + (oldtrans[0] - sw2) * (newscale / oldscale),
-        sh2 + (oldtrans[1] - sh2) * (newscale / oldscale), newscale];    
+        sh2 + (oldtrans[1] - sh2) * (newscale / oldscale), newscale];
     // set the new transformation into the content
     nc.graph.svg.select("g.nc-svg-content")
             .attr("transform", "translate(" + newtrans[0] + "," + newtrans[1] + ")scale(" + newtrans[2] + ")");
@@ -1252,6 +1328,7 @@ nc.graph.centerview = function () {
 /**
  * Converts between a mouse coordinate p to an avg coordinate 
  * (The differences comes from transformations and scaling)
+ * @param p
  */
 nc.graph.getCoord = function (p) {
     var trans = nc.graph.getTransformation();
@@ -1278,6 +1355,7 @@ nc.graph.resetForms = function () {
 
 /**
  * Find the node that is nearest to the given point
+ * @param p array with 2d coordinates
  */
 nc.graph.findNearestNode = function (p) {
     var bestid = 0;
@@ -1295,7 +1373,9 @@ nc.graph.findNearestNode = function (p) {
 
 /**
  * Replace an existing node id by a new one.
- * Returns the index of the node in the nc.graph.nodes array
+ * Returns the index of the node in the nc.graph.nodes array 
+ * @param oldid
+ * @param newid
  */
 nc.graph.replaceNodeId = function (oldid, newid) {
 
@@ -1326,6 +1406,8 @@ nc.graph.replaceNodeId = function (oldid, newid) {
 /**
  * Replaces an id in the nc.graph.links array
  * Returns the index to the link in question
+ * @param oldid
+ * @param newid
  */
 nc.graph.replaceLinkId = function (oldid, newid) {
     // replace any linking data
@@ -1416,6 +1498,7 @@ nc.graph.createNode = function () {
     );
 };
 
+
 /**
  * * Processes the new link form submit action
  */
@@ -1495,7 +1578,6 @@ nc.graph.createLink = function () {
 };
 
 
-
 /**
  * remove a node from the viz (not from the server)
  */
@@ -1517,7 +1599,7 @@ nc.graph.removeNode = function () {
         nc.graph.rawlinks[i].target = nc.graph.rawlinks[i].target.id;
     }
     nc.graph.rawlinks = nc.graph.rawlinks.filter(function (value) {
-        return (value.source != nodeid && value.target !== nodeid);
+        return (value.source !== nodeid && value.target !== nodeid);
     });
 
     // restart the simulation
@@ -1547,3 +1629,63 @@ nc.graph.removeLink = function () {
     $('#nc-graph-newlink').hide();
 };
 
+
+/* ====================================================================================
+ * Handling of node/link positions from/to the server
+ * ==================================================================================== */
+
+nc.graph.sendNodePositions = function () {
+    //console.log("sendNodePositions");
+
+    var npos = [];
+    nc.graph.rawnodes.map(function (x) {
+        npos.push({id: x.id, "x": x.x.toPrecision(5), "y": x.y.toPrecision(5)});
+    });
+
+    /** Helper to create a batch of npos and then send it to server 
+     * @param b is the batch index, i.e. 0, 1, 2, etc. */
+    var sendBatch = function (b) {
+        // prepare a batch of npos
+        var batchpos = npos.filter(function (x, i) {
+            return Math.floor(i / batchsize) === b;
+        });
+        // send request to server
+        //console.log("sending with b: " + b);
+        //console.log("sending in sendBatch: " + JSON.stringify(batchpos));
+        $.post(nc.api,
+                {
+                    controller: "NCGraph",
+                    action: "setNodePositions",
+                    network: nc.network,
+                    positions: JSON.stringify(batchpos)
+                },
+                function (data) {
+                    data = JSON.parse(data);
+                }
+        );
+    };
+
+    // send in batches (prevents simulatneous large data uploads for large networks)
+    var batchsize = 2000;
+    var numbatches = Math.ceil(npos.length / batchsize);
+    for (var b = 0; b < numbatches; b++) {
+        setTimeout(sendBatch, 500 * b, b);
+    }
+
+};
+
+
+/**
+ * Transfer fx, fy coordinates from nc.graph.nodepositions to 
+ * nc.graph.rawnodes and nc.graph.rawlinks
+ 
+ * @returns {unresolved}
+ */
+nc.graph.fillNodePositions = function () {
+    if (nc.graph.nodepositions.length === 0) {
+        console.log("no positions");
+        return;
+    }
+    console.log("received data: " + JSON.stringify(nc.graph.nodepositions));
+    return null;
+};

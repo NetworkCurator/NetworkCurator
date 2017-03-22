@@ -4,8 +4,10 @@
  * 
  */
 
+/* global nc */
 
-if (typeof nc == "undefined") {
+
+if (typeof nc === "undefined") {
     throw new Error("nc is undefined");
 }
 nc.ontology = {};
@@ -19,6 +21,9 @@ nc.ontology.links = {};
 
 /**
  * Invoked when user wants to create a new class for a node or link
+ * @param classname
+ * @param islink
+ * @param isdirectional
  */
 nc.ontology.createClass = function(classname, islink, isdirectional) {
     
@@ -42,7 +47,7 @@ nc.ontology.createClass = function(classname, islink, isdirectional) {
     }, function(data) {
         nc.utils.alert(data);      
         data = JSON.parse(data);
-        if (data['success']==false) {              
+        if (!data['success']) {
             nc.msg('Error', data['errormsg']);                
         } else {                
             // insert was successful, so append the tree   
@@ -62,10 +67,16 @@ nc.ontology.createClass = function(classname, islink, isdirectional) {
             nc.ui.addClassTreeRow(newrow, 1);                
         }
     });  
-}
+};
+
 
 /**
  * Send a request to update a class name or parent structure
+ * @param classid
+ * @param classname
+ * @param parentid
+ * @param islink logical
+ * @param isdirectional logical
  */
 nc.ontology.updateClassProperties = function(classid, classname, parentid, islink, isdirectional) {
                 
@@ -78,7 +89,7 @@ nc.ontology.updateClassProperties = function(classid, classname, parentid, islin
     // also between parentid and parentname
     var targetname = $('div.nc-classdisplay[val="'+classid+'"] span[val="nc-classname"]').html();   
     var parentname = parentid;
-    if (parentid!='') {
+    if (parentid!=='') {
         parentname = $('div.nc-classdisplay[val="'+parentid+'"] span[val="nc-classname"]').html();
     }
     
@@ -102,7 +113,7 @@ nc.ontology.updateClassProperties = function(classid, classname, parentid, islin
     }, function(data) {        
         nc.utils.alert(data);      
         data = JSON.parse(data);
-        if (data['success']==false) {              
+        if (!data['success']) {              
             nc.msg('Error', data['errormsg']);                
         } else {   
             // update the tree display
@@ -112,19 +123,22 @@ nc.ontology.updateClassProperties = function(classid, classname, parentid, islin
             targetdisplay.find('> span.nc-comment[val="nc-directional"]').html(dirtext);
         }
     });  
-}
+};
+
 
 /**
  * Preps to send request to remove/disactivate/deprecate a class 
  * As this is an important step, this function shows a modal to confirm
  * The action is only performed upon confirmation
+ * @param classid
+ * @param action
  */ 
 nc.ontology.askConfirmation = function(classid, action) {   
     var classname = $('li[val="'+classid+'"] span[val="nc-classname"]').html();
     var modal = $('#nc-deprecateconfirm-modal');
     modal.find('#nc-deprecateconfirm-action').html(action);
     modal.find('#nc-deprecateconfirm-class').html(classname).attr("val", classid);        
-    if (action=="inactive") {
+    if (action==="inactive") {
         $('#nc-deprecateconfirm-modal button[val="nc-confirm"]')
         .off("click").on("click", nc.ontology.confirmDeprecate);
         modal.find('p[val="deprecate"]').show();
@@ -136,7 +150,7 @@ nc.ontology.askConfirmation = function(classid, action) {
         modal.find('p[val="activate"]').show();
     }
     modal.modal("show");    
-}
+};
 
 
 /*
@@ -155,17 +169,18 @@ nc.ontology.confirmActivate = function() {
     }, function(data) {
         nc.utils.alert(data);              
         data = JSON.parse(data);
-        if (data['success']==false) {              
+        if (!data['success']) {
             nc.msg('Error', data['errormsg']);                
         } else {            
-            if (data['data']==true) {                
+            if (data['data']) {
                 nc.ui.toggleClassDisplay($('li[val="'+classid+'"]'));
             } else {
                 nc.msg("That's strange", data['data']);                
             }
         }
     });  
-}
+};
+
 
 /**
  * Sends a request to deprecate/remova a class
@@ -184,14 +199,14 @@ nc.ontology.confirmDeprecate = function() {
     }, function(data) {
         nc.utils.alert(data);              
         data = JSON.parse(data);
-        if (data['success']==false) {              
+        if (!data['success']) {              
             nc.msg('Error', data['errormsg']);                
         } else {            
             var thisrow = $('li[val="'+classid+'"]');            
-            if (data['data']==true) {
+            if (data['data']) {
                 // the class has been truly removed
                 thisrow.fadeOut(nc.ui.speed, function() {
-                    $(this).remove()
+                    $(this).remove();
                 } ); 
             } else {
                 // the class has been deprecated
@@ -199,7 +214,7 @@ nc.ontology.confirmDeprecate = function() {
             }
         }
     });  
-}
+};
 
 
 /**
@@ -223,12 +238,12 @@ nc.ontology.addLongnames = function(ontolist) {
             thisparent = val['parent_id'],
             longname = thisname;
         
-            if (tree.find('div[val="'+thisid+'"]').length==1) {
+            if (tree.find('div[val="'+thisid+'"]').length===1) {
                 counter++;
             } else {
-                var parentdiv = tree.find('div[val="'+thisparent+'"]')
-                if (parentdiv.length==1) {                    
-                    if (thisparent!="") {
+                var parentdiv = tree.find('div[val="'+thisparent+'"]');
+                if (parentdiv.length===1) {                    
+                    if (thisparent!=="") {
                         longname = parentdiv.attr('text')+":"+thisname;
                     }
                     parentdiv.append('<div val="'+thisid+'" text="'+longname+'"></div>');
@@ -240,4 +255,4 @@ nc.ontology.addLongnames = function(ontolist) {
     }
 
     return ontolist;            
-}
+};

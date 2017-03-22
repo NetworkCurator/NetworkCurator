@@ -32,7 +32,7 @@ if (!file_exists($infile)) {
 
 
 /* --------------------------------------------------------------------------
- * Run the minify code
+ * Run the minifier on the input data
  * -------------------------------------------------------------------------- */
 
 $minifier = new SimpleMinifier();

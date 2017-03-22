@@ -5,14 +5,14 @@
  * 
  */
 
+/* global nc */
+
 
 // create a namespace within nc for user functions
-if (typeof nc == "undefined") {
+if (typeof nc === "undefined") {
     throw new Error("nc is undefined");
 }
 nc.users = {};
-
-
 
 
 /* ====================================================================================
@@ -48,7 +48,7 @@ nc.users.sendLogin = function(fgid, fgpwd, fgremember) {
         nc.utils.alert(data);                
         data = JSON.parse(data);
         if (nc.utils.checkAPIresult(data)) {
-            if (data['success']==false) {
+            if (!data['success']) {
                 $('#fg-userid,#fg-password').addClass('has-error has-feedback');                
                 $('#fg-userid label').html("Please verify the user id is correct:");
                 $('#fg-password label').html("Please verify the password is correct:");
@@ -60,7 +60,7 @@ nc.users.sendLogin = function(fgid, fgpwd, fgremember) {
     );    
     
     return 0;
-}
+};
 
 
 /**
@@ -69,7 +69,7 @@ nc.users.sendLogin = function(fgid, fgpwd, fgremember) {
  */
 nc.users.sendLogout = function() {
     window.location.replace("?page=logout");
-}
+};
 
 
 
@@ -88,7 +88,7 @@ nc.users.lookup = function() {
     var targetid = $("#nc-form-permissions input").val();
                 
     // check if name is well-formed              
-    if (nc.utils.checkString(targetid, 1)==0) { 
+    if (nc.utils.checkString(targetid, 1)===0) { 
         nc.msg('Hey!', 'Invalid user id');  
         return false;
     }
@@ -108,10 +108,10 @@ nc.users.lookup = function() {
         data = JSON.parse(data);
         btn.html('Lookup').removeClass('btn-warning disabled').addClass('btn-success');                    
         if (nc.utils.checkAPIresult(data)) {            
-            if (data['success']==false) {              
+            if (!data['success']) {              
                 nc.msg('Error', data['errormsg']);                
             } else {                
-                if (data['data']==0) {                    
+                if (data['data']===0) {                    
                     // the target user exists and indeed cannot view the network
                     // offer to grant permissions
                     $('#nc-grantconfirm-user').html(targetid);                    
@@ -124,7 +124,7 @@ nc.users.lookup = function() {
         }      
     });
     return false;
-}
+};
 
 
 /*
@@ -133,7 +133,7 @@ nc.users.lookup = function() {
 nc.users.updatePermissions = function(targetid) {
 
     // check for self-adjustment
-    if (targetid==nc.userid) {
+    if (targetid===nc.userid) {
         var warnm  = "<p>You are about to update your own permission level.</p>";
         warnm += "<p>If you set your permission level below curator level, you will no longer be able to make adjustments on this page.</p>";        
         $('#nc-danger-header').html("Permissions");
@@ -147,18 +147,19 @@ nc.users.updatePermissions = function(targetid) {
         nc.users.confirmUpdatePermissions(targetid);          
     }    
             
-}
+};
 
 
 /**
  * performs an update of permissions (after the action has been validated/confirmed)
+ * @param targetid
  */
 nc.users.confirmUpdatePermissions = function(targetid) {
     
     var nowform = $('form.nc-form-permissions[val="'+targetid+'"]');
     var nowval = nowform.find("label.active").find("input:radio").val();    
     // find the update button for this user
-    var btn = nowform.find('button')    
+    var btn = nowform.find('button');   
     btn.addClass('btn-warning disabled').html('Updating');    
         
     // call the update permissions api
@@ -169,18 +170,18 @@ nc.users.confirmUpdatePermissions = function(targetid) {
             setTimeout(function(){
                 btn.html('Update').removeClass('btn-default disabled').addClass('btn-success');            
             }, nc.ui.timeout); 
-            if (nc.utils.checkAPIresult(data) && data['success']==false) {                                 
+            if (nc.utils.checkAPIresult(data) && data['success']===false) {                                 
                 nc.msg('Error', data['errormsg']);                                 
                 return;
             }                        
-            if (nowval==0 && targetid!=="guest") {                
+            if (nowval===0 && targetid!=="guest") {                
                 // if setting user to 0, remove the form element from the page
                 $('.nc-form-permissions[val="'+targetid+'"]').fadeOut(nc.ui.speed, function() {                
                     $(this).remove();
                 }); 
             }
         });  
-}
+};
 
 /**
 * Invoked when curator confirms to grant privileges to a user
@@ -198,7 +199,7 @@ nc.users.grantView = function() {
             new_item.show(nc.ui.speed);        
         });
     return false;        
-}
+};
 
 
 /**
@@ -218,5 +219,5 @@ nc.users.updatePermissionsGeneric = function(targetid, perm, f) {
         target_id: targetid,
         permissions: perm
     }, f );   
-}
+};
 

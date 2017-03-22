@@ -12,9 +12,7 @@
  * 
  */
 
-
-/* global nc */
-/* global d3 */
+/* global nc, d3 */
 
 
 /* ====================================================================================
@@ -118,7 +116,7 @@ nc.graph.initSimulation = function () {
             .attr("transform", newTS);
 
     // set up zooming on entire svg
-    nc.graph.zoombehavior = d3.zoom().scaleExtent([0.125, 4])
+    nc.graph.zoombehavior = d3.zoom().scaleExtent([0.05, 4])
             .on("zoom", nc.graph.zoom);
     nc.graph.svg.call(nc.graph.zoombehavior);
 
@@ -237,6 +235,7 @@ nc.graph.simStart = function () {
     }
 
     nc.graph.simUnpause();
+    nc.graph.fillSummary();
 };
 
 

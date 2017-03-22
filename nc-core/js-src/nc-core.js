@@ -41,13 +41,15 @@ var nc = {
 };
 
 
-
 /* ====================================================================================
 * Generic functions 
 * ==================================================================================== */
 
 /**
 * Show a message in a modal window
+* 
+* @param h string, modal header
+* @param b string, modal body
 */
 nc.msg = function(h, b) {
     
@@ -60,7 +62,6 @@ nc.msg = function(h, b) {
 /* ====================================================================================
  * Startup
  * ==================================================================================== */
-
 
 /**
  * runs several startup functions. Each function determines if its content
@@ -126,6 +127,9 @@ nc.init.initOntology = function() {
     var ontlinks = $('#nc-ontology-links');        
     if (ontnodes.length===0 || ontlinks.length===0) return;
          
+         
+         console.log("nodes: "+JSON.stringify(nc.ontology.nodes));
+         console.log("links: "+JSON.stringify(nc.ontology.links));
     // add ontology trees     
     ontnodes.html(nc.ui.ClassTreeWidget(nc.ontology.nodes, false));                    
     ontlinks.html(nc.ui.ClassTreeWidget(nc.ontology.links, true));               
@@ -160,9 +164,9 @@ nc.init.initLog = function() {
  * Initialize a graph editing toolbar and graph viewer
  */
 nc.init.initGraph = function() {
-    if ($('#nc-graph-svg').length==0) return;         
+    if ($('#nc-graph-svg').length===0) return;         
     nc.graph.initGraph();    
-}
+};
 
 
 /**
@@ -419,6 +423,9 @@ nc.updateAnnotationText = function(annoid, annomd) {
 
 /**
 * run when user presses "save" and tries to submit a new comment
+* @param annomd
+* @param rootid
+* @param parentid
 */
 nc.createComment = function(annomd, rootid, parentid) {
         

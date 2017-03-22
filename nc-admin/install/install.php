@@ -5,28 +5,19 @@
 
 echo "\n";
 echo "NetworkCurator installation\n\n";
-include "../../nc-api/helpers/nc-generic.php";
+include_once "../../nc-api/helpers/nc-generic.php";
 
 // load the settings (also local settings)
 $localfile = "install-settings-local.php";
 if (file_exists($localfile)) {
-    include $localfile;
+    include_once $localfile;
 }
-include "install-settings.php";
+include_once "install-settings.php";
 
 
 /* --------------------------------------------------------------------------
- * Prep - helper functions and helper variables
+ * Prep - helper variables
  * -------------------------------------------------------------------------- */
-
-function sqlreport($db, $s) {
-    try {
-        $db->query($s);
-        echo "\tok\n";
-    } catch (Exception $ex) {
-        echo "\tError: " . $ex->getMessage();
-    }
-}
 
 // Helper definitions for sql columns
 $charset = "CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT ''";
@@ -48,42 +39,12 @@ $engine = " ENGINE = InnoDB ";
  * Start installation
  * -------------------------------------------------------------------------- */
 
-try {
-
-    $dbroot = new PDO('mysql:host=' . DB_SERVER . ';dbname=' . DB_NAME . ';charset=utf8mb4', DB_ROOT, DB_ROOT_PASSWD);
-    $dbroot->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $dbroot->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-
-    echo "Dropping existing database:";
-    $sql = "DROP DATABASE IF EXISTS " . DB_NAME . " ";
-    sqlreport($dbroot, $sql);
-
-    echo "Creating database:\t";
-    $sql = "CREATE DATABASE " . DB_NAME . " ";
-    $sql .= "DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;";
-    sqlreport($dbroot, $sql);
-
-    $dbroot = null;
-} catch (Exception $e) {
-    echo "DROP/CREATE operations failed: " . $e->getMessage();
-    echo "\n\n";
-}
-
-
-/* --------------------------------------------------------------------------
- * Create tables
- * -------------------------------------------------------------------------- */
-
-$db = new PDO('mysql:host=' . DB_SERVER . ';dbname=' . DB_NAME . ';charset=utf8mb4', DB_ADMIN, DB_ADMIN_PASSWD);
+$db = new PDO('mysql:host=' . DB_SERVER . ';dbname=' . DB_NAME .
+        ';charset=utf8mb4', DB_ADMIN, DB_ADMIN_PASSWD);
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 
-echo "Dropping existing tables:";
 $tp = "" . DB_TABLE_PREFIX . "_";
-$alltabs = array("users", "networks", "permissions",
-    "nodes", "links", "annotations", "annotation_log");
-$sql = "DROP TABLE IF EXISTS " . $tp . implode(", " . $tp, $alltabs);
-sqlreport($db, $sql);
 
 
 // -----------------------------------------------------------------------------
@@ -91,7 +52,7 @@ sqlreport($db, $sql);
 
 $tabname = $tp . "users";
 echo "Creating table $tabname:";
-$sql = "CREATE TABLE $tabname (
+$sql = "CREATE TABLE IF NOT EXISTS $tabname (
   datetime $datecol,
   user_id $vc32col,
   user_firstname $vc64col,
@@ -103,7 +64,7 @@ $sql = "CREATE TABLE $tabname (
   user_status $statuscol,
   PRIMARY KEY (`user_id`)
   ) $engine COLLATE utf8_unicode_ci";
-sqlreport($db, $sql);
+ncQueryAndReport($db, $sql);
 
 
 // -----------------------------------------------------------------------------
@@ -112,14 +73,14 @@ sqlreport($db, $sql);
 
 $tabname = $tp . "permissions";
 echo "Creating table $tabname: ";
-$sql = "CREATE TABLE $tabname (
+$sql = "CREATE TABLE IF NOT EXISTS $tabname (
   user_id $vc32col,
   network_id $vc32col,    
   permissions INT NOT NULL DEFAULT 0,
   UNIQUE KEY user_network (user_id, network_id),
   KEY network_id (network_id)
 ) $engine COLLATE utf8_unicode_ci";
-sqlreport($db, $sql);
+ncQueryAndReport($db, $sql);
 
 
 // -----------------------------------------------------------------------------
@@ -127,12 +88,12 @@ sqlreport($db, $sql);
 
 $tabname = $tp . "networks";
 echo "Creating table $tabname: ";
-$sql = "CREATE TABLE $tabname (  
+$sql = "CREATE TABLE IF NOT EXISTS $tabname (  
   network_id $vc32col,       
   owner_id $vc32col,  
   PRIMARY KEY (network_id)  
 ) $engine COLLATE utf8_unicode_ci";
-sqlreport($db, $sql);
+ncQueryAndReport($db, $sql);
 
 
 // -----------------------------------------------------------------------------
@@ -140,7 +101,7 @@ sqlreport($db, $sql);
 
 $tabname = $tp . "nodes";
 echo "Creating table $tabname: ";
-$sql = "CREATE TABLE $tabname (  
+$sql = "CREATE TABLE IF NOT EXISTS $tabname (  
   network_id $vc32col,
   node_id $vc32col,
   class_id $vc32col,    
@@ -148,7 +109,7 @@ $sql = "CREATE TABLE $tabname (
   PRIMARY KEY (node_id),
   KEY network_id (network_id)
 ) $engine COLLATE utf8_unicode_ci";
-sqlreport($db, $sql);
+ncQueryAndReport($db, $sql);
 
 
 // -----------------------------------------------------------------------------
@@ -156,7 +117,7 @@ sqlreport($db, $sql);
 
 $tabname = $tp . "links";
 echo "Creating table $tabname: ";
-$sql = "CREATE TABLE $tabname (  
+$sql = "CREATE TABLE IF NOT EXISTS $tabname (  
   network_id $vc32col,
   link_id $vc32col,
   source_id $vc32col,
@@ -168,7 +129,7 @@ $sql = "CREATE TABLE $tabname (
   KEY target_id (target_id),
   KEY network_id (network_id)
 ) $engine COLLATE utf8_unicode_ci";
-sqlreport($db, $sql);
+ncQueryAndReport($db, $sql);
 
 
 // -----------------------------------------------------------------------------
@@ -177,7 +138,7 @@ sqlreport($db, $sql);
 
 $tabname = $tp . "classes";
 echo "Creating table $tabname: ";
-$sql = "CREATE TABLE $tabname (  
+$sql = "CREATE TABLE IF NOT EXISTS $tabname (  
   network_id $vc32col,
   class_id $vc32col,       
   parent_id $vc32col,
@@ -187,16 +148,15 @@ $sql = "CREATE TABLE $tabname (
   class_status $statuscol,
   PRIMARY KEY (class_id)    
 ) $engine COLLATE utf8_unicode_ci";
-sqlreport($db, $sql);
- //
-//KEY network_id (network_id, parent_id)
+ncQueryAndReport($db, $sql);
+
 
 // -----------------------------------------------------------------------------
 // The annotations table will hold comments, subcomments for all components
 
 $tabname = $tp . "anno_text";
 echo "Creating table $tabname: ";
-$sql = "CREATE TABLE $tabname (    
+$sql = "CREATE TABLE IF NOT EXISTS $tabname (    
   datetime DATETIME NOT NULL,
   modified DATETIME,
   anno_id $vc32col,
@@ -212,12 +172,12 @@ $sql = "CREATE TABLE $tabname (
   KEY anno_id (anno_id),
   KEY root_id (network_id, root_id)  
 ) $engine COLLATE utf8_unicode_ci";
-sqlreport($db, $sql);
+ncQueryAndReport($db, $sql);
 
 
 $tabname = $tp . "anno_numeric";
 echo "Creating table $tabname:";
-$sql = "CREATE TABLE $tabname (  
+$sql = "CREATE TABLE IF NOT EXISTS $tabname (  
   datetime DATETIME NOT NULL,
   modified DATETIME,
   anno_id $vc32col,
@@ -234,8 +194,7 @@ $sql = "CREATE TABLE $tabname (
   KEY anno_id (anno_id),
   KEY root_id (network_id, root_id)
 ) $engine COLLATE utf8_unicode_ci";
-sqlreport($db, $sql);
-
+ncQueryAndReport($db, $sql);
 
 
 // -----------------------------------------------------------------------------
@@ -243,9 +202,9 @@ sqlreport($db, $sql);
 
 $tabname = $tp . "datafiles";
 echo "Creating table $tabname: ";
-$sql = "CREATE TABLE $tabname (  
+$sql = "CREATE TABLE IF NOT EXISTS $tabname (  
   datetime DATETIME NOT NULL,
-  file_id $vc32col,
+  file_id $vc32col,  
   user_id $vc32col,  
   network_id $vc32col,    
   file_name $vc256col,  
@@ -255,7 +214,7 @@ $sql = "CREATE TABLE $tabname (
   PRIMARY KEY (file_id),
   KEY network_id (network_id)
 ) $engine COLLATE utf8_unicode_ci";
-sqlreport($db, $sql);
+ncQueryAndReport($db, $sql);
 
 
 // -----------------------------------------------------------------------------
@@ -264,7 +223,7 @@ sqlreport($db, $sql);
 
 $tabname = $tp . "activity";
 echo "Creating table $tabname: ";
-$sql = "CREATE TABLE $tabname (
+$sql = "CREATE TABLE IF NOT EXISTS $tabname (
   datetime $datecol,
   user_id $vc32col,
   network_id $vc32col,    
@@ -273,7 +232,7 @@ $sql = "CREATE TABLE $tabname (
   value $textcol, 
   KEY network_id (network_id, datetime)
 ) $engine COLLATE utf8_unicode_ci";
-sqlreport($db, $sql);
+ncQueryAndReport($db, $sql);
 
 
 // -----------------------------------------------------------------------------
@@ -282,7 +241,7 @@ sqlreport($db, $sql);
 
 $tabname = $tp . "log";
 echo "Creating table $tabname:\t";
-$sql = "CREATE TABLE $tabname (
+$sql = "CREATE TABLE IF NOT EXISTS $tabname (
   datetime $datecol,
   user_id $vc32col,
   user_ip $vc128col,
@@ -291,7 +250,7 @@ $sql = "CREATE TABLE $tabname (
   value $textcol,
   KEY user_id (user_id, datetime)
 ) $engine COLLATE utf8_unicode_ci";
-sqlreport($db, $sql);
+ncQueryAndReport($db, $sql);
 
 
 /* --------------------------------------------------------------------------
@@ -312,21 +271,20 @@ $sql = "INSERT INTO $userstable
                 'Administrator', '', '', '', 1) , 
             (UTC_TIMESTAMP(), 'guest',  '', 'guest', 
             'Guest', '', '', '', 1)";
-sqlreport($db, $sql);
+ncQueryAndReport($db, $sql);
 
 
 // Create an icon for the admin
 $img = imagecreate(48, 48);
 $imgbg = imagecolorallocate($img, 0, 0, 0);
 $imgfile = "../../nc-data/users/admin.png";
-imagepng($img, $imgfile);        
-        
+imagepng($img, $imgfile);
+
 // Create an icon for the guest
 $img = imagecreate(48, 48);
 $imgbg = imagecolorallocate($img, 127, 127, 127);
 $imgfile = "../../nc-data/users/guest.png";
-imagepng($img, $imgfile);        
-
+imagepng($img, $imgfile);
 
 
 /* --------------------------------------------------------------------------
@@ -339,7 +297,7 @@ $sql = "INSERT INTO $logtable
           (datetime, user_id, network_id, target_name, action, value) VALUES 
           (UTC_TIMESTAMP(), 'admin', '', '',
           'installed the NetworkCurator database', '')";
-sqlreport($db, $sql);
+ncQueryAndReport($db, $sql);
 
 
 echo "Logging installation (2/2):";
@@ -347,12 +305,11 @@ $logtable = $tp . "log";
 $sql = "INSERT INTO $logtable 
           (datetime, user_id, action, value) VALUES 
           (UTC_TIMESTAMP(), 'admin', 'install', '')";
-sqlreport($db, $sql);
+ncQueryAndReport($db, $sql);
 
 // close the connection
 $db = null;
 echo "\n";
-
 
 
 /* --------------------------------------------------------------------------
@@ -361,7 +318,6 @@ echo "\n";
 
 echo "Writing site config file:\t";
 include_once "configure.php";
-
 
 ?>
 

@@ -5,12 +5,13 @@
  * 
  */
 
+/* global nc */
 
-if (typeof nc == "undefined") {
+
+if (typeof nc === "undefined") {
     throw new Error("nc is undefined");
 }
 nc.data = {};
-
 
 
 /* ====================================================================================
@@ -37,7 +38,7 @@ nc.data.importData = function(fgfile, fgdesc) {
     // check if filename is specified
     var fileinput = $('#'+fgfile+' input');     
     var filename = fileinput.val();
-    if (filename=='') {        
+    if (filename==='') {        
         $('#'+fgfile).addClass('has-warning');
         $('#'+fgfile+' label').html("Please select a data file");
     }
@@ -54,14 +55,14 @@ nc.data.importData = function(fgfile, fgdesc) {
     confirmmodal.modal("show");    
    
     return false;   
-}
+};
 
 
 /**
  * Invoked after user confirms upload of data.
- * @params filename - string, name of file to upload
- * @params filedesc - string, short description recorded during upload
- * @params fileurl - complete url to local file
+ * @param filename - string, name of file to upload
+ * @param filedesc - string, short description recorded during upload
+ * @param fileurl - complete url to local file
  * @param networkname - string, specifies target network
  */
 nc.data.sendData = function(filename, filedesc, fileurl, networkname) {
@@ -98,7 +99,7 @@ nc.data.sendData = function(filename, filedesc, fileurl, networkname) {
             nc.utils.alert(data);        
             data = JSON.parse(data);            
             if (nc.utils.checkAPIresult(data)) {
-                if (data['success']==false) {
+                if (!data['success']) {
                     $('#nc-import-response').html("Error: "+data['errormsg']);            
                 } else {                                        
                     $('#nc-import-response').html(data['data'].replace(/\n/g,"<br/>"));            
@@ -117,14 +118,12 @@ nc.data.sendData = function(filename, filedesc, fileurl, networkname) {
         reader.readAsText(fileurl);    
     }
 
-}
+};
 
 
 /* ====================================================================================
  * Exporting files
  * ==================================================================================== */
-
-
 
 /*
  * request a data download from server
@@ -150,7 +149,7 @@ nc.data.exportData = function() {
         nc.utils.alert(data);        
         data = JSON.parse(data);                    
         if (nc.utils.checkAPIresult(data)) {
-            if (data['success']==false) {
+            if (!data['success']) {
                 nc.msg('Hey!', 'Something went wrong with the export');                  
             } else {                                                        
                 var xx = JSON.stringify(JSON.parse(data['data']), null," ");
@@ -162,4 +161,4 @@ nc.data.exportData = function() {
         btn.toggleClass("btn-default disabled btn-success").html("Download");
     }
     );    
-}
+};

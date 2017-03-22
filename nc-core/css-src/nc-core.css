@@ -62,6 +62,9 @@ a {
     }
 }
 
+#page.container {
+    clear: both;
+}
 
 /* ------------------------------------------------------------------------------------
  * Generic helper classes
@@ -98,7 +101,7 @@ a {
 }
 
 /** The footer at the bottom of each page */
-footer {
+footer {    
     background-color: #f8f8f8; 
 }
 .nc-footer {
@@ -312,7 +315,18 @@ svg {
 #nc-graph-svg {
     margin-left: 15px;
     border: #ddd solid 1px;  
-    margin-bottom: 1em;
+    margin-bottom: 0em;
+}
+#nc-graph-summary {    
+    position: absolute;
+    bottom: 0px;    
+    margin: 0em 15px 0em 15px;    
+    padding: 2px 12px;    
+    color: #555;    
+    font-size: 90%;
+}
+#nc-graph-summary span.nc-highlight {
+    font-weight: 700;
 }
 textarea {
     resize: vertical;
@@ -738,7 +752,7 @@ table {
 /**
  * features accessible only to curators
 */
-.nc-curator > a {
+.nc-curator > a, .btn-curator  {
     color: #d43f3a !important;
 }
 .nc-curation-content {

@@ -5,12 +5,12 @@
  * 
  */
 
+/* global nc */
 
-if (typeof nc == "undefined") {
+if (typeof nc === "undefined") {
     throw new Error("nc is undefined");
 }
 nc.admin = {};
-
 
 
 /* ====================================================================================
@@ -37,22 +37,22 @@ nc.admin.createNetwork = function(fgname, fgtitle, fgdesc) {
     // callback function displayes feedback from server into the form
     var createCallback = function(data) {
         if (nc.utils.checkAPIresult(data)) {
-            if (data['success']==false || data['data']==false) {
+            if (data['success']===false || data['data']===false) {
                 $('#'+fgname).addClass('has-error has-feedback');                
                 $('#'+fgname+' label').html("Please choose another network name:");                
-            } else if (data['success']==true && data['data']==true) {                    
+            } else if (data['success'] && data['data']) {                    
                 $('#'+fgname+',#'+fgtitle+',#'+fgdesc).addClass('has-success has-feedback');                                
                 $('form button.submit').removeClass('btn-success').addClass('btn-default disabled').html("Success!");                
                 $('form,form button.submit').attr("disabled", true);                
             }
         }
-    }       
+    }; 
        
     nc.admin.sendCreateNetwork($('#'+fgname+' input').val(), $('#'+fgtitle+' input').val(),
         networkdesc, createCallback);
      
     return 1;
-}
+};
 
 
 /** 
@@ -79,12 +79,16 @@ nc.admin.sendCreateNetwork = function(netname, nettitle, netabstract, callback) 
         callback(JSON.parse(data));                                
     }
     );    
-}
+};
+
 
 /**
  *
  * Invoked from the network creation page (admin)
  * Send a request to create  new network from a data file
+ * 
+ * @param fgfile
+ * 
  */
 nc.admin.importNetwork = function(fgfile) {
             
@@ -94,7 +98,7 @@ nc.admin.importNetwork = function(fgfile) {
     // check if filename is specified
     var fileinput = $('#'+fgfile+' input');     
     var filename = fileinput.val();
-    if (filename=='') {        
+    if (filename==='') {        
         $('#'+fgfile).addClass('has-warning');
         $('#'+fgfile+' label').html("Please select a data file");
         return;
@@ -106,7 +110,7 @@ nc.admin.importNetwork = function(fgfile) {
     reader.onload = function(e) {                                 
         // clean the data here with JSON.parse
         try {
-            var filejson = JSON.parse(reader.result)
+            var filejson = JSON.parse(reader.result);
         } catch(ex) {
             nc.msg('Error', 'File contents does not appear to be valid JSON');                
             return;
@@ -115,38 +119,45 @@ nc.admin.importNetwork = function(fgfile) {
         // extract network name, title, description
         if (!("network" in filejson)) {
             nc.msg('Error', 'File does not contain a network definition');
+            return;
         }
         var netdef = filejson.network[0];
-        if (netdef==null) {
+        if (netdef===null) {
             nc.msg('Error', 'Invalid network definition');
+            return;
         }        
         var netname = netdef["name"];
         var nettitle = netdef["title"];
-        var netabstract = netdef["abstract"];                
-        if (netname==null) {
+        var netabstract = netdef["abstract"];                       
+        if (netname===null || typeof netname==="undefined") {
             nc.msg('Error', 'Missing network name');
+            return;
         }
-        if (nettitle==null) nettitle = netname;        
-        if (netabstract==null) netabstract = nettitle;
-         
+        if (nettitle===null || typeof nettitle==="undefined") {
+            nettitle = netname;
+        }        
+        if (netabstract===null || typeof netabstract==="undefined") {
+            netabstract = nettitle;
+        }        
+                
         // send a request to create the network                
         var createCallback = function(data) {
+            console.log("callback: "+JSON.stringify(data));
             if (nc.utils.checkAPIresult(data)) {
-                if (data['success']==false || data['data']==false) {
+                if (data['success']===false || data['data']===false) {
                     $('#'+fgfile).removeClass('has-warning has-error');                    
-                    $('#'+fgfile+' label').html("Please choose another network name");                      
-                // that's all, now exit
-                } else if (data['success']==true && data['data']==true) {                    
+                    $('#'+fgfile+' label').html("Error: "+data['errormsg']);                    
+                } else if (data['success'] && data['data']) {                    
                     // here invoke function to actually send the data to the server                    
                     nc.data.sendData(filename, "new network", fileurl, netname);        
                 }
             }
-        }                 
+        };              
         nc.admin.sendCreateNetwork(netname, nettitle, netabstract, createCallback);                        
-    }
+    };
       
     reader.readAsText(fileurl);    
-}
+};
 
 
 /**
@@ -163,7 +174,7 @@ nc.admin.purgeNetwork = function() {
         nc.admin.confirmPurgeNetwork(); 
         $(this).off("click");
     }); 
-}
+};
 
 
 /**
@@ -179,15 +190,15 @@ nc.admin.confirmPurgeNetwork = function() {
     }, function(data) {                         
         data = JSON.parse(data);
         if (nc.utils.checkAPIresult(data)) {
-            if (data['success']==false) {
+            if (!data['success']) {
                 nc.msg('Error', data['errormsg']);                
-            } else if (data['success']==true) {                    
+            } else if (data['success']) {   
                 nc.msg('Result', data['data']);
             }
         }        
     }
     ); 
-}
+};
 
 
 /* ====================================================================================
@@ -221,7 +232,7 @@ nc.admin.createUser = function(fgfirst, fgmiddle, fglast, fgid, fgemail, fgpwd, 
         + nc.utils.checkFormEmail(fgemail, "email") < 7) {
         return 0;
     };                
-    if ($('#'+fgpwd+' input').val() != $('#'+fgpwd2+' input').val()) {
+    if ($('#'+fgpwd+' input').val() !== $('#'+fgpwd2+' input').val()) {
         $('#'+fgpwd2).addClass('has-warning');
         $('#'+fgpwd2+' label').html("Please re-confirm the password:");
         return 0;
@@ -241,10 +252,10 @@ nc.admin.createUser = function(fgfirst, fgmiddle, fglast, fgid, fgemail, fgpwd, 
         nc.utils.alert(data);        
         data = JSON.parse(data);
         if (nc.utils.checkAPIresult(data)) {
-            if (data['success']==false || data['data']==false) {
+            if (data['success']===false || data['data']===false) {
                 $('#'+fgid).addClass('has-error has-feedback');                
                 $('#'+fgid+' label').html("Please choose another user id:");                
-            } else if (data['success']==true && data['data']==true) {                 
+            } else if (data['success'] && data['data']) {                 
                 $('form .form-group').addClass('has-success has-feedback');                                                                
                 $('form button.submit').removeClass('btn-success').addClass('btn-default disabled').html("Success!");                
                 $('form,form button.submit').attr("disabled", true);  
@@ -253,7 +264,7 @@ nc.admin.createUser = function(fgfirst, fgmiddle, fglast, fgid, fgemail, fgpwd, 
     });    
     
     return 1;
-}
+};
 
 
 /**
@@ -280,13 +291,13 @@ nc.admin.updateUserInfo = function(fgfirst, fgmiddle, fglast, fgemail, fgpwd, fg
         + nc.utils.checkFormEmail(fgemail, "email") < 5) {
         return 0;
     };      
-    if ($('#'+fgnewpwd+' input').val() != $('#'+fgnewpwd2+' input').val()) {
+    if ($('#'+fgnewpwd+' input').val() !== $('#'+fgnewpwd2+' input').val()) {
         $('#'+fgnewpwd2).addClass('has-warning');
         $('#'+fgnewpwd2+' label').html("Please re-confirm the password:");
         return 0;
     }             
     // check validity of new password 
-    if ($('#'+fgnewpwd+' input').val() !="") {
+    if ($('#'+fgnewpwd+' input').val() !=="") {
         if (nc.utils.checkFormInput(fgnewpwd, "password", 1)<1) {
             return 0;
         }
@@ -307,9 +318,9 @@ nc.admin.updateUserInfo = function(fgfirst, fgmiddle, fglast, fgemail, fgpwd, fg
         nc.utils.alert(data);        
         data = JSON.parse(data);
         if (nc.utils.checkAPIresult(data)) {
-            if (data['success']==false || data['data']==false) {                
+            if (data['success']===false || data['data']===false) {                
                 $('#nc-update-response').html("<br/>Error:"+data['errormsg']);                
-            } else if (data['success']==true) {                 
+            } else if (data['success']) {                 
                 $('form .form-group').addClass('has-success has-feedback');                                                                
                 $('form button.submit').removeClass('btn-success').addClass('btn-default disabled').html("Success!");                
                 $('form,form button.submit').attr("disabled", true);  
@@ -318,4 +329,4 @@ nc.admin.updateUserInfo = function(fgfirst, fgmiddle, fglast, fgemail, fgpwd, fg
         }                        
     });    
                 
-}
+};
