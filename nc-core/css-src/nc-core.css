@@ -835,6 +835,30 @@ div.makealive {
     height: auto;   
     overflow: visible;            
 }
+/** Positions of x, y labels **/
+svg.makealive text.ylab {
+    text-anchor: middle;
+}
+svg.makealive text.xlab.bottom {
+    text-anchor: middle;     
+}
+svg.makealive text.xlab.top {
+    text-anchor: start;
+}
+svg.makealive text.title {
+    text-anchor: start;    
+}
+.makealive .tooltip {    
+    font-size: 80%;
+    display: inline-block;
+    text-align: center;
+    padding: 4px 8px;
+    color: #fff4f4;
+    position: relative;
+    background-color: #333333;
+    border-radius: 4px;
+    opacity: 0;
+}
 
 /* ------------------------------------------------------------------------------------
  * History

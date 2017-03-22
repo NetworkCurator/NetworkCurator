@@ -71,7 +71,12 @@ nc.sandbox.generateMarkdown = function () {
         var now = "";
         if (iinput.length === 1) {
             now = iinput.val();
-            result[iname] = (isNaN(now) || now === '' ? now : +now);
+            if (+$(this).attr("array") === 1) {                
+                result[iname] = [];
+                result[iname].push(now);
+            } else {                
+                result[iname] = (isNaN(now) || now === '' ? now : +now);
+            }
         } else if (iinput.length > 1) {
             result[iname] = [];
             iinput.each(function () {
@@ -147,7 +152,7 @@ makealive.lib.sandbox = function (obj, x) {
         return ans;
     };
     var arrayForm = function (fname, flabel, fvalues) {
-        var ans = '<div class="form-group" val="' + fname + '">';
+        var ans = '<div class="form-group" val="' + fname + '" array=1>';
         ans += '<label class="col-sm-2 control-label">' + flabel + '</label>';
         fvalues = [].concat(fvalues);
         for (var j = 0; j < fvalues.length; j++) {
@@ -171,6 +176,7 @@ makealive.lib.sandbox = function (obj, x) {
     };
 
     // loop over the arguments and create form elements
+    var singles = ["string", "color", "integer", "number"];
     for (var i = 0; i < funargs.length; i++) {
         var iarg = funargs[i];
         var itype = iarg.type.split(":");
@@ -178,7 +184,7 @@ makealive.lib.sandbox = function (obj, x) {
         idesc = idesc[0].toUpperCase() + idesc.slice(1);
         var ivalue = iarg.value;
         var ihtml = "";
-        if (itype.length === 1 && itype[0] === "string") {
+        if (itype.length === 1 && singles.indexOf(itype[0])>=0) {
             ihtml = textForm(iarg.name, idesc, ivalue);
         } else if (itype[0] !== "array" && itype[0] !== "matrix") {
             ihtml = arrayForm(iarg.name, idesc, ivalue);
@@ -495,16 +501,16 @@ $(document).ready(
 
             // check if a string s consists of a double space
             var spacechar = " ".charAt(0);
-            var dblspace = function(s) {
-                return s.charAt(0) === spacechar  && s.charAt(1) === spacechar;                    
+            var dblspace = function (s) {
+                return s.charAt(0) === spacechar && s.charAt(1) === spacechar;
             };
 
             // using two spaces for tabs in textarea
             $('textarea').on('keyup', function (e) {
-                if (e.keyCode === 32) {                    
+                if (e.keyCode === 32) {
                     var nowval = $(this).val();
-                    var nowpos = $(this).prop("selectionStart");                                       
-                    if (dblspace(nowval.substr(nowpos - 2, 2))) {                        
+                    var nowpos = $(this).prop("selectionStart");
+                    if (dblspace(nowval.substr(nowpos - 2, 2))) {
                         $(this).val(nowval.substr(0, nowpos - 2) + "\t" + nowval.substr(nowpos));
                         $(this).prop("selectionStart", nowpos - 1).prop("selectionEnd", nowpos - 1);
                     }
