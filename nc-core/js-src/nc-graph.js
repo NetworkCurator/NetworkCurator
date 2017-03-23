@@ -132,7 +132,7 @@ nc.graph.initGraph = function () {
             function (data) {
                 data = JSON.parse(data);
                 if (nc.utils.checkAPIresult(data)) {
-                    nc.graph.nodepositions = []; //data['data'];
+                    nc.graph.nodepositions = data['data'];
                     numloaded++;
                 }
             }
@@ -144,7 +144,8 @@ nc.graph.initGraph = function () {
             $('#nc-graph-svg-container').find('span').remove();
             nc.graph.fillNodePositions();
             nc.graph.initInterface();
-            nc.graph.initSimulation();
+            nc.graph.initSimulation();            
+            nc.graph.autozoom();
             return;
         }
         // if reached here, not loaded yet
@@ -239,7 +240,7 @@ nc.graph.initInterface = function () {
     toolbar.append(nc.graph.makeSaveBtn());
 
     // make button for saving layout
-    //toolbar.append(nc.graph.makeSaveLayoutBtn());
+    toolbar.append(nc.graph.makeSaveLayoutBtn());
 
     // create behaviors in the svg based on the toolbar        
     var jsvg = $('#nc-graph-svg');
@@ -281,16 +282,10 @@ nc.graph.makeIconToolbar = function () {
 
     // add handlers for the buttons
     obj.find('.glyphicon-zoom-in').click(function () {
-        var svgbg = document.querySelector('#nc-graph-svg');
-        var nowscale = d3.zoomTransform(svgbg);
-        nowscale.k = nowscale.k * 1.1;
-        nc.graph.svg.select('.nc-svg-background').call(nc.graph.zoombehavior.transform, nowscale);
+        nc.graph.zoomk(1.1);
     });
     obj.find('.glyphicon-zoom-out').click(function () {
-        var svgbg = document.querySelector('#nc-graph-svg');
-        var nowscale = d3.zoomTransform(svgbg);
-        nowscale.k = nowscale.k / 1.1;
-        nc.graph.svg.select('.nc-svg-background').call(nc.graph.zoombehavior.transform, nowscale);
+        nc.graph.zoomk(1 / 1.1);
     });
     // centering of viewpoint
     obj.find('.glyphicon-record').click(nc.graph.centerview);
@@ -472,14 +467,29 @@ nc.graph.makeSaveBtn = function () {
  * @returns btn object
  */
 nc.graph.makeSaveLayoutBtn = function () {
+
     if (nc.curator === 0) {
         console.log("regular user");
         return "";
     }
-    var btn = nc.ui.ButtonGroup(['Remember Layout']);
-    btn.find("button").removeClass("btn-primary").addClass("btn-default btn-curator");
-    btn.click(nc.graph.sendNodePositions);
-    return btn;
+
+    var laybtn = nc.ui.DropdownLayoutSave();
+    laybtn.find("button").removeClass("btn-primary").addClass("btn-default btn-curator");
+
+    // attach actions to the save lins
+    laybtn.find('a[val="remember"]').click(
+            function () {
+                nc.graph.sendNodePositions(false);
+            });
+    laybtn.find('a[val="forget"]').click(
+            function () {
+                nc.graph.sendNodePositions(true);
+            });
+
+    //var btn = nc.ui.ButtonGroup(['Remember Layout']);
+    //btn.find("button").removeClass("btn-primary").addClass("btn-default btn-curator");
+    //btn.click(nc.graph.sendNodePositions);
+    return laybtn;
 };
 
 
@@ -1306,6 +1316,20 @@ nc.graph.zoom = function () {
 
 
 /**
+ * Perform a zoom transformation by a specified zoom factor k
+ * 
+ * @param {double} k
+ *
+ */
+nc.graph.zoomk = function (k) {    
+    var svgbg = document.querySelector('#nc-graph-svg');
+    var sc = d3.zoomTransform(svgbg);
+    sc.k = sc.k * k;
+    nc.graph.svg.select('.nc-svg-background').call(nc.graph.zoombehavior.transform, sc);
+};
+
+
+/**
  * perform a translate operation so that nodes appear in the center of the graph view
  */
 nc.graph.centerview = function () {
@@ -1318,6 +1342,32 @@ nc.graph.centerview = function () {
     var newtrans = [sw2 * (1 - oldtrans[2]), sh2 * (1 - oldtrans[2])];
     nc.graph.svg.select("g.nc-svg-content")
             .attr("transform", "translate(" + newtrans[0] + "," + newtrans[1] + ")scale(" + oldtrans[2] + ")");
+};
+
+
+/**
+ * Adjusts the zoom factor so that all the points are visible in the svg 
+ */
+nc.graph.autozoom = function () {    
+    // get current svg dimensions    
+    var sw = parseInt(nc.graph.svg.style("width").replace("px", ""));
+    var sh = parseInt(nc.graph.svg.style("height").replace("px", ""));
+    // get current extent of graph nodes
+    var gx = [0, 0], gy = [0, 0];    
+    nc.graph.rawnodes.map(function (x) {
+        if ("x" in x) {
+            gx[0] = Math.min(gx[0], x.x);
+            gx[1] = Math.max(gx[1], x.x);
+            gy[0] = Math.min(gy[0], x.y);
+            gy[1] = Math.max(gy[1], x.y);
+        }
+    });
+
+    // finally, perform the zoom to make all the nodes fit
+    var finalk = Math.min(sw / (gx[1] - gx[0]), sh / (gy[1] - gy[0]));    
+    if (finalk < 1) {
+        nc.graph.zoomk(finalk * 0.96);
+    }
 };
 
 
@@ -1634,13 +1684,30 @@ nc.graph.removeLink = function () {
  * Handling of node/link positions from/to the server
  * ==================================================================================== */
 
-nc.graph.sendNodePositions = function () {
-    //console.log("sendNodePositions");
+/**
+ * Send current x,y positions for all nodes to the server
+ * 
+ * @param reset logical, if true, will always send 0,0 
+ * 
+ * @returns 
+ */
+nc.graph.sendNodePositions = function (reset) {
 
     var npos = [];
     nc.graph.rawnodes.map(function (x) {
-        npos.push({id: x.id, "x": x.x.toPrecision(5), "y": x.y.toPrecision(5)});
+        if ("x" in x) {
+            npos.push({id: x.id, "x": x.x.toPrecision(5), "y": x.y.toPrecision(5)});
+        }
     });
+
+    if (reset) {
+        console.log("reset is" + (typeof reset) + " . " + JSON.stringify(reset));
+        npos = npos.map(function (x) {
+            x.x = 0;
+            x.y = 0;
+            return x;
+        });
+    }
 
     /** Helper to create a batch of npos and then send it to server 
      * @param b is the batch index, i.e. 0, 1, 2, etc. */
@@ -1654,19 +1721,24 @@ nc.graph.sendNodePositions = function () {
         //console.log("sending in sendBatch: " + JSON.stringify(batchpos));
         $.post(nc.api,
                 {
-                    controller: "NCGraph",
+                    controller: "NCGraphs",
                     action: "setNodePositions",
                     network: nc.network,
                     positions: JSON.stringify(batchpos)
                 },
                 function (data) {
                     data = JSON.parse(data);
+                    if (nc.utils.checkAPIresult(data)) {
+                        if (!data['success']) {
+                            nc.msg('Error', data['errormsg']);
+                        }
+                    }
                 }
         );
     };
 
     // send in batches (prevents simulatneous large data uploads for large networks)
-    var batchsize = 2000;
+    var batchsize = 1000;
     var numbatches = Math.ceil(npos.length / batchsize);
     for (var b = 0; b < numbatches; b++) {
         setTimeout(sendBatch, 500 * b, b);
@@ -1679,13 +1751,31 @@ nc.graph.sendNodePositions = function () {
  * Transfer fx, fy coordinates from nc.graph.nodepositions to 
  * nc.graph.rawnodes and nc.graph.rawlinks
  
- * @returns {unresolved}
+ * @returns nothing
  */
 nc.graph.fillNodePositions = function () {
     if (nc.graph.nodepositions.length === 0) {
-        console.log("no positions");
         return;
     }
-    console.log("received data: " + JSON.stringify(nc.graph.nodepositions));
-    return null;
+
+    // create dictionaries with lookups between node ids and x/y
+    var posdict = {};
+    nc.graph.nodepositions.map(function (x) {
+        posdict[x.id] = [+x.x, +x.y];
+    });
+    // get rid of the nodepositions as separate arrays (for memory)
+    nc.graph.nodepositions = [];
+
+    // transfer data from posdict into the rawnodes and rawlinks;    
+    nc.graph.rawnodes = nc.graph.rawnodes.map(function (x) {
+        var iid = x['id'];
+        if (iid in posdict) {
+            x['x'] = posdict[iid][0];
+            x['y'] = posdict[iid][1];
+        } else {
+            x['x'] = 0;
+            x['y'] = 0;
+        }
+        return x;
+    });
 };

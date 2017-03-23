@@ -97,7 +97,7 @@ nc.init.initPermissions = function() {
     }
     if (guestperms.length===0 || usersperms.length===0) return;
         
-    // creat widgets
+    // create widgets    
     guestperms.append(nc.ui.PermissionsWidget(nc.permissions.guest));                
     usersperms.append(nc.ui.PermissionsWidget(nc.permissions.users));                          
     // prevent disabled buttons being clicked
@@ -126,10 +126,7 @@ nc.init.initOntology = function() {
     var ontnodes = $('#nc-ontology-nodes');
     var ontlinks = $('#nc-ontology-links');        
     if (ontnodes.length===0 || ontlinks.length===0) return;
-         
-         
-         console.log("nodes: "+JSON.stringify(nc.ontology.nodes));
-         console.log("links: "+JSON.stringify(nc.ontology.links));
+                  
     // add ontology trees     
     ontnodes.html(nc.ui.ClassTreeWidget(nc.ontology.nodes, false));                    
     ontlinks.html(nc.ui.ClassTreeWidget(nc.ontology.links, true));               

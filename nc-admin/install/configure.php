@@ -48,6 +48,7 @@ $myconf .= "define('NC_TABLE_LOG',\t\t'" . DB_TABLE_PREFIX . "_log');\n";
 $myconf .= "define('NC_TABLE_NETWORKS',\t'" . DB_TABLE_PREFIX . "_networks');\n";
 $myconf .= "define('NC_TABLE_NODES',\t'" . DB_TABLE_PREFIX . "_nodes');\n";
 $myconf .= "define('NC_TABLE_PERMISSIONS',\t'" . DB_TABLE_PREFIX . "_permissions');\n";
+$myconf .= "define('NC_TABLE_POSITIONS',\t'" . DB_TABLE_PREFIX . "_positions');\n";
 $myconf .= "define('NC_TABLE_USERS',\t'" . DB_TABLE_PREFIX . "_users');\n";
 $myconf .= "define('NC_ID_LEN',\t\t'" . NC_ID_LEN . "');\n";
 $myconf .= "\n// Configuration for web server delivering content\n";

@@ -254,7 +254,7 @@ class NCGraphs extends NCOntology {
 
         // check that required inputs are defined
         $params = $this->subsetArray($this->_params, array_merge(["class",
-                    "source", "target"], array_keys($this->_annotypes)));
+            "source", "target"], array_keys($this->_annotypes)));
 
         // check required permission to edit the graph
         $this->checkEditPermissions();
@@ -725,7 +725,7 @@ class NCGraphs extends NCOntology {
             if ($i > 0) {
                 $sqlclass .= " OR ";
             }
-            $sqlclass.= " $tl.class_id = :class_$i ";
+            $sqlclass .= " $tl.class_id = :class_$i ";
         }
         $sqlclass .= ");";
 
@@ -979,6 +979,65 @@ class NCGraphs extends NCOntology {
             'USER' => $this->_uid];
 
         $ncemail->sendEmailToCurators("email-update-object", $emaildata, $this->_netid, $users);
+    }
+
+    /**
+     * Insert x,y coordinates for nodes into the db
+     * 
+     */
+    public function setNodePositions() {
+        
+        $this->subsetArray($this->_params, ['positions']);
+
+        if ($this->_uperm < NC_PERM_CURATE) {
+            throw new Exception("Insufficient permissions to set node positions");
+        }
+
+        // expect input as a JSON array of object with .id .x and .y
+        $positions = json_decode($this->_params['positions'], true);
+
+        // update the node positions via INSERT and ON DUPLICATE KEY UPDATE
+        $ntp = NC_TABLE_POSITIONS;
+        $sql = "INSERT INTO $ntp (network_id, node_id, pos_x, pos_y) VALUES ";
+        $sqlinsert = [];
+        $sqlparams = [];
+        $n = count($positions);
+        for ($i = 0; $i < $n; $i++) {
+            $x = sprintf("%'.06d", $i);
+            $sqlinsert[$i] = "(:network_$x, :node_$x, :x_$x, :y_$x)";
+            $sqlparams["network_$x"] = $this->_netid;
+            $sqlparams["node_$x"] = $positions[$i]['id'];
+            $sqlparams["x_$x"] = $positions[$i]['x'];
+            $sqlparams["y_$x"] = $positions[$i]['y'];
+        }
+
+        $sqlend = " ON DUPLICATE KEY UPDATE pos_x=VALUES(pos_x), pos_y=VALUES(pos_y) ";
+        $sql .= implode(", ", $sqlinsert) . $sqlend;
+        $this->qPE($sql, $sqlparams);
+
+        return 1;
+    }
+
+    /**
+     * Fetch any x,y coordinates for nodes in associated with a network
+     * This is a very simple select 
+     * 
+     */
+    public function getNodePositions() {
+
+        if ($this->_uperm < NC_PERM_VIEW) {
+            throw new Exception("Insufficient permissions to view network");
+        }
+        
+        $sql = "SELECT node_id AS id, pos_x AS x, pos_y AS y FROM " . 
+                NC_TABLE_POSITIONS . " WHERE network_id = ? ";
+        $stmt = $this->qPE($sql, [$this->_netid]);
+        $result = array();
+        while ($row = $stmt->fetch()) {
+            $result[] = $row;
+        }
+
+        return $result;
     }
 
 }

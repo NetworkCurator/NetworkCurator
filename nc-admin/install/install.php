@@ -112,6 +112,18 @@ $sql = "CREATE TABLE IF NOT EXISTS $tabname (
 ncQueryAndReport($db, $sql);
 
 
+$tabname = $tp."positions";
+echo "Creating table $tabname: ";
+$sql = "CREATE TABLE IF NOT EXISTS $tabname (
+    network_id $vc32col,
+    node_id $vc32col,
+    pos_x $dblcol,
+    pos_y $dblcol,
+    PRIMARY KEY (node_id)
+) $engine COLLATE utf8_unicode_ci";
+ncQueryAndReport($db, $sql);
+
+
 // -----------------------------------------------------------------------------
 // The links table will hold all links across all networks
 

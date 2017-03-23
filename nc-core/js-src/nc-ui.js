@@ -91,7 +91,7 @@ nc.ui.PermissionsWidget = function (udata) {
     $.each(udata, function (key, val) {
 
         var uid = val['user_id'];
-        var up = val['permissions'];
+        var up = +val['permissions'];
         var nowlab = uid;
         if (uid !== "guest") {
             nowlab += " (" + val['user_firstname'] + " " + val['user_middlename'] + " " + val['user_lastname'] + ")";
@@ -714,6 +714,26 @@ nc.ui.DropdownGraphSave = function () {
     html += '<li><a val="diagram" href="#">Network diagram (svg)</a></li>';
     //html += '<li><a val="definition" href="#">Network definition (json)</a></li>';
     html += '<li><a val="nodes" href="#">Node list (txt)</a></li>';
+    html += '</ul>';
+
+    dropb.find('div.nc-dropdown-content').append(html);
+
+    return dropb;
+};
+
+
+/* 
+ * Create button with a dropdown list for handling graph layout 
+ */
+nc.ui.DropdownLayoutSave = function() {
+    
+    // create generic dropdown button structure
+    var dropb = nc.ui.DropdownGeneric('Layout', 'layout');
+
+    // create list with objects types
+    var html = '<ul class="dropdown-menu">';
+    html += '<li><a val="remember" href="#">Remember layout</a></li>';    
+    html += '<li><a val="forget" href="#">Forget layout</a></li>';
     html += '</ul>';
 
     dropb.find('div.nc-dropdown-content').append(html);

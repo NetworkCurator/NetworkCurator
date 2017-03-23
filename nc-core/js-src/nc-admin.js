@@ -141,8 +141,7 @@ nc.admin.importNetwork = function(fgfile) {
         }        
                 
         // send a request to create the network                
-        var createCallback = function(data) {
-            console.log("callback: "+JSON.stringify(data));
+        var createCallback = function(data) {            
             if (nc.utils.checkAPIresult(data)) {
                 if (data['success']===false || data['data']===false) {
                     $('#'+fgfile).removeClass('has-warning has-error');                    
