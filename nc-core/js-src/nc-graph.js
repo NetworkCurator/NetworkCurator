@@ -1738,7 +1738,7 @@ nc.graph.sendNodePositions = function (reset) {
     };
 
     // send in batches (prevents simulatneous large data uploads for large networks)
-    var batchsize = 1000;
+    var batchsize = 4000;
     var numbatches = Math.ceil(npos.length / batchsize);
     for (var b = 0; b < numbatches; b++) {
         setTimeout(sendBatch, 500 * b, b);
