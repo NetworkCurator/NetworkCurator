@@ -408,7 +408,7 @@ GROUP BY $ta.network_id, $tac) AS T GROUP BY network_id ORDER BY title";
         // remove all entries from db tables
         $alltables = [NC_TABLE_PERMISSIONS, NC_TABLE_ANNOTEXT,
             NC_TABLE_CLASSES, NC_TABLE_FILES, NC_TABLE_ACTIVITY, NC_TABLE_NETWORKS, NC_TABLE_NODES,
-            NC_TABLE_PERMISSIONS];
+            NC_TABLE_PERMISSIONS, NC_TABLE_POSITIONS];
         foreach ($alltables as $dbtable) {
             $sql = "DELETE FROM $dbtable WHERE network_id = ?";
             $this->qPE($sql, [$this->_netid]);
