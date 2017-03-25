@@ -119,7 +119,8 @@ $sql = "CREATE TABLE IF NOT EXISTS $tabname (
     node_id $vc32col,
     pos_x $dblcol,
     pos_y $dblcol,
-    PRIMARY KEY (node_id)
+    PRIMARY KEY (node_id),
+    KEY network_id (network_id)
 ) $engine COLLATE utf8_unicode_ci";
 ncQueryAndReport($db, $sql);
 
