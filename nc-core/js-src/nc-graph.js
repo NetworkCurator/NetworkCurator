@@ -1057,7 +1057,7 @@ nc.graph.filterNodes = function () {
  * 
  */
 nc.graph.filterLinks = function () {
-
+        
     // some shorthand objects
     var rawlinks = nc.graph.rawlinks;
     var llen = rawlinks.length;
@@ -1078,7 +1078,7 @@ nc.graph.filterLinks = function () {
         // check the ontology should be visible
         if (lonto[iclassid].show > 0) {
             // cehck that the links are active/inactive
-            if (nc.graph.settings.inactive === 1 ||
+            if (nc.graph.settings.inactive ||
                     (rawlinks[i].status > 0 && lonto[iclassid].status > 0)) {
                 var isource = rawlinks[i].source;
                 var itarget = rawlinks[i].target;

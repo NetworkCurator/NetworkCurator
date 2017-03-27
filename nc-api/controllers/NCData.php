@@ -582,7 +582,7 @@ class NCData extends NCGraphs {
         // batch insert and update
         if (count($newset) > 0) {
             //echo "inserting new nodes ".count($newset)."! <br/>";
-            for ($i = 0; $i < count($newset); $i+=$this->_atatime) {
+            for ($i = 0; $i < count($newset); $i += $this->_atatime) {
                 $tempset = array_slice($newset, $i, $this->_atatime);
                 $this->batchInsertNodes($tempset);
             }
@@ -591,7 +591,7 @@ class NCData extends NCGraphs {
         $updatecount = 0;
         if (count($updateset) > 0) {
             //echo "updating nodes ".count($updateset)."! <br/>";
-            for ($i = 0; $i < count($newset); $i+=$this->_atatime) {
+            for ($i = 0; $i < count($newset); $i += $this->_atatime) {
                 $tempset = array_slice($updateset, $i, $this->_atatime);
                 $updatecount += $this->batchUpdateObjects($tempset, 'node');
             }
@@ -695,7 +695,7 @@ class NCData extends NCGraphs {
         // batch insert and update
         if (count($newset) > 0) {
             //echo "inserting new links ".count($newset)."! <br/>";
-            for ($i = 0; $i < count($newset); $i+=$this->_atatime) {
+            for ($i = 0; $i < count($newset); $i += $this->_atatime) {
                 $tempset = array_slice($newset, $i, $this->_atatime);
                 $this->batchInsertLinks($tempset);
             }
@@ -704,7 +704,7 @@ class NCData extends NCGraphs {
         $updatecount = 0;
         if (count($updateset) > 0) {
             //echo "updating links ".count($newset)."! <br/>";
-            for ($i = 0; $i < count($updateset); $i+=$this->_atatime) {
+            for ($i = 0; $i < count($updateset); $i += $this->_atatime) {
                 $tempset = array_slice($updateset, $i, $this->_atatime);
                 $updatecount += $this->batchUpdateObjects($tempset, 'link');
             }
@@ -744,6 +744,10 @@ class NCData extends NCGraphs {
 
         // get a snapshot of the users
         $result['users'] = $this->exportUsers();
+
+        if ($what == "sif") {
+            return $this->exportSifData($result);
+        }
 
         return json_encode($result);
     }
@@ -876,6 +880,63 @@ class NCData extends NCGraphs {
             $result[] = $val;
         }
         return $result;
+    }
+
+    /**
+     * Produce a SIF representation of the network connections
+     * 
+     * SIF files are text files with two line formats
+     * SOURCE_NODE LINK_TYPE TARGET_NODE
+     * DISCONNECTE_NODE
+     * 
+     * This SIF representation contains only active nodes, links, and classes
+     * 
+     * @param array $arraydata
+     * @return string
+     */
+    private function exportSifData($arraydata) {
+
+        // fetch active ontology classes
+        $onto = array();
+        foreach ($arraydata["ontology"] as $key => $val) {
+            if ($val["status"] == NC_ACTIVE) {
+                $onto[$val["name"]] = 1;
+            }
+        }
+
+        $goodnodes = array();
+        foreach ($arraydata["nodes"] as $key => $val) {
+            if ($val["status"] == NC_ACTIVE && $onto[$val["class"]]) {
+                $goodnodes[$val["name"]] = 1;
+            }
+        }
+
+        // collect the link data into an array (leter into one string)
+        $result = array();
+        $linkednodes = array();
+        foreach ($arraydata["links"] as $key => $val) {
+            $n1 = $val["source"];
+            $n2 = $val["target"];
+            $lc = $val["class"];
+            // check link has active status
+            if ($onto[$lc] && $goodnodes[$n1] && $goodnodes[$n2] &&
+                    $val["status"] == NC_ACTIVE) {
+                $result[] = $n1 . "\t" . $val["class"] . "\t" . $n2;
+                $linkednodes[$n1] = 1;
+                $linkednodes[$n2] = 1;
+            }
+        }
+
+        // add in information about unlinked nodes
+        foreach ($arraydata["nodes"] as $key => $val) {
+            $nx = $val["name"];
+            if ($goodnodes[$nx] && !$linkednodes[$nx]) {
+                $result[] = $nx;
+            }
+        }
+
+        // turn the array into one long string
+        return implode("\n", $result);
     }
 
     /**
