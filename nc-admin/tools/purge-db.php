@@ -40,7 +40,7 @@ echo "Dropping existing tables:";
 $tp = "" . DB_TABLE_PREFIX . "_";
 $alltabs = array("activity", "anno_numeric", "anno_text", "classes", "datafiles",
     "users", "networks", "permissions", "log",
-    "nodes", "links", "annotations", "annotation_log");
+    "nodes", "links", "annotations", "annotation_log", "positions");
 $sql = "DROP TABLE IF EXISTS " . $tp . implode(", " . $tp, $alltabs);
 ncQueryAndReport($db, $sql);
 
